@@ -23,7 +23,7 @@ Test the installation by running the tests:::
 
 
 Data representation
-~~~~~~~~~~~~~~~~~~~
+--------------------
 
 Neurons are essentially tree structures. More precisely, when disregarding the soma, a neuron is a binary tree. That is a tree with at most 2 children at any node. As such, a tree structure provides an intuitive representation of a morphology and can be easily probed to calculate morphometric features.
 
@@ -80,7 +80,7 @@ Visualization
 (simple, using matplotlib):
 
 * Dendrogram
-* 2D/3D plot 
+* 2D/3D plot as wires and/or with diameters
 
 
 
@@ -89,20 +89,22 @@ Quick example
 
 ::
 
-   import btstructs, btstats, btviz
+   import btmorph
    import numpy
    import matplotlib.pyplot as plt
 
-   swc_tree = btstructs.STree()
-   swc_tree.read_SWC_tree_from_file(file_name)
-   stats = btstats.BTStats(swc_tree)
+   swc_tree= btmorph.STree2()
+   swc_tree.read_SWC_tree_from_file("examples/data/v_e_moto1.CNG.swc")
+
+   stats = btmorph.BTStats(swc_tree)
 
    # get the total length
    total_length = stats.total_length()
+   print "total_length = %f" % total_length
 
    # get the max degree, i.e., degree of the soma
    max_degree = stats.degree_of_node(swc_tree.get_root())
 
    # generate and save the dendrogram
-   btviz.plot_dendrogram(file_name=test_file_name)
+   btmorph.plot_dendrogram("examples/data/v_e_moto1.CNG.swc")
    plt.savefig('examplar_dendrogram.pdf')
