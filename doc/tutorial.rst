@@ -2,29 +2,9 @@
 btmorph tutorial
 ################
 
-Brief hands-on introduction to the usage of btmorph to analyze andvalidate neuronal morphometrics data at BBP. A toy algorithm to synthesize neurite morphologies is also described. 
+Brief hands-on introduction to the usage of btmorph to analyze and validate neuronal morphometrics. A short description is also provided on how to use btmorph in further scripting.
 
-Recommended to use IPython. Open ``ipython --pylab -i`` at the prompt in the ``tutorial`` directory. Then copy and paste code into the python prompt using ``%paste``.
-
-Converting BBP H5(v2) to SWC
-----------------------------
-
-The exemplar H5 file is found in the ``tutorial`` directory. The neuron under investigation is a pyramidal cell. To convert the morphology of the complete cell::
-
-  import btmorphtools
-  btmorphtools.convert_h5_to_SWC('C060109A3.h5',\
-                                 types=[3,4],\
-                                 swc_given_name='morph.swc')                                
-
-
-Or if you want to analyze the apical tree separately. ::  
-
-  import btmorphtools
-  btmorphtools.convert_h5_to_SWC('C060109A3.h5',\
-                                 types=[4],\
-                                 swc_given_name='apical.swc')
-
-You can verify that the files are created in the same directory.                                
+Recommended to use IPython. Open ``ipython --pylab -i`` at the prompt in the ``examples`` directory. Then copy and paste the code snippets into the python prompt using ``%paste`` `(Magic functions) <http://ipython.org/ipython-doc/rel-1.1.0/interactive/tutorial.html>`_.
 
 
 Analyzing morphometric data
@@ -114,7 +94,7 @@ Finally, to visually inspect both morphologies we could plot them::
 +---------+-----------+
 
 Potential extensions
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 There are also hooks in ``btmorph`` to access other features. For instance, it is straight-forward to save a cloud on which measurement related to the spatial distribution of points (for instance the moments) can be measured.::
 
@@ -200,57 +180,3 @@ According to the `manual <http://docs.scipy.org/doc/scipy/reference/generated/sc
 
 .. image:: figures/compare_segments.png
   :scale: 50
-
-
-Synthesis of neurons
---------------------
-
-Currently, only a `naive` version of Hermann Cuntz' "minimal spanning tree" algorithm (MST) is implemented. 
-
-*MST:* Create a path (without loops, it's a tree!) of minimal length in between of a set of vertices. To create a neuron morphology is has to be adapted for:
-
-* binary trees: dendrites and axons `generally` only have bifurcations.
-* The cost is not only the minimum total path length but also the path length to the soma. Thus, cost = total_path + bf x path_to_soma.
-
-Then there are two free parameters: 1. How many `points` to connect, and, 2. the balancing factor bf.
-
-In the naive implementation 1. is set to the same number as in a prototype neuron, i.e., the same number bifurcation points and end points, and 2. is picked by hand. 
-
-*Naive* means here that the algorithm just shakes the existing bifurcation and terminal points by convolving them with a uniform or Gaussian distribution. The result is a unique set of points that is highly similar to the original prototype. As a consequence, you only need to optimize bf to and validate for the total length of the structure. (Which can be done by the simplex method or any other gradient descent-like algorithm).
-
-The implementation is not currently not very fast but the algorithm can connect some 50 points per second.
-
-(Do add the synthesis directory to the `PYTHONPATH`)::
-
-  import mst
-  import btviz
-  import matplotlib.pyplot as plt
-  
-  synthesizer = mst.MSTSynth()
-  BF=0.1
-  tree = synthesizer.from_exemplar_SWC_naive("1208875.CNG.swc",bf=BF,\
-                                             out_name="naive_granule.swc",\
-                                             seed=0,test=0)
-  plt.figure()
-  btviz.plot_2D_SWC("N4ttwt.CNG.swc")
-  plt.figure()
-  btviz.plot_2D_SWC("naive_granule.swc")
-
-which generates the following two plots:
-
-.. |real| image:: figures/granule.png
-  :scale: 50
-
-.. |fake| image:: figures/granule_mst.png
-  :scale: 50
-
-+---------+---------+
-| |real|  | |fake|  |
-+---------+---------+
-
-Obviously, some shape parameters are captured by the algorithm (overall spatial embedding) while more detailed parameters are not captured, for instance, the meandering.
-
-Suggested improvements:
-
-* Not naive implementation: construct a density distribution of neuron, sample a number n points from this distribution and connect those. Suggested to use kernel density estimates; once the neurons are aligned around a certain axis, a population can be used to generate the KDEs.
-* Meandering: introduce smoothing. Add a little bit of extra meandering / smoothing to the long stretches of dendrite in between of the vertices.

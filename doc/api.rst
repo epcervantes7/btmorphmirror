@@ -1,30 +1,34 @@
 API Documentation
 =================
 
-..
-   Auto
-   ----
 
-   .. autosummary::
-      :toctree: btmorph
+.. automodule:: btmorph
 
-      btmorph.btstats
-      btmorph.btstructs2
+P3D2
+-------
 
-
-btstats
---------
-
-.. automodule:: btmorph.btstats
+.. autoclass:: btmorph.P3D2
    :members:
    :undoc-members:
    :show-inheritance:
 
 
-btstructs2
+SNode2
 -----------
 
-.. automodule:: btmorph.btstructs2
+.. autoclass:: btmorph.SNode2
    :members:
-   :undoc-members:
-   :show-inheritance:
+
+
+STree2
+-----
+
+.. autoclass:: btmorph.STree2
+   :members:
+
+BTStats
+-----
+
+.. autoclass:: btmorph.BTStats
+   :members:
+
