@@ -129,14 +129,6 @@ class BTStats :
         
         """        
         L = 0
-        # for node in self._all_nodes :
-        #     n = node.get_content()['p3d']
-        #     if(n.index not in [1,2,3]) :           
-        #         p = node.get_parent_node().get_content()['p3d']
-        #         d = np.sqrt( (n.x-p.x)*(n.x-p.x) + (n.y-p.y)*(n.y-p.y) + \
-        #                      (n.z-p.z)*(n.z-p.z) )
-        #         L += d
-        
         # upated 2014-01-21 for compatibility with new btstructs2
         for node in self._all_nodes :
             n = node.get_content()['p3d']
