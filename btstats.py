@@ -279,7 +279,7 @@ class BTStats :
         
         Parameters
         ----------
-        to_node : SNode
+        to_node : :class:`SNode2`
            Node *to* which the measurement is taken
 
         Returns
@@ -319,7 +319,7 @@ class BTStats :
 
         Parameters
         ----------
-        from_node : SNode
+        from_node : :class:`SNode2`
         
         Returns
         -------
@@ -354,7 +354,7 @@ class BTStats :
 
         Parameters
         ----------
-        from_node : SNode
+        from_node : :class:`SNode2`
         
         Returns
         -------
@@ -390,7 +390,7 @@ class BTStats :
 
         Parameters
         ----------
-        from_node : SNode
+        from_node : :class:`SNode2`
         
         Returns
         -------
@@ -417,7 +417,7 @@ class BTStats :
 
         Parameters
         ----------
-        node : SNode
+        node : :class:`SNode2`
 
         Returns
         -------
@@ -434,7 +434,7 @@ class BTStats :
 
         Parameters
         ----------
-        node : SNode
+        node : :class:`SNode2`
 
         Returns
         -------
@@ -452,7 +452,7 @@ class BTStats :
 
         Parameters
         ----------
-        node : SNode
+        node : :class:`SNode2`
 
         Returns
         -------
@@ -481,7 +481,7 @@ class BTStats :
         
         Parameters
         ----------
-        node : SNode
+        node : :class:`SNode2`
         where : string
             Toggle 'local' or 'remote' (see L-Measure website)
 
@@ -512,7 +512,7 @@ class BTStats :
 
         Parameters
         ----------
-        node : SNode
+        node : :class:`SNode2`
         where : string
             Toggle 'local' or 'remote'
 
