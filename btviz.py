@@ -26,14 +26,31 @@ C = 'k'
 max_width = 0
 max_height = 0
 
-def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None,offset=None,show_axis=False) :
-    '''
-    Colors can be
-    None: uniform/default matplotlib color
-    Any color code: uniform but specified color
-    array of values:
-    colormap?
-    '''
+def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None,offset=None,show_axis=False,XZ=False) :
+    """
+    2D matplotlib plot of a neuronal moprhology. Projection can be in XY and XZ.
+    Colors can be provided
+
+    Parameters
+    -----------
+    file_name : string
+        File name of the SWC file to plots
+    cs : list of float
+        Raw values that will be plotted on the morphology according to a colormap
+    synapses : list of int
+        Indices of the compartments where synapses (= small circles) should be drawn
+    syn_c : string
+        Color of the synapses ('r','g', 'b', ...)
+    outN : string
+        File name of the output file. Extension of this file sets the file type
+    offset : list on float
+        List of length 3 with X,Y and Z shift of the morphology to be plotted
+    show_axis : boolean
+        whether or not to draw the axis
+    XZ : boolean
+        Default False means the XY projection is drawn. If True, the XZ projection is drawn
+
+    """
     # read the SWC into a dictionary: key=index, value=(x,y,z,d,parent)
     x = open(file_name,'r')
     SWC = {}
@@ -57,7 +74,7 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
     my_color_list = ['r','g','b','c','m','y','r--','b--','g--']
             
     if cs == None :
-        pass#plt.clf()
+        pass
     else :
         norm = colors.normalize(np.min(cs),np.max(cs))
         Z = [[0,0],[0,0]]
@@ -94,11 +111,17 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
                 min_y= p_y
             # print 'index:', index, ', len(cs)=', len(cs)
             if(cs == None) :
-                pl = plt.plot([p_x,c_x],[p_y,c_y],my_color_list[current_SWC[5]-1],linewidth=c_r)
-                #pl = plt.plot([p_x,c_x],[p_y,c_y],'r',linewidth=c_r)
+                if XZ:
+                    pl = plt.plot([p_z,c_z],[p_x,c_x],my_color_list[current_SWC[5]-1],linewidth=c_r)
+                    #pl = plt.plot([p_x,c_x],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r)
+                else:
+                    pl = plt.plot([p_x,c_x],[p_y,c_y],my_color_list[current_SWC[5]-1],linewidth=c_r)
             else :
                 try :
-                    pl = plt.plot([p_x,c_x],[p_y,c_y],c=cm.jet(norm(cs[index])),linewidth=c_r)
+                    if XZ:
+                        pl = plt.plot([p_x,c_x],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r)
+                    else:
+                        pl = plt.plot([p_x,c_x],[p_y,c_y],my_color_list[current_SWC[5]-1],linewidth=c_r)                    
                 except Exception :
                     pass# it's ok: it's the list size...
 
@@ -107,9 +130,17 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
             if index in synapses :
                 syn_index = syn_index + 1
                 if syn_cs :
-                    plt.plot(c_x,c_y,syn_cs)
+                    if XZ:
+                        plt.plot(c_x,c_z,syn_cs)
+                    else:
+                        plt.plot(c_x,c_y,syn_cs)
+                    
                 else :
-                    plt.plot(c_x,c_y,'ro')
+                    if XZ:
+                        plt.plot(c_x,c_z,syn_cs,'ro')
+                    else:
+                        plt.plot(c_x,c_y,syn_cs,'ro')
+                    
 
 
     frame1 = plt.gca()
@@ -120,9 +151,6 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
         frame1.axes.get_xaxis().set_visible(False)
         frame1.axes.get_yaxis().set_visible(False)
         
-    # plt.xlabel('X')
-    # plt.ylabel('Y')
-
     # draw a scale bar
     if offset == None :
         plt.plot([0,100],[min_y*1.1,min_y*1.1],'k',linewidth=5) # 250 for MN, 100 for granule
@@ -141,12 +169,22 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
 
 def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None) :
     """
-    Matplotlib rendering of a SWC described morphology in 3D
-    Colors can be
-    None: uniform/default matplotlib color
-    Any color code: uniform but specified color
-    array of values:
-    colormap?
+    3D matplotlib plot of a neuronal moprhology.
+    Colors can be provided and synapse location marked
+
+    Parameters
+    -----------
+    file_name : string
+        File name of the SWC file to plots
+    cs : list of float
+        Raw values that will be plotted on the morphology according to a colormap
+    synapses : list of int
+        Indices of the compartments where synapses (= small circles) should be drawn
+    syn_cs : string
+        Color of the synapses ('r','g', 'b', ...)
+    outN : string
+        File name of the output file. Extension of this file sets the file type
+
     """
     my_color_list = ['r','g','b','c','m','y','r--','b--','g--']
     

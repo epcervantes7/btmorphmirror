@@ -1,24 +1,26 @@
 ################
-btmorph tutorial
+Tutorial
 ################
 
-Brief hands-on introduction to the usage of btmorph to analyze and validate neuronal morphometrics. A short description is also provided on how to use btmorph in further scripting.
+This is a brief, hands-on tutorial explaining how to use btmorph to load SWC files, analyse them by computing morphometric measures and compare morphologies to one another. A short description is also provided on how to use btmorph in further scripting.
 
-Recommended to use IPython. Open ``ipython --pylab -i`` at the prompt in the ``examples`` directory. Then copy and paste the code snippets into the python prompt using ``%paste`` `(Magic functions) <http://ipython.org/ipython-doc/rel-1.1.0/interactive/tutorial.html>`_.
+We recommend to use IPython. In a terminal type, change to the ``examples`` directory and type ``ipython --pylab -i``. Then, you can either type the command in the listings below or directly copy them. Copy and pasting of the code snippets can be done by copying them and typing into the ipython prompt ``%paste`` `(Magic functions) <http://ipython.org/ipython-doc/rel-1.1.0/interactive/tutorial.html>`_.
 
+.. note:: Make use of "magic functions" in IPython. Copy the code from this pages and type ``%paste`` in the IPython session. All code will be pasted with correct layout and directly executed.
 
 Analyzing morphometric data
 ---------------------------
 
-Once you have an SWC file, you can start analyzing the associated morphology. Stay in the directory where you outputted the ``morph.swc`` file ::
+This tutorial assumes you are in the ``examples`` directory of the btmorph package. Several exemplar SWC files are contained in the package [#f1]_.
+::
 
-  import btstructs, btstats, btviz
+  import btmorph
   import numpy
   import matplotlib.pyplot as plt
 
-  swc_tree = btstructs.STree()
-  swc_tree.read_SWC_tree_from_file('morph.swc')
-  stats = btstats.BTStats(swc_tree)
+  swc_tree = btmorph.STree2()
+  swc_tree.read_SWC_tree_from_file("data/v_e_moto1.CNG.swc")
+  stats = btmorph.BTStats(swc_tree)
 
   """ get the total length, a scalar morphometric feature """
   total_length = stats.total_length()
@@ -29,13 +31,14 @@ Once you have an SWC file, you can start analyzing the associated morphology. St
   print 'Number of terminals=%f' % no_terminals
 
 
-In case you all do it in one session in ``Ipython``, you don't need to load all libraries all the time and you can just continue to copy and paste code into the prompt.
+In case you do this tutorial in one Ipython session (``Ipython --pylab``), you don't need to load all libraries all the time and you can just continue to copy and paste code into the prompt. Therefore, loading of the library is omitted in the code listing below.
 
-Now you'll get a vector morphometric, namely the segment length. Clearly, summing all segments lengths together should give us the total segment length as before.::
+Now probe a vector morphometric, for instance the segment length. Clearly, summing all segments lengths together should give us the total segment length as before.
+::
 
   bif_nodes = stats._bif_points
   term_nodes = stats._end_points
-  all_nodes = bif_nodes +term_nodes
+  all_nodes = bif_nodes + term_nodes
   total_length = 0
   all_segment_lengths = []
   for node in all_nodes :
@@ -51,7 +54,7 @@ Now you can plot a histogram of the segment length distribution::
 
 which should produce an image as illustrated below:
 
-.. image:: figures/segment_length_histogram.png
+.. image:: figures/v_e_moto1_segment_lengths.png
   :scale: 50
 
 As a slightly more complicated example, we can also check the path length and Euclidean distance at which bifurcations occur. Plotting the number of bifurcations as a function of euclidean distance is roughly the same as the *Sholl analysis*. ::
@@ -70,40 +73,46 @@ As a slightly more complicated example, we can also check the path length and Eu
 
 which produces the following image:
 
-.. image:: figures/sholl.png
+.. image:: figures/v_e_moto1_sholl.png
   :scale: 50
 
-Clearly, you can distinguish the bimodal distribution introduced by some the basal and oblique dendrites on the one hand, and the distal apical dendrites on the other.
+Clearly, in the above figure we can distinguish the bimodal distribution introduced by some the basal and oblique dendrites on the one hand, and the distal apical dendrites on the other.
 
 Finally, to visually inspect both morphologies we could plot them::
 
-  import btviz
   plt.figure()
-  btviz.plot_2D_SWC('apical.swc')
+  btmorph.plot_2D_SWC("data/v_e_moto1.CNG.swc")
   plt.figure()
-  btviz.plot_2D_SWC('morph.swc')
+  btmorph.plot_dendrogram("data/v_e_moto1.CNG.swc")
 
-.. |full| image:: figures/full_.png
+.. |2D| image:: figures/v_e_moto1_2D.png
   :scale: 50
 
-.. |apical| image:: figures/apical.png
+.. |dendro| image:: figures/v_e_moto1_dendrogram.png
   :scale: 50
 
 +---------+-----------+
-| |full|  | |apical|  |
+| |2D|    | |dendro|  |
 +---------+-----------+
 
 Potential extensions
 --------------------
 
-There are also hooks in ``btmorph`` to access other features. For instance, it is straight-forward to save a cloud on which measurement related to the spatial distribution of points (for instance the moments) can be measured.::
+There are also hooks in ``btmorph`` to access other features. 
+
+- ``stats._all_nodes``: list with all nodes in the tree
+- ``stats._bif_points``: list with bifurcating nodes in the tree
+- ``stats._end_points``: list with terminal (=leaf) nodes in the tree
+- ``stats._tree``: STree2 structure. Can be used to compute various graph-theoretical features.
+
+For instance, it is straight-forward to save a cloud on which measurement related to the spatial distribution of points (for instance, the moments of the point cloud) can be measured.::
 
   bx,by,bz = [],[],[]
   for node in stats._bif_points :
-      n = node.get_content()
-      bx.append(n.x)
-      by.append(n.y)
-      bz.append(n.z)
+      n = node.get_content()['p3d']
+      bx.append(n.xyz[0])
+      by.append(n.xyz[1])
+      bz.append(n.xyz[2])
   bif_cloud = [bx,by,bz]
   # save as txt...
   np.savetxt('bif_cloud.txt',bif_cloud) 
@@ -111,72 +120,90 @@ There are also hooks in ``btmorph`` to access other features. For instance, it i
   import pickle
   pickle.dump(bif_cloud,open('bif_cloud.pkl','w'))
 
-Note that in this example only bifurcation points are considered. Through the ``STree.get_nodes()`` you can also access data that is neither a bifurcation point (``BTStats._bif_points``) nor a terminal point (``BTStats._end_points``).
+Note that in this example only bifurcation points are considered. Through the ``STree.get_nodes()`` or ``stats._all_points``.
 
-The cloud data can now be loaded and plotted (and serve for further analysis)::
+The cloud data can now be loaded and plotted (and serve for further analysis)
+::
 
   import pickle
   bc = pickle.load(open('bif_cloud.pkl'))
   for i in range(len(bc[0])) :
       plt.plot(bc[0][i],bc[1][i],'ro')
 
-.. image:: figures/bif_cloud.png
+.. image:: figures/v_e_moto1_bifcloud.png
   :scale: 50
 
 
-Validation of morphologies
+Comparison of morphologies
 --------------------------
 
-Validation of morphologies boils down, in the simplest 1D case and in a staistical sense, to comparisons of vectors of data. The idea is demonstrated below and can be fairly easily upgraded to conditional (N-dimensional) comparisons using adequate statistical tools.
+Validation of morphologies boils down -in the simplest one-dimensional case and in a statistical sense- to the comparison of data vectors. The idea is visually illustrated below. The method outlined here can be easily extended to conditional data, that is, N-dimensional data capturing relations between data point using adequate statistical tools.
 
-* One-to-one validation: Two neurons are compared to each other. On a one to one basis there is little statistical ground to compare the scalar properties with each other. However, the vector features (for instance, segment lengths) can be compared.
-* Many-to-many validation: A population is compared. In a population with sufficient sample size, we can start comparing the scalar features as well. Simply append all scalar features to a vector for each population and both vectors can be compared. Vector features can be compared by appending the vector of one population (in the 1D case).
 
-1D (or N-dimensional) distributions can be compared with hypothesis testing; a set of tests that assess whether two data distributions are drawn from the same true data source. 
+One-to-one validation
+~~~~~~~~~~~~~~~~~~~~~
 
-In this example we compare one L5_TTPC1 (from above) with a L6_TPC_L4 one. First convert the l6_ cell::
+Two neurons are compared to each other. On a one to one basis there is little statistical ground to compare the scalar properties with each other. However, the vector features (for instance, segment lengths) can be compared. In this example we do the fairly senseless thing of showing the difference between a hippocampal granule cell and a spinal cord motor neuron (used before).
+::
 
-  import btmorphtools
-  btmorphtools.convert_h5_to_SWC('tkb061126a4_ch0_cc2_h_zk_60x_1.h5',\
-                                 types=[3,4],\
-                                 swc_given_name='l6_tpc_l4.swc')
-
-Then compute some morphometric (for the sake of the example we just compute the segment lengths of all segment coming into a bifurcation point)::
-
-  import btstructs, btstats, btviz
+  import btmorph
   import numpy
   import matplotlib.pyplot as plt
 
-  l5_tree = btstructs.STree()
-  l5_tree.read_SWC_tree_from_file('morph.swc')
-  l5_stats = btstats.BTStats(l5_tree)
+  v1_tree = btmorph.STree2()
+  v1_tree.read_SWC_tree_from_file("data/v_e_moto1.CNG.swc")
+  v1_stats = btmorph.BTStats(v1_tree)
 
-  l6_tree = btstructs.STree()
-  l6_tree.read_SWC_tree_from_file('l6_tpc_l4.swc')
-  l6_stats = btstats.BTStats(l6_tree)
+  granule_tree = btmorph.STree2()
+  granule_tree.read_SWC_tree_from_file("data/1220882a.CNG.swc")
+  granule_stats = btmorph.BTStats(granule_tree)
 
-  l5_bif_nodes = l5_stats._bif_points
-  l6_bif_nodes = l6_stats._bif_points
+  v1_bif_nodes = v1_stats._bif_points
+  granule_bif_nodes = granule_stats._bif_points
 
-  l5_bif_segment_lengths = []
-  l6_bif_segment_lengths = []
+  v1_bif_segment_lengths = []
+  granule_bif_segment_lengths = []
   
-  for node in l5_bif_nodes:
-      l5_bif_segment_lengths.append( l5_stats.get_segment_pathlength(node)  )
-  for node in l6_bif_nodes:
-      l6_bif_segment_lengths.append( l6_stats.get_segment_pathlength(node)  )
+  for node in v1_bif_nodes:
+      v1_bif_segment_lengths.append( v1_stats.get_segment_pathlength(node)  )
+  for node in granule_bif_nodes:
+      granule_bif_segment_lengths.append( granule_stats.get_segment_pathlength(node)  )
 
-
-and compare::
+And compare the two vectors (visually and by performing the Kruskal-Wallis H-test):
+::
 
   import scipy
   import scipy.stats
-  hist(l5_bif_segment_lengths,color='r',alpha=0.5,label='l5_ttpc1')
-  hist(l6_bif_segment_lengths,color='b',alpha=0.5,label='l6_tpc_l4')
-  res = scipy.stats.ks_2samp(l5_bif_segment_lengths,l6_bif_segment_lengths)
+  hist(v1_bif_segment_lengths,color='r',alpha=0.5,label="v_e_moto1")
+  hist(granule_bif_segment_lengths,color='b',alpha=0.5,label="granule")
+  legend(loc=0)
+  res = scipy.stats.ks_2samp(v1_bif_segment_lengths,granule_bif_segment_lengths)
   print 'K-S=%f, p_value=%f' % (res[0], res[1])
 
-According to the `manual <http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.kruskal.html#scipy.stats.kruskal>`_: "if the K-S statistic is small or the p-value is high, then we cannot reject the hypothesis that the distributions of the two samples are the same."
+A figure will be generated and the output will appear: ``K-S=0.609631, p_value=0.000023``
 
 .. image:: figures/compare_segments.png
   :scale: 50
+
+According to the `manual <http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.kruskal.html#scipy.stats.kruskal>`_: "if the K-S statistic is small or the p-value is high, then we cannot reject the hypothesis that the distributions of the two samples are the same."
+
+
+Many-to-many validation
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The comparison of two population can be done in exactly the same way as described above. The scalar properties of each neuron in the population make up a vector of values. Hence, the vector of one population can be compared against the vector associated with another population. In the case of vector features, all features can be appended to one vector per population.
+
+
+Wrappers for btmorph
+--------------------
+
+We provide basic wrappers that perform standard, of-the-shelf analysis of neurons. Two wrappers are available.
+
+- ``btmorph.perform_2D_analysis``. Collects morphometric features of birufcatiuon and terminal points and stores the results in files. For each of these points the path length to the soma, euclidean distance from the soma, degree, order, partition asymmetry and segment length are recorded. Hence, one can correlate, for instance, the segment length with the centrifugal order (= two-dimensional). Higher order correlation can be used at will as well. (See API)
+
+- ``btmorph.perform_1D_population_analysis``. Collects all morphometric features of one population in vectors and writes the result to files. (see API)
+
+
+References
+
+.. [#f1] v_e_moto1 is downloaded from `here <http://neuromorpho.org/neuroMorpho/neuron_info.jsp?neuron_name=v_e_moto1>`_ and originates from a study linked on `pubmed <http://www.ncbi.nlm.nih.gov/pubmed/3819010>`_.

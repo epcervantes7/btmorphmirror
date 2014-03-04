@@ -195,24 +195,23 @@ def ttest_bifurcation_sibling_ratio_remote() :
 #     plt.hist(all_ampl,color='red',alpha=0.5)
 #     # plt.show()
     
-def ttest_ralls_ratio() :
+def test_ralls_ratio() :
     """
     Binary search for rall's power
     """
     all_p = []
     for node in stats._bif_points :
-        p = stats.bifurcation_ralls_ratio(node) 
-        all_p.append(p)
-        print node, '-> p=', p
+        r_ratio = stats.bifurcation_ralls_ratio(node) 
+        all_p.append(r_ratio)
+        #print node, '-> p=', p
     all_p = np.array(all_p)
     all_pp = []
     for n in all_p :
         if not np.isnan(n) :
             all_pp.append(n)
     print 'min_p=%f,avg_p=%f, max_p=%f' % (np.min(all_pp),np.mean(all_pp),np.max(all_pp))
-    # p = stats.bifurcation_ralls_ratio(stats._bif_points[1])
-    plt.hist(all_pp)
-    plt.show()
+    avg_rr = np.mean(all_pp)
+    assert(1.87< avg_rr < 1.88)
 
 def ttest_ralls_ratio2() :
     """

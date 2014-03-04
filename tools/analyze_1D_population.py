@@ -7,6 +7,34 @@ import matplotlib.pyplot as plt
 import btmorph
 
 def perform_1D_population_analysis(destination):
+    """
+    Wrapper function to perform a complete analysis of a population of neuronal morphologies stored in SWC format (and three-point soma).
+
+    Computes the following features:
+
+    - # bifurcations
+    - # terminals
+    - # stems
+    - total length
+    - total volume
+    - total surface
+    - max centrifugal order
+    - inter bifurcation length
+    - terminal segment length
+    - euclidean distance between terminal tips and soma
+    - path legth between terminal tips and soma
+
+    For each feature a list is created with all values collected from all morphologies.
+    
+    These vectors are saved as python Pickle objects.
+
+    At the same time a histogram is generated to display the data.
+
+    Parameters
+    -----------
+    destination : string
+        string with the location of where to find the SWC files.
+    """
     # change to a directory of choice for I/O
     os.chdir(destination)    
 

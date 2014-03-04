@@ -4,36 +4,88 @@ from btmorph import SNode2
 
 class STree2 :
     '''
-    Simple tree for use with a simple Node (SNode2)
+    Simple tree for use with a simple Node (SNode2).
+
+    While the class is designed to contain binary trees (for neuronal morphologies) the number of children is not limited.
+    As such, this is a generic implementation of a tree structure as a linked list.
     '''
     
     def __init__(self) :
          _root = None
         
     def set_root(self,node) :
+        """
+        Set the root node of the tree
+
+        Parameters
+        -----------
+        node : :class:`SNode2`
+            to-be-root node
+        """
         self._root = node
         self._root.set_parent_node(None)
         
     def get_root(self) :
+        """
+        Obtain the root node
+
+        Returns
+        -------
+        root : :class:`SNode2`
+        """
         return self._root
         
     def is_root(self,node) :
+        """
+        Check whether a node is the root node
+
+        Returns
+        --------
+        is_root : boolean
+            True is the queried node is the root, False otherwise
+        """
         if node.get_parent_node() != None :
             return False
         else :
             return True
             
     def is_leaf(self,node) :
+        """
+        Check whether a node is a leaf node, i.e., a node without children
+
+        Returns
+        --------
+        is_leaf : boolean
+            True is the queried node is a leaf, False otherwise
+        """
         if len(node.get_child_nodes()) == 0  :
             return True
         else :
             return False
             
     def add_node_with_parent(self,node,parent) :
+        """
+        Add a node to the tree under a specific parent node
+
+        Parameters
+        -----------
+        node : :class:`SNode2`
+            node to be added
+        parent : :class:`SNode2`
+            parent node of the newly added node
+        """
         node.set_parent_node(parent)
         parent.add_child(node)
         
     def remove_node(self,node) :
+        """
+        Remove a node from the tree
+
+        Parameters
+        -----------
+        node : :class:`SNode2`
+            node to be removed
+        """
         node.get_parent_node().remove_child(node)
         self._deep_remove(node)
         
@@ -45,11 +97,31 @@ class STree2 :
             self._deep_remove(child)        
 
     def get_nodes(self) :
+        """
+        Obtain a list of all nodes int he tree
+
+        Returns
+        -------
+        all_nodes : list of :class:`SNode2`
+        """
         n = []
         self._gather_nodes(self._root,n) 
         return n 
 
     def get_sub_tree(self,fake_root) :
+        """
+        Obtain the subtree starting from the given node
+
+        Parameters
+        -----------
+        fake_root : :class:`SNode2`
+            Node which becomes the new root of the subtree
+
+        Returns
+        -------
+        sub_tree :  STree2
+            New tree with the node from the first argument as root node
+        """
         ret = STree2()
         cp = fake_root.__copy__()
         cp.set_parent_node(None)
@@ -62,9 +134,37 @@ class STree2 :
             self._gather_nodes(child,node_list)
     
     def get_node_with_index(self, index) :
+        """
+        Get a node with a specific name. The name is always an integer
+
+        Parameters
+        ----------
+        index : int
+            Name of the node to be found
+
+        Returns
+        -------
+        node : :class:`SNode2`
+            Node with the specific index
+        """
         return self._find_node(self._root,index)
         
     def get_node_in_subtree(self,index,fake_root) :
+        """
+        Get a node with a specific name in a the subtree rooted at fake_root. The name is always an integer
+
+        Parameters
+        ----------
+        index : int
+            Name of the node to be found
+        fake_root: :class:`SNode2`
+            Root node of the subtree in which the node with a given index is searched for
+
+        Returns
+        -------
+        node : :class:`SNode2`
+            Node with the specific index
+        """
         return self._find_node(fake_root,index)
         
     def _find_node(self,node,index) :
@@ -78,7 +178,7 @@ class STree2 :
         
         Returns
         -------
-        node : SNode2
+        node : :class:`SNode2`
             when found and None when not found
         """
         stack = []; 
@@ -94,6 +194,18 @@ class STree2 :
         return None # Not found!
         
     def degree_of_node(self,node) :
+        """
+        Get the degree of a given node. The degree is defined as the number of leaf nodes in the subtree rooted at this node.
+
+        Parameters
+        ----------
+        node : :class:`SNode2`
+            Node of which the degree is to be computed.
+
+        Returns
+        -------
+        degree : int
+        """
         sub_tree = self.get_sub_tree(node)
         st_nodes = sub_tree.get_nodes()
         leafs = 0
@@ -103,6 +215,19 @@ class STree2 :
         return leafs
         
     def order_of_node(self,node) :
+        """
+        Get the order of a given node. The order or centrifugal order is defined as 0 for the root and increased with any bifurcation.
+        Hence, a node with 2 branch points on the shortest path between that node and the root has order 2.
+
+        Parameters
+        ----------
+        node : :class:`SNode2`
+            Node of which the order is to be computed.
+
+        Returns
+        -------
+        order : int
+        """
         ptr =self.path_to_root(node)
         order = 0
         for n in ptr :
@@ -112,6 +237,19 @@ class STree2 :
         return order -1 
                 
     def path_to_root(self,node) :
+        """
+        Find and return the path between a node and the root.
+
+        Parameters
+        ----------
+        node : :class:`SNode2`
+            Node at which the path starts
+
+        Returns
+        -------
+        path : list of :class:`SNode2`
+            list of :class:`SNode2` with the provided node and the root as first and last entry, respectively.
+        """
         n = []
         self._go_up_from(node,n)            
         return n
@@ -130,8 +268,8 @@ class STree2 :
 
         Parameters
         -----------
-        from_node : SNode2
-        to_node : SNode2
+        from_node : :class:`SNode2`
+        to_node : :class:`SNode2`
         """
         n = []
         self._go_up_from_until(from_node,to_node,n)
@@ -147,7 +285,7 @@ class STree2 :
 
     def write_SWC_tree_to_file(self,file_n) :
         """
-        Save a tree to an SWC file
+        Non-specific for a tree. Used to write an SWC file from a morphology stored in this tree.
 
         Parameters
         ----------
@@ -192,7 +330,8 @@ class STree2 :
         
     def read_SWC_tree_from_file(self,file_n) :
         """
-        Read and load a morphology from an SWC file. 
+        Non-specific for a tree.
+        Read and load a morphology from an SWC file. and parse it into an STree2 object. 
         On the NeuroMorpho.org website, 5 types of somadescriptions are 
         considered. (http://neuromorpho.org/neuroMorpho/SomaFormat.html)
         

@@ -155,9 +155,9 @@ class SNode2 :
         Remove a child node from the list of children of a specific node
 
         Parameters
-        ----------
+        -----------
         node :  SNode2
-            Not dummy proof: if the child doesn't exist, you get into problems.
+            If the child doesn't exist, you get into problems.
         """
         self._child_nodes.remove(child_node)
         

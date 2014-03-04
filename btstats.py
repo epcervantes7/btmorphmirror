@@ -44,7 +44,7 @@ class BTStats :
                 if node._parent_node != None :
                     bif_points.append(node) # the root is not a bifurcation
             if len(node.get_child_nodes()) == 0  :
-                if node.get_parent_node()._index != 1  :
+                if node.get_parent_node()._index != 1: # "3 point soma", avoid the two side branches
                     end_points.append(node)
             if  node._parent_node == None :
                 soma_points = node
@@ -256,6 +256,18 @@ class BTStats :
     """
     Local measures
     """
+    def get_diameters(self):
+        """
+        *Vector, local morphometric*
+
+        Get the diameters of all points in the morphology
+        """
+        diams = []
+        for node in self._all_nodes:
+            if not node._index in [1,2,3]:
+                diams.append(node._content['p3d'].radius*2.0)
+        return diams
+    
     def get_segment_pathlength(self,to_node) :
         """
         *Vector, local morphometric*. 
@@ -292,7 +304,7 @@ class BTStats :
         for node in path :
             # print 'going along the path'
             n = node.get_content()['p3d']
-            if len(node.get_child_nodes()) >= 2 :
+            if len(node.get_child_nodes()) >= 2 : # I arrive at either the soma or a branchpoint close to the soma
                 return L
             else :
                 p = node.get_parent_node().get_content()['p3d']
@@ -323,22 +335,15 @@ class BTStats :
             path = self._tree.path_to_root(from_node)[1:]
             p = from_node.get_parent_node().get_content()['p3d']
             n = from_node.get_content()['p3d']
-            # px = p.xyz[0]
-            # py = p.xyz[1]
-            # pz = p.xyz[2]            
-            # nx = n.xyz[0]
-            # ny = n.xyz[1]
-            # nz = n.xyz[2]            
-            # d = np.sqrt( (nx-px)*(nx-px) + (ny-py)*(ny-py) + (nz-pz)*(nz-pz) ) 
             d = np.sqrt(np.sum((n.xyz-p.xyz)**2))
             L = L + d
         
-        for node in path[:-1] :
+        for node in path[:-1]:
             # print 'going along the path'
             n = node.get_content()['p3d']
             p = node.get_parent_node().get_content()['p3d']
             # d = np.sqrt( (nx-px)*(nx-px) + (ny-py)*(ny-py) + (nz-pz)*(nz-pz) )
-            d = np.sqrt(np.sum((n.xyz-p.xyz)**2))
+            d = np.sqrt(np.sum((n.xyz-p.xyz)**2))#np.sqrt(np.sum((n.xyz-p.xyz)**2))
             L = L + d
         return L
                 
@@ -441,7 +446,9 @@ class BTStats :
 
     def partition_asymmetry(self,node) :
         """
-        Compute the partition asymmetry for a given node. 
+        *Vector, local morphometric*
+
+        Compute the partition asymmetry for a given node.
 
         Parameters
         ----------
@@ -547,25 +554,29 @@ class BTStats :
         # print t_node,' -> found a bif'
         return t_node
                 
-    def bifurcation_ralls_ratio(self,node,precision=0.2,where='local') :
+    def bifurcation_ralls_ratio(self,node,precision=0.05,max_loops=30,where='local') :
         """
         *Vector, local morphometric*
 
-        Approximation of Rall's ratio. First implementation
+        Approximation of Rall's ratio.
         D^p = d1^p + d2^p, p being the approximated value of Rall's ratio
+
+        Approximation performed by a binary search that finishes when a given precision is reached
         """
         p_diam = node.get_content()['p3d'].radius*2
         child1,child2 = self._get_child_nodes(node,where=where)
         d1_diam = child1.get_content()['p3d'].radius*2
         d2_diam = child2.get_content()['p3d'].radius*2
-        print 'pd=%f,d1=%f,d2=%f' % (p_diam,d1_diam,d2_diam)
+        #print 'pd=%f,d1=%f,d2=%f' % (p_diam,d1_diam,d2_diam)
+        if d1_diam > p_diam or d2_diam > p_diam:
+            return np.nan
 
-        p_lower = 1.0
+        p_lower = 0.0
         p_upper = 5.0 # THE associated mismatch MUST BE NEGATIVE
 
         mismatch=100000000
         count_outer = 0
-        while mismatch > precision and count_outer < 20:
+        while mismatch > precision and count_outer < max_loops:
             lower_mismatch = (np.power(d1_diam,p_lower) + np.power(d2_diam,p_lower))-np.power(p_diam,p_lower)
             upper_mismatch = (np.power(d1_diam,p_upper) + np.power(d2_diam,p_upper))-np.power(p_diam,p_upper)
 
@@ -575,7 +586,7 @@ class BTStats :
             # print 'p_lower=%f, p_mid=%f' % (p_lower,p_mid)   
             #print 'looking for the MID'
             count_inner = 0
-            while mid_mismatch > 0 and count_inner < 20:
+            while mid_mismatch > 0 and count_inner < max_loops:
                 p_lower = p_mid
                 lower_mismatch = (np.power(d1_diam,p_lower) + np.power(d2_diam,p_lower))-np.power(p_diam,p_lower)
                 p_mid = (p_lower + p_upper)/2.0
@@ -595,7 +606,7 @@ class BTStats :
             count_outer = count_outer + 1
             #print 'mismatch=%f, p_lower=%f,p_upper=%f' % (mismatch,p_lower,p_upper)
             # raw_input('Enter')
-        if count_outer >=19 :
+        if count_outer >=(max_loops-1) :
             return np.nan
         else :
             return p_mid

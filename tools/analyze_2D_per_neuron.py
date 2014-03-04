@@ -20,8 +20,27 @@ def _get_node_features(stats,node,term=False):
         return O,D,ED,PL,SPL,SED,PA
 
 def perform_2D_analysis(destination):
-    """function description"""
+    """
+    Wrapper function to perform an analysis of the vector features of one neuronal morphology (in the SWC format and with 3-point soma)
 
+    For both the terminal points and the branching points the following features are recorded
+
+    - Order of the node
+    - degree of the node
+    - Euclidean distance to the soma
+    - path length to the soma
+    - pathlength of the segment (coming in to a node)
+    - Euclidean distance of the segment (coming in the a node)
+    
+    Two text files are generated, for terminal and branching points. Each row corresponds to a node (point) and the six
+    columns correspond to the features above.
+
+    Parameters
+    -----------
+    destination : string
+        string with the location of where to find the SWC files.
+    """
+    
     # change to a directory of choice for I/O
     os.chdir(destination)
     
