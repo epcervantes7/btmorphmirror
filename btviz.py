@@ -100,7 +100,8 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
             min_y = c_y
                 
         if(index <= 3) :
-            print 'do not draw the soma and its CNG, 2 point descriptions'
+            #print 'do not draw the soma and its CNG, 2 point descriptions'
+            pass
         else :
             parent_SWC = SWC[parent_index]
             p_x = parent_SWC[0]

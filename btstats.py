@@ -551,69 +551,13 @@ class BTStats :
         # print t_node,' -> found a bif'
         return t_node
                 
-    def bifurcation_ralls_ratio(self,node,precision=0.05,max_loops=30,where='local') :
+    def bifurcation_ralls_ratio(self,node,precision=0.05,max_loops=50,where='local') :
         """
         *Vector, local morphometric*
 
         Approximation of Rall's ratio.
-        D^p = d1^p + d2^p, p being the approximated value of Rall's ratio
-
-        Approximation performed by a binary search that finishes when a given precision is reached
-        """
-        p_diam = node.get_content()['p3d'].radius*2
-        child1,child2 = self._get_child_nodes(node,where=where)
-        d1_diam = child1.get_content()['p3d'].radius*2
-        d2_diam = child2.get_content()['p3d'].radius*2
-        #print 'pd=%f,d1=%f,d2=%f' % (p_diam,d1_diam,d2_diam)
-        if d1_diam > p_diam or d2_diam > p_diam:
-            return np.nan
-
-        p_lower = 0.0
-        p_upper = 5.0 # THE associated mismatch MUST BE NEGATIVE
-
-        mismatch=100000000
-        count_outer = 0
-        while mismatch > precision and count_outer < max_loops:
-            lower_mismatch = (np.power(d1_diam,p_lower) + np.power(d2_diam,p_lower))-np.power(p_diam,p_lower)
-            upper_mismatch = (np.power(d1_diam,p_upper) + np.power(d2_diam,p_upper))-np.power(p_diam,p_upper)
-
-            p_mid = (p_lower + p_upper)/2.0
-            mid_mismatch = (np.power(d1_diam,p_mid) + np.power(d2_diam,p_mid))-np.power(p_diam,p_mid)
-
-            # print 'p_lower=%f, p_mid=%f' % (p_lower,p_mid)   
-            #print 'looking for the MID'
-            count_inner = 0
-            while mid_mismatch > 0 and count_inner < max_loops:
-                p_lower = p_mid
-                lower_mismatch = (np.power(d1_diam,p_lower) + np.power(d2_diam,p_lower))-np.power(p_diam,p_lower)
-                p_mid = (p_lower + p_upper)/2.0
-                mid_mismatch = (np.power(d1_diam,p_mid) + np.power(d2_diam,p_mid))-np.power(p_diam,p_mid)
-                # print 'p_lower=%f, p_mid=%f, p_upper=%f' % (p_lower,p_mid,p_upper)
-                # print 'lower=%f, mid=%f, upper=%f' % (lower_mismatch,mid_mismatch,upper_mismatch)
-                count_inner = count_inner + 1
-            #print 'found the MID'
-            # print '\nlow_m=%f,mid_m=%f,up_m=%f' % (lower_mismatch,mid_mismatch,upper_mismatch)
-            # print 'low_p=%f,mid_p=%f,up_p=%f' % (p_lower,p_mid,p_upper)
-
-            if upper_mismatch < mid_mismatch :
-                p_upper = p_mid
-            else :
-                p_lower = p_mid
-            mismatch = np.abs(mid_mismatch)
-            count_outer = count_outer + 1
-            #print 'mismatch=%f, p_lower=%f,p_upper=%f' % (mismatch,p_lower,p_upper)
-            # raw_input('Enter')
-        if count_outer >=(max_loops-1) :
-            return np.nan
-        else :
-            return p_mid
-
-    def bifurcation_ralls_ratio2(self,node,precision=0.05,max_loops=30,where='local') :
-        """
-        *Vector, local morphometric*
-
-        Approximation of Rall's ratio. Second implementation
-        D^p = d1^p + d2^p, p being the approximated value of Rall's ratio
+        D^p = d1^p + d2^p, p being the approximated value of Rall's ratio.
+        Appriximation performed by binary search over [0.0,5.0]
         
         """
         p_diam = node.get_content()['p3d'].radius*2
@@ -623,37 +567,59 @@ class BTStats :
         #print 'pd=%f,d1=%f,d2=%f' % (p_diam,d1_diam,d2_diam)
 
         if d1_diam >= p_diam or d2_diam >= p_diam :
-            return 1
+            return np.nan
 
-        p_lower = 0.0
+        p_lower = 0.5
         p_upper = 5.0 # THE associated mismatch MUST BE NEGATIVE
 
         mismatch=100000000
         count_outer = 0
-        while mismatch > precision and count_outer < 100:
+        while mismatch > precision and count_outer < max_loops:
             lower_mismatch = (np.power(d1_diam,p_lower) + np.power(d2_diam,p_lower))-np.power(p_diam,p_lower)
             upper_mismatch = (np.power(d1_diam,p_upper) + np.power(d2_diam,p_upper))-np.power(p_diam,p_upper)
 
             p_mid = (p_lower + p_upper)/2.0
+            p_mid = p_lower + (p_upper-p_lower)*np.random.random()
+                
             mid_mismatch = (np.power(d1_diam,p_mid) + np.power(d2_diam,p_mid))-np.power(p_diam,p_mid)
-
-            # print 'p_lower=%f, p_mid=%f' % (p_lower,p_mid)   
-            #print 'looking for the MID'
-
-            if upper_mismatch < mid_mismatch :
+            if np.abs(lower_mismatch) < np.abs(upper_mismatch) :
                 p_upper = p_mid
-            else :
+            else:
                 p_lower = p_mid
-            mismatch = np.abs(mid_mismatch)
+            
+            mismatch = p_upper - p_lower
             count_outer = count_outer + 1
-            #print 'mismatch=%f, p_lower=%f,p_upper=%f' % (mismatch,p_lower,p_upper)
-            # raw_input('Enter')
-        if count_outer >=19 :
-            return np.nan
-        else :
-            return p_mid
-        
+        return p_mid
 
+    def bifurcation_ralls_ratio_brute(self,node,precision=0.05,max_loops=50,where='local') :
+        """
+        *Vector, local morphometric*
+
+        Approximation of Rall's ratio.
+        D^p = d1^p + d2^p, p is approximated by brute-force checking the \
+        interval [0,5] in 1000 steps.
+        """
+        p_diam = node.get_content()['p3d'].radius*2
+        child1,child2 = self._get_child_nodes(node,where=where)
+        d1_diam = child1.get_content()['p3d'].radius*2
+        d2_diam = child2.get_content()['p3d'].radius*2
+        #print 'pd=%f,d1=%f,d2=%f' % (p_diam,d1_diam,d2_diam)
+
+        if d1_diam >= p_diam or d2_diam >= p_diam :
+            return None
+
+        test_v = np.linspace(0.0,5.0,1000)
+        min_mismatch=100000000000.0
+        best_n = -1
+        for n in test_v:
+            mismatch = (np.power(d1_diam,n) + np.power(d2_diam,n))-np.power(p_diam,n)
+            #print "n=%f -> mismatch: %f" % (n,mismatch)
+            if np.abs(mismatch) < min_mismatch:
+                best_n = n
+                min_mismatch = np.abs(mismatch)
+        return best_n
+        
+    
     def _get_ampl_angle(self,node) :
         """
         Compute the angle of this node on the XY plane and against the origin
