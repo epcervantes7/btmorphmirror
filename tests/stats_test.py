@@ -174,27 +174,23 @@ def ttest_bifurcation_sibling_ratio_remote() :
     print 'mean(ratios_remote)=', np.mean(ratios)    
     assert(1.16 < np.mean(ratios) < 1.17)
 
-# def test_bifurcation_amplitude_local() :
-#     all_ampl = []
-#     for node in stats._bif_points :
-#         ampl = stats.bifurcation_angle(node, where='local')[0]
-#         all_ampl.append(ampl)
-#     print 'min=%f max(ample)=%f, mean(ampl)=%f' % (np.min(all_ampl),np.max(all_ampl),np.mean(all_ampl))
-#     import matplotlib.pyplot as plt
-#     plt.figure(1)
-#     plt.hist(all_ampl,color='blue',alpha=0.5)
+def test_bifurcation_amplitude_local() :
+    all_ampl = []
+    for node in stats._bif_points :
+        ampl = stats.bifurcation_angle_vec(node, where='local')
+        all_ampl.append(ampl)
+    print 'min=%f max(ample)=%f, mean(ampl)=%f' % (np.min(all_ampl),np.max(all_ampl),np.mean(all_ampl))
+    assert(46.8 < np.mean(all_ampl) < 46.9)
 
-# def test_bifurcation_amplitude_remote() :
-#     all_ampl = []
-#     for node in stats._bif_points :
-#         ampl = stats.bifurcation_angle(node, where='remote')[0]
-#         all_ampl.append(ampl)
-#     print 'min=%f max(ample)=%f, mean(ampl)=%f' % (np.min(all_ampl),np.max(all_ampl),np.mean(all_ampl))
-#     import matplotlib.pyplot as plt
-#     plt.figure(1)
-#     plt.hist(all_ampl,color='red',alpha=0.5)
-#     # plt.show()
+def test_bifurcation_amplitude_remote() :
+    all_ampl = []
+    for node in stats._bif_points :
+        ampl = stats.bifurcation_angle_vec(node, where='remote')
+        all_ampl.append(ampl)
+    print 'min=%f max(ample)=%f, mean(ampl)=%f' % (np.min(all_ampl),np.max(all_ampl),np.mean(all_ampl))
+    assert(45.7 < np.mean(all_ampl) < 45.8)
     
+
 def test_ralls_ratio() :
     """
     Binary search for rall's power
@@ -213,7 +209,7 @@ def test_ralls_ratio() :
     avg_rr = np.mean(all_pp)
     assert(1.87< avg_rr < 1.88)
 
-def ttest_ralls_ratio2() :
+def test_ralls_ratio2() :
     """
     Binary search for rall's power
     """
@@ -221,7 +217,7 @@ def ttest_ralls_ratio2() :
     for node in stats._bif_points :
         p = stats.bifurcation_ralls_ratio2(node) 
         all_p.append(p)
-        print node, '-> p=', p
+        #print node, '-> p=', p
     all_p = np.array(all_p)
     all_pp = []
     for n in all_p :
@@ -232,29 +228,3 @@ def ttest_ralls_ratio2() :
     plt.hist(all_pp)
     plt.show()
     
-# def test_plot_SWC_3D() :
-#     """
-#     Plot SWC file in 3D, saves figures in tests/test_figure.pdf
-#     """
-#     import btviz
-#     import matplotlib.pyplot as plt
-#     btviz.plot_3D_SWC(file_name=test_file_name)
-#     plt.savefig('tests/test_figure3D.pdf')
-#     assert(True) # if not crashed, it's ok
-    
-# def test_plot_SWC_2D() :
-#     """
-#     Plot SWC file in 3D, saves figures in tests/test_figure.pdf
-#     """
-#     import btviz
-#     import matplotlib.pyplot as plt
-#     btviz.plot_2D_SWC(file_name=test_file_name)
-#     plt.savefig('tests/test_figure2D.pdf')    
-#     assert(True) # if not crashed, it's ok
-
-# def test_dendrogram() :
-#     import btviz
-#     import matplotlib.pyplot as plt
-#     btviz.plot_dendrogram(file_name=test_file_name)
-#     plt.savefig('tests/test_figure_dendrogram.pdf')
-#     assert(True) # if not crashed, it's ok

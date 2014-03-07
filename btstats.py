@@ -470,39 +470,36 @@ class BTStats :
         else :
             return np.abs(d1-d2)/(d1+d2-2.0)
 
-    def bifurcation_angle(self,node,where='local') :
+
+    def bifurcation_angle_vec(self,node,where='local'):
         """
-        Compute the angles related to the parent - daughter constellation:
-        amplitude, tilt and torque. 
-        Can be computed locally, i.e., taking the parent segment and the first
-        segment of the daughters, or, remote between the parent segment and
-        next bifurcation or terminal point
-        Follows: http://cng.gmu.edu:8080/Lm/help/index.htm
+        *Vector, local morphometric*
+
+        Only to be computed at branch points (_bif_points). Computes the angle
+        between the two daughter branches in the plane defined by the \
+        parent and the two daughters.
         
+        cos alpha = (a dot b) / (|a||b|)
+
         Parameters
-        ----------
+        -----------
         node : :class:`SNode2`
         where : string
-            Toggle 'local' or 'remote' (see L-Measure website)
+            either "local" or "remote". "Local" uses the immediate daughter \
+            points while "remote" uses the point just before the next bifurcation or terminal point.
 
         Returns
         -------
-        data : list of float
-            amplitude, -1, -1 WHY?
+        angle : float
+            Angle in degrees
         """
         child_node1,child_node2 = self._get_child_nodes(node,where=where)
-        ampl_alpha = self._get_ampl_angle(child_node1)
-        ampl_beta = self._get_ampl_angle(child_node2)
-        if ampl_alpha > 360 or ampl_beta > 360 :
-            print 'alpha=%f, beta=%f' % (ampl_alpha,ampl_beta)
-            raw_input('ENTER')
-        # ampl_gamma= ampl_alpha - ampl_beta if ampl_beta < ampl_alpha else \
-        #  ampl_beta - ampl_alpha
-        ampl_gamma = np.sqrt( (ampl_alpha-ampl_beta)**2  )  
-        ampl_gamma = ampl_gamma if ampl_gamma <=180 else 360 -ampl_gamma
-        # print "alpha=%f, beta=%f, gamma=%f" % (ampl_alpha,ampl_beta,ampl_gamma)
+        scaled_1 = child_node1._content['p3d'].xyz - node._content['p3d'].xyz
+        scaled_2 = child_node2._content['p3d'].xyz - node._content['p3d'].xyz
 
-        return [ampl_gamma,-1,-1]
+
+        amp = lambda a: np.sqrt(np.sum((a)**2))
+        return np.arccos(np.dot(scaled_1,scaled_2)/(amp(scaled_1)*amp(scaled_2))) / (2*np.pi/360)
 
     def bifurcation_sibling_ratio(self,node,where='local') :
         """
@@ -611,7 +608,7 @@ class BTStats :
         else :
             return p_mid
 
-    def bifurcation_ralls_ratio2(self,node,precision=0.2,where='local') :
+    def bifurcation_ralls_ratio2(self,node,precision=0.05,max_loops=30,where='local') :
         """
         *Vector, local morphometric*
 
@@ -623,12 +620,12 @@ class BTStats :
         child1,child2 = self._get_child_nodes(node,where=where)
         d1_diam = child1.get_content()['p3d'].radius*2
         d2_diam = child2.get_content()['p3d'].radius*2
-        print 'pd=%f,d1=%f,d2=%f' % (p_diam,d1_diam,d2_diam)
+        #print 'pd=%f,d1=%f,d2=%f' % (p_diam,d1_diam,d2_diam)
 
         if d1_diam >= p_diam or d2_diam >= p_diam :
             return 1
 
-        p_lower = 1.0
+        p_lower = 0.0
         p_upper = 5.0 # THE associated mismatch MUST BE NEGATIVE
 
         mismatch=100000000
