@@ -50,10 +50,10 @@ def perform_1D_population_analysis(destination):
         swc_trees[cell_name] = temp_tree
         temp_stats = btmorph.BTStats(temp_tree)
         individual_stats[cell_name] = temp_stats
-        # plt.clf()
-        # btmorph.plot_2D_SWC(f,outN=cell_name+"_2D.pdf")
-        # plt.clf()
-        # btmorph.plot_3D_SWC(f,outN=cell_name+"_3D.pdf")    
+        plt.clf()
+        btmorph.plot_2D_SWC(f,outN=cell_name+"_2D.pdf")
+        plt.clf()
+        btmorph.plot_3D_SWC(f,outN=cell_name+"_3D.pdf")    
 
     """ 1D features, without dependencies on other quantities
         Both global (1 per neuron) and local (N per neuron) features"""

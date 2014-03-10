@@ -328,7 +328,7 @@ class STree2 :
         writer.close()          
         #print 'STree::writeSWCTreeToFile -> finished. Tree in >',fileN,'<'
         
-    def read_SWC_tree_from_file(self,file_n) :
+    def read_SWC_tree_from_file(self,file_n,types=range(1,10)) :
         """
         Non-specific for a tree.
         Read and load a morphology from an SWC file. and parse it into an STree2 object. 
@@ -355,11 +355,12 @@ class STree2 :
                 z = float(split[4].rstrip())
                 radius = float(split[5].rstrip())
                 parent_index = int(split[6].rstrip())
-                
-                tP3D = P3D2(np.array([x,y,z]),radius,type)
-                t_node = SNode2(index)
-                t_node.set_content({'p3d':tP3D})
-                all_nodes[index] = (t_node,parent_index)
+
+                if type in types:
+                    tP3D = P3D2(np.array([x,y,z]),radius,type)
+                    t_node = SNode2(index)
+                    t_node.set_content({'p3d':tP3D})
+                    all_nodes[index] = (t_node,parent_index)
                 
         for index, (node,parent_index) in all_nodes.items() :
             if index == 1:

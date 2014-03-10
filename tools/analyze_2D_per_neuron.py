@@ -17,7 +17,8 @@ def _get_node_features(stats,node,term=False):
         return O,D,ED,PL,SPL,SED
     else:
         PA = stats.partition_asymmetry(node)
-        return O,D,ED,PL,SPL,SED,PA
+        AMP = stats.bifurcation_angle_vec(node)
+        return O,D,ED,PL,SPL,SED,PA,AMP
 
 def perform_2D_analysis(destination):
     """
@@ -31,6 +32,7 @@ def perform_2D_analysis(destination):
     - path length to the soma
     - pathlength of the segment (coming in to a node)
     - Euclidean distance of the segment (coming in the a node)
+    - branch angle amplitude [branch points only]
     
     Two text files are generated, for terminal and branching points. Each row corresponds to a node (point) and the six
     columns correspond to the features above.
@@ -67,26 +69,26 @@ def perform_2D_analysis(destination):
         bif_nodes = individual_stats[cell_name]._bif_points
         term_nodes = individual_stats[cell_name]._end_points
 
-        bif_to_write = ""
-        for node in bif_nodes:
-            O,D,ED,PL,SPL,SED,PA= \
-              _get_node_features(individual_stats[cell_name],node)
-            bif_to_write += "%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\n" % (O,D,ED,PL,SPL,SED,PA)
-        bif_writer = open(cell_name+"_bifs_2D.txt","w")
-        bif_writer.write(bif_to_write)
-        bif_writer.flush()
-        bif_writer.close()
-
         term_to_write = ""
         for node in term_nodes:
             O,D,ED,PL,SPL,SED= \
               _get_node_features(individual_stats[cell_name],node,term=True)
             term_to_write += "%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\n" % (O,D,ED,PL,SPL,SED)
             
-        term_writer = open(cell_name+"_terms_2D.txt","w")
+        term_writer = open(cell_name+"_terms_multivariate.txt","w")
         term_writer.write(term_to_write)
         term_writer.flush()
         term_writer.close()
+
+        bif_to_write = ""
+        for node in bif_nodes:
+            O,D,ED,PL,SPL,SED,PA,AMP= \
+              _get_node_features(individual_stats[cell_name],node)
+            bif_to_write += "%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\t%0.2f\n" % (O,D,ED,PL,SPL,SED,PA,AMP)
+        bif_writer = open(cell_name+"_bifs_multivariate.txt","w")
+        bif_writer.write(bif_to_write)
+        bif_writer.flush()
+        bif_writer.close()
 
 if __name__=="__main__":
     destination = "."
