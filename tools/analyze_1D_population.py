@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 import btmorph
 
-def perform_1D_population_analysis(destination):
+def perform_1D_population_analysis(destination,filter="*.swc"):
     """
     Wrapper function to perform a complete analysis of a population of neuronal morphologies stored in SWC format (and three-point soma).
 
@@ -39,12 +39,12 @@ def perform_1D_population_analysis(destination):
     os.chdir(destination)    
 
     # load morphologies and initialize statistics
-    all_f = glob.glob("*.swc")
+    all_f = glob.glob(filter)
     swc_trees = {}
     individual_stats = {}
     for f in all_f:
         print "f: ", f
-        cell_name = f.split(".")[0]
+        cell_name = f.split(filter)[0]
         temp_tree = btmorph.STree2()
         temp_tree.read_SWC_tree_from_file(f)
         swc_trees[cell_name] = temp_tree
@@ -52,8 +52,9 @@ def perform_1D_population_analysis(destination):
         individual_stats[cell_name] = temp_stats
         plt.clf()
         btmorph.plot_2D_SWC(f,outN=cell_name+"_2D.pdf")
-        plt.clf()
-        btmorph.plot_3D_SWC(f,outN=cell_name+"_3D.pdf")    
+        plt.close()
+        btmorph.plot_3D_SWC(f,outN=cell_name+"_3D.pdf")
+        plt.close()
 
     """ 1D features, without dependencies on other quantities
         Both global (1 per neuron) and local (N per neuron) features"""

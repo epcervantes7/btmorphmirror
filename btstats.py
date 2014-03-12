@@ -69,7 +69,8 @@ class BTStats :
         
         """
         
-        r = abs(self._tree.get_node_with_index(2).get_content()['p3d'].xyz[1]) # abs(y_value)
+        #r = abs(self._tree.get_node_with_index(2).get_content()['p3d'].xyz[1]) # abs(y_value)
+        r = self._tree.get_node_with_index(1).get_content()['p3d'].radius
         print 'r=',r
         return 4.0*np.pi*r*r
 
@@ -399,14 +400,7 @@ class BTStats :
 
         """
         n = from_node.get_content()['p3d']
-        # nx = n.xyz[0]
-        # ny = n.xyz[1]
-        # nz = n.xyz[2]        
         p = self._tree.get_root().get_content()['p3d']
-        # px = p.xyz[0]
-        # py = p.xyz[1]
-        # pz = p.xyz[2]                    
-        # d = np.sqrt( (n.x-p.x)*(n.x-p.x) + (n.y-p.y)*(n.y-p.y) + (n.z-p.z)*(n.z-p.z) )
         d = np.sqrt(np.sum((n.xyz-p.xyz)**2))
         return d
 
@@ -479,7 +473,7 @@ class BTStats :
         between the two daughter branches in the plane defined by the \
         parent and the two daughters.
         
-        cos alpha = (a dot b) / (|a||b|)
+        cos alpha = :math:`(a \dot b) / (|a||b|)`
 
         Parameters
         -----------

@@ -26,7 +26,7 @@ C = 'k'
 max_width = 0
 max_height = 0
 
-def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None,offset=None,show_axis=False,XZ=False) :
+def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None,offset=None,show_axis=False,XZ=False,filter=range(10)) :
     """
     2D matplotlib plot of a neuronal moprhology. Projection can be in XY and XZ.
     Colors can be provided
@@ -69,7 +69,8 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
                 z = float(splits[4])
             r = float(splits[5])
             parent = int(splits[-1])
-            SWC[index] = (x,y,z,r,parent,n_type)
+            if n_type in filter:
+                SWC[index] = (x,y,z,r,parent,n_type)
 
     my_color_list = ['r','g','b','c','m','y','r--','b--','g--']
             

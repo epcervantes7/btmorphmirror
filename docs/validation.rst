@@ -82,7 +82,7 @@ morphology: `v_e_moto1` `(from here) <http://neuromorpho.org/neuroMorpho/neuron_
 .. [#f4] Unclear how the NeuroMorpho.org value is generated. We compute the euclidean distance between each terminal point and the soma. A visual inspection shows that our value is correct.
 
 .. [#f5] See [#f4]_
-.. [#f6]   
+.. [#f6] This is actually not the maximum as listed on the NeuroMorpho website but the average of either all points, or the bifurcation points.
 .. [#f7] Computed as follows: 
 :: 
 
