@@ -2,40 +2,30 @@ API Documentation
 =================
 
 
-P3D2
--------
 
-.. autoclass:: btmorph.P3D2
+Data structures
+----------------
+
+.. automodule:: btmorph.btstructs2
    :members:
+   :undoc-members:
    :show-inheritance:
 
+Morphometrics
+--------------
 
-SNode2
------------
-
-.. autoclass:: btmorph.SNode2
+.. automodule:: btmorph.btstats
    :members:
+   :undoc-members:
+   :show-inheritance:
 
+Visualization
+--------------
 
-STree2
---------
-
-.. autoclass:: btmorph.STree2
+.. automodule:: btmorph.btviz
    :members:
+   :undoc-members:
+   :show-inheritance:
 
-BTStats
---------
-
-.. autoclass:: btmorph.BTStats
-   :members:
-
-Wrappers
------
-
-.. automodule:: analyze_1D_population
-   :members:
-
-.. automodule:: analyze_2D_per_neuron
-   :members:
 
 

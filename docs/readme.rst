@@ -9,11 +9,13 @@ Small Python library containing a data structure and tools to represent and anal
 Installation
 ------------
 
-To run the code it suffices to adjust the PYTHONPATH by adding the `btmorph` directory.
+Check out the git repository and adjust your `$PYTHONPATH`. 
 ::
-
-    # in the directory with the *.py files
+    git clone git@bitbucket.org:btorb/btmorph.git
+    cd btmorph
     export PYTHONPATH=$(pwd):$PYTHONPATH
+
+The above commands will temporarily set your `PYTHONPATH`. Add the appropriate path in your `.bashrc` to make add the package permanently.
 
 Test the installation by running the tests (see :ref:`unit_testing`):
 ::
