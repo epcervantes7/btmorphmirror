@@ -49,7 +49,8 @@ if on_rtd:
         'sphinx.ext.todo',
         'sphinx.ext.coverage',
         'sphinx.ext.mathjax',
-        'sphinx.ext.viewcode'
+        'sphinx.ext.viewcode',
+        'numpydoc'
     ]
 else:
     extensions = [
