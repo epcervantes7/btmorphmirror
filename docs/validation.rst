@@ -116,6 +116,7 @@ Unit-tests of this library are provided in the ``tests`` directory and can be ru
 ::
 
     nosetests -v tests/stats_test.py
+    nosetests -v --nocapture tests/structs_test.py
 
 .. note:: Run the unit-tests after change to the code to ensure a) backward compatibility and b) correctness of the results.
 
