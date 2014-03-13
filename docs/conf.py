@@ -121,7 +121,7 @@ exclude_patterns = ['_build']
 pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
-#modindex_common_prefix = []
+modindex_common_prefix = ['btmorph.']
 
 autosummary_generate = True
 autodoc_default_flags = ['show-inheritance']

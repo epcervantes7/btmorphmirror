@@ -66,7 +66,7 @@ morphology: `v_e_moto1` `(from here) <http://neuromorpho.org/neuroMorpho/neuron_
 | Partition Asymmetry | 0.43            | :green:`0.43` [#f9]_      |
 +---------------------+-----------------+---------------------------+
 | Average Rall's      |                 |                           |
-| Ratio               |1.25             | :red:`___` [#f10]_        |
+| Ratio               |1.25             | :red:`1.69` [#f10]_       |
 +---------------------+-----------------+---------------------------+
 | Average Bifurcation |                 |                           |
 | Angle Local         | 46.83°          | :green:`46.83°`           |

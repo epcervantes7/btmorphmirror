@@ -27,5 +27,18 @@ Visualization
    :undoc-members:
    :show-inheritance:
 
+Wrappers / Tools
+-----------------
+
+.. automodule:: btmorph.tools.analyze_1D_population
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: btmorph.tools.analyze_2D_per_neuron
+   :members:
+   :undoc-members:
+   :show-inheritance:  
+
 
 
