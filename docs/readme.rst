@@ -11,7 +11,7 @@ Installation
 
 Check out the git repository and adjust your :code:`$PYTHONPATH`. 
 ::
-    git clone https://bitbucket.org:btorb/btmorph.git
+    git clone https://bitbucket.org/btorb/btmorph.git
     cd btmorph
     export PYTHONPATH=$(pwd):$PYTHONPATH
 
