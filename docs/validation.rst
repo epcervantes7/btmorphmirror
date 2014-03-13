@@ -30,7 +30,7 @@ morphology: `v_e_moto1` `(from here) <http://neuromorpho.org/neuroMorpho/neuron_
 +---------------------+-----------------+---------------------------+
 |Morphometric feature | NeuroMorpho.org | btmorph                   |
 +=====================+=================+===========================+
-| Soma Surface        | 45216 μm2       | 45238 μm2 (rounding error)|
+| Soma Surface        | 45216 μm2       | :red:`45238` μm2 [#f0]_   |
 +---------------------+-----------------+---------------------------+
 | # Stems             | 10              | :green:`10`               |
 +---------------------+-----------------+---------------------------+
@@ -48,9 +48,9 @@ morphology: `v_e_moto1` `(from here) <http://neuromorpho.org/neuroMorpho/neuron_
 +---------------------+-----------------+---------------------------+
 | Total Length        |  78849.1 μm     | :green:`78849.1` μm       |
 +---------------------+-----------------+---------------------------+
-| Total Surface       |  512417 μm2     | :green:`512417` μm        |
+| Total Surface       |  512417 μm2     | :green:`512417` μm2       |
 +---------------------+-----------------+---------------------------+
-| Total Volume        |  390413 μm3     | :green:`390412` μm        |
+| Total Volume        |  390413 μm3     | :green:`390412` μm3       |
 +---------------------+-----------------+---------------------------+
 | Max Euclidean       |                 |                           |
 | Distance            | 765.73 μm       | :red:`1531 μm` [#f4]_     |
@@ -75,7 +75,7 @@ morphology: `v_e_moto1` `(from here) <http://neuromorpho.org/neuroMorpho/neuron_
 | Angle Remote        |  45.74°         | :green:`45.7 °`           |
 +---------------------+-----------------+---------------------------+
 
-
+.. [#f0] In accordance with the three-point soma format, the somatic surface is computed as :math:`A = 4 \times \pi \times r^2`.
 .. [#f1] Computed by `stats.no_bifurcations() + stats.no_terminals()`
 .. [#f2] We compute the raw, untranslated extend in X,Y and Z dimension. This is different from the translated and truncated extend used by L-Measure.
 .. [#f3] Computed by `np.mean(stats.get_diameters())`

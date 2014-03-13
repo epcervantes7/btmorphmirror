@@ -171,6 +171,7 @@ if on_rtd:
 else:
     html_theme_path = ["_themes", ]
     html_theme = "sphinx_rtd_theme"
+    html_theme = "sphinxdoc"
 
 
 # Theme options are theme-specific and customize the look and feel of a theme

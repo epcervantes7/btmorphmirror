@@ -9,9 +9,9 @@ class BTStats :
     '''
     Compute morphometric features and statistics of a single morphology
 
-    Assume the "3 point" soma of the curated NeuroMorpho format. (see website)
+    Assume the "3 point" soma of the curated NeuroMorpho format. (`website <http://neuromorpho.org/neuroMorpho/SomaFormat.html>`_)
     
-    B. Torben-Nielsen, 2014-01 @ OIST/CNS (from BTN legacy code)
+    B. Torben-Nielsen (legacy code)
     '''
     
     def __init__(self,tree) :
@@ -280,7 +280,7 @@ class BTStats :
         
         Parameters
         ----------
-        to_node : :class:`SNode2`
+        to_node : :class:`btmorph.btstructs2.SNode2`
            Node *to* which the measurement is taken
 
         Returns
@@ -320,7 +320,7 @@ class BTStats :
 
         Parameters
         ----------
-        from_node : :class:`SNode2`
+        from_node : :class:`btmorph.btstructs2.SNode2`
         
         Returns
         -------
@@ -355,7 +355,7 @@ class BTStats :
 
         Parameters
         ----------
-        from_node : :class:`SNode2`
+        from_node : :class:`btmorph.btstructs2.SNode2`
         
         Returns
         -------
@@ -391,7 +391,7 @@ class BTStats :
 
         Parameters
         ----------
-        from_node : :class:`SNode2`
+        from_node : :class:`btmorph.btstructs2.SNode2`
         
         Returns
         -------
@@ -411,7 +411,7 @@ class BTStats :
 
         Parameters
         ----------
-        node : :class:`SNode2`
+        node : :class:`btmorph.btstructs2.SNode2`
 
         Returns
         -------
@@ -428,7 +428,7 @@ class BTStats :
 
         Parameters
         ----------
-        node : :class:`SNode2`
+        node : :class:`btmorph.btstructs2.SNode2`
 
         Returns
         -------
@@ -446,7 +446,7 @@ class BTStats :
 
         Parameters
         ----------
-        node : :class:`SNode2`
+        node : :class:`btmorph.btstructs2.SNode2`
 
         Returns
         -------
@@ -477,7 +477,7 @@ class BTStats :
 
         Parameters
         -----------
-        node : :class:`SNode2`
+        node : :class:`btmorph.btstructs2.SNode2`
         where : string
             either "local" or "remote". "Local" uses the immediate daughter \
             points while "remote" uses the point just before the next bifurcation or terminal point.
@@ -503,7 +503,7 @@ class BTStats :
 
         Parameters
         ----------
-        node : :class:`SNode2`
+        node : :class:`btmorph.btstructs2.SNode2`
         where : string
             Toggle 'local' or 'remote'
 
@@ -559,7 +559,7 @@ class BTStats :
 
         Parameters
         ----------
-        node : :class:`SNode2`
+        node : :class:`btmorph.btstructs2.SNode2`
         precision : float
             Maximal precision. If the precision is reached, the best found value is returned
         max_loops : int
@@ -618,7 +618,7 @@ class BTStats :
 
         Parameters
         ----------
-        node : :class:`SNode2`
+        node : :class:`btmorph.btstructs2.SNode2`
         where : string
             either "local" or "remote". "Local" uses the immediate daughter \
             points while "remote" uses the point just before the next bifurcation or terminal point.

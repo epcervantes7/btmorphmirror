@@ -9,17 +9,16 @@ Small Python library containing a data structure and tools to represent and anal
 Installation
 ------------
 
-Check out the git repository and adjust your `$PYTHONPATH`. 
+Check out the git repository and adjust your :code:`$PYTHONPATH`. 
 ::
     git clone https://bitbucket.org:btorb/btmorph.git
     cd btmorph
     export PYTHONPATH=$(pwd):$PYTHONPATH
 
-The above commands will temporarily set your `PYTHONPATH`. Add the appropriate path in your `.bashrc` to make add the package permanently.
+The above commands will temporarily set your :code:`$PYTHONPATH`. Add the appropriate path in your :code:`.bashrc` to make add the package permanently.
 
 Test the installation by running the tests (see :ref:`unit_testing`):
 ::
-    nosetests -v --nocapture tests/tools_test.py
     nosetests -v --nocapture tests/structs_test.py
     nosetests -v --nocapture tests/stats_test.py
 
@@ -30,7 +29,7 @@ Data representation
 
 Neurons not only look like the branching of trees, their structure is, mathematically speaking a tree structure because they can be represented as graphs without cycles. More precisely, when disregarding the soma, a neuron is a binary tree. That is a tree with at most two children at any node. As such, a **tree data structure** provides an intuitive representation of a morphology and can be easily probed to calculate morphometric features.
 
-The tree is implemented as a linked list data structure (STree2). Each item in the list/tree is a node (SNode2) and contains pointers to its parent (``get_parent``) and its children (``get_children``). Each node can store *something* in its designated ``content`` container. By design, the content is a Python dict and in this library it has at least one key: ``'p3d'``, a P3D2 object. Obviously, this tree data structure resembles strongly the structure of an SWC file.
+The tree is implemented as a linked list data structure (STree2). Each item in the list/tree is a node (SNode2) and contains pointers to its parent (:code:`get_parent`) and its children (:code:`get_children`). Each node can store *something* in its designated :code:`content` container. By design, the content is a Python dict and in this library it has at least one key: :code:`'p3d'`, a P3D2 object. Obviously, this tree data structure resembles strongly the structure of an SWC file.
 
 Schematically, it looks like this:
 
@@ -99,6 +98,10 @@ Visualization
 
 Quick example
 -------------
+
+In the top directory of the package (:code:`btmorph`) open :code:`ipython --pylab` and issue the command below.
+
+.. note:: In :code:`ipython` you can use the magic function :code:`%paste` to paste a whole code block. Copy the code below and type :code:`%paste` at the :code:`ipython` prompt.
 
 ::
 

@@ -2,7 +2,7 @@
 Basic visualization of neurite morphologies. Color coding for individual \
 sections is supported. Also synapse can be drawn.
 
-B. Torben-Nielsen @ OIST/CNS (updated BTN legacy code)
+B. Torben-Nielsen (legacy code)
 """
 import sys,time
 sys.setrecursionlimit(10000)
@@ -29,6 +29,7 @@ max_height = 0
 def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None,offset=None,show_axis=False,XZ=False,filter=range(10)) :
     """
     2D matplotlib plot of a neuronal moprhology. Projection can be in XY and XZ.
+    The SWC has to be formatted with a "three point soma".
     Colors can be provided
 
     Parameters
@@ -171,7 +172,7 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
 
 def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None) :
     """
-    3D matplotlib plot of a neuronal moprhology.
+    3D matplotlib plot of a neuronal morphology. The SWC has to be formatted with a "three point soma".
     Colors can be provided and synapse location marked
 
     Parameters
@@ -274,6 +275,26 @@ def plot_dendrogram(file_name,transform='plain',shift=0,c='k',radius=True,rm=200
     global C, RM, RA, max_width, max_height # n.a.s.t.y.
     '''
     Generate a dendrogram from an SWC file. The SWC has to be formatted with a "three point soma"
+
+    Parameters
+    -----------
+    file_name : string
+        File name of the SWC file to plots
+    transform : string
+        Either 'plain' or 'lambda'. Plain means no transform while 'lambda' performs an elecotrtonic transform
+    shift : float
+        Offset in the x-direction
+    c : string
+        Color ('r','g', 'b', ...)
+    radius : boolean
+        Plot a wire (False) dendrogram or one with the thickness of the processes (True)
+    rm : float
+       Membrane resistance. Only needed when transform = 'lambda'
+    rm : float
+       Axial resistance. Only needed when transform = 'lambda'
+    outN : string
+        File name of the output file. Extension of this file sets the file type
+
     '''
     swc_tree = btmorph.STree2()
     swc_tree = swc_tree.read_SWC_tree_from_file(file_name)

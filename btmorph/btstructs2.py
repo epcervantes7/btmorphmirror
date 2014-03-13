@@ -4,9 +4,7 @@ File contains:
     SNode2   
     STree2
 
-B. Torben-Nielsen, 2013-10 @ OIST,
-2013-01 @ BBP
-from BTN legacy code
+B. Torben-Nielsen (legacy code)
 """
 
 
@@ -70,8 +68,8 @@ class SNode2 :
 
         Returns
         -------
-        parent : SNode2
-           In case of the root, None is returned.Otherwise a SNode2 is returned
+        parent : :class:`SNode2`
+           In case of the root, None is returned.Otherwise a :class:`SNode2` is returned
         """          
         return self._parent_node
         
@@ -81,19 +79,19 @@ class SNode2 :
 
         Returns
         -------
-        children : list SNode2
+        children : list :class:`SNode2`
            In case of a leaf an empty list is returned
         """                  
         return self._child_nodes
         
     def get_content(self) :
         """
-        Return the content dict of a SNode2
+        Return the content dict of a :class:`SNode2`
 
         Returns
         -------
-        parent : SNode2
-           In case of the root, None is returned.Otherwise a SNode2 is returned
+        parent : :class:`SNode2`
+           In case of the root, None is returned.Otherwise a :class:`SNode2` is returned
         """                  
         return self._content
     
@@ -114,7 +112,7 @@ class SNode2 :
 
         Parameters
         ----------
-        node : SNode2
+        node : :class:`SNode2`
         """
         self._parent_node = parent_node
         
@@ -138,7 +136,7 @@ class SNode2 :
 
         Parameters
         -----------
-        node :  SNode2
+        node :  :class:`SNode2`
         """
         self._child_nodes.append(child_node)
             
@@ -156,7 +154,7 @@ class SNode2 :
 
         Parameters
         -----------
-        node :  SNode2
+        node :  :class:`SNode2`
             If the child doesn't exist, you get into problems.
         """
         self._child_nodes.remove(child_node)
@@ -187,7 +185,7 @@ class SNode2 :
         
 class STree2 :
     '''
-    Simple tree for use with a simple Node (SNode2).
+    Simple tree for use with a simple Node (:class:`SNode2`).
 
     While the class is designed to contain binary trees (for neuronal morphologies) the number of children is not limited.
     As such, this is a generic implementation of a tree structure as a linked list.

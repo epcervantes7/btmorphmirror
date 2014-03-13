@@ -4,14 +4,14 @@ Tutorial
 
 This is a brief, hands-on tutorial explaining how to use btmorph to load SWC files, analyse them by computing morphometric measures and compare morphologies to one another. A short description is also provided on how to use btmorph in further scripting.
 
-We recommend to use IPython. In a terminal type, change to the ``examples`` directory and type ``ipython --pylab -i``. Then, you can either type the command in the listings below or directly copy them. Copy and pasting of the code snippets can be done by copying them and typing into the ipython prompt ``%paste`` `(Magic functions) <http://ipython.org/ipython-doc/rel-1.1.0/interactive/tutorial.html>`_.
+We recommend to use IPython. In a terminal type, change to the :code:`examples` directory and type :code:`ipython --pylab -i`. Then, you can either type the command in the listings below or directly copy them. Copy and pasting of the code snippets can be done by copying them and typing into the ipython prompt :code:`%paste` `(Magic functions) <http://ipython.org/ipython-doc/rel-1.1.0/interactive/tutorial.html>`_.
 
 .. note:: Make use of "magic functions" in IPython. Copy the code from this pages and type ``%paste`` in the IPython session. All code will be pasted with correct layout and directly executed.
 
 Analyzing morphometric data
 ---------------------------
 
-This tutorial assumes you are in the ``examples`` directory of the btmorph package. Several exemplar SWC files are contained in the package [#f1]_.
+This tutorial assumes you are in the :code:`examples` directory of the btmorph package (ath the top level, issue :code:`cd examples`). Several exemplar SWC files are contained in the package [#f1]_.
 ::
 
   import btmorph
@@ -31,7 +31,7 @@ This tutorial assumes you are in the ``examples`` directory of the btmorph packa
   print 'Number of terminals=%f' % no_terminals
 
 
-In case you do this tutorial in one Ipython session (``Ipython --pylab``), you don't need to load all libraries all the time and you can just continue to copy and paste code into the prompt. Therefore, loading of the library is omitted in the code listing below.
+In case you do this tutorial in one Ipython session (:code:`Ipython --pylab`), you don't need to load all libraries all the time and you can just continue to copy and paste code into the prompt. Therefore, loading of the library is omitted in the code listing below.
 
 Now probe a vector morphometric, for instance the segment length. Clearly, summing all segments lengths together should give us the total segment length as before.
 ::
@@ -98,7 +98,7 @@ Finally, to visually inspect both morphologies we could plot them::
 Potential extensions
 --------------------
 
-There are also hooks in ``btmorph`` to access other features. 
+There are also hooks in :code:`btmorph` to access other features. 
 
 - ``stats._all_nodes``: list with all nodes in the tree
 - ``stats._bif_points``: list with bifurcating nodes in the tree
