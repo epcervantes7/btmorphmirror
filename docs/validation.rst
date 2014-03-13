@@ -103,7 +103,7 @@ morphology: `v_e_moto1` `(from here) <http://neuromorpho.org/neuroMorpho/neuron_
        pas.append(stats.partition_asymmetry(node))
    mean(pas)
 
-.. [#f10] Rall's ratio, :math:`n`, :math:`{D_p}^n={D_{d1}}^n+{D_{d2}}^n` We use two distinct implementations. One based on the L-Measure documentation, namely, brute-force looking for the best :math:`n` over :math:`[0,5]` in 1000 steps. This yielded an average of :math:`n=1.77`, a value that differs from the value reported on NeuroMorpho.org (:math:`n=1.25`). One difference might be caused by bifurcations where one of the daughters is actually thicker than the parent. We discard such bifurcations. The other implementation uses a more efficient binary search over :math:`[0.5,5.0]` and finds an average of :math:`n=1.05`.
+.. [#f10] Rall's ratio, :math:`n`, :math:`{D_p}^n={D_{d1}}^n+{D_{d2}}^n` We use two distinct implementations. One based on the L-Measure documentation, namely, brute-force looking for the best :math:`n` over :math:`[0,5]` in 1000 steps. This yielded an average of :math:`n=1.77`, a value that differs from the value reported on NeuroMorpho.org (:math:`n=1.25`). Although, in accordance to the L-Measure documentation many segments are being "discarded" and it is unclear why such a large number is discarded. We only discard the branching points where :math:`d_1 > D_p` or :math:`d_2 > D_p`. In another implementation we use the scipy.optimize module to perform a simplex search for the optimal value of :math:`p` and this yields :math:`p=1.69`. In this second implementation we discard more points, namely points where :math:`p` is not on :math:`[0,5]`.
 
 .. _unit_testing:
 

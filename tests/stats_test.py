@@ -203,13 +203,32 @@ def test_ralls_ratio_brute():
     assert(1.25 < np.mean(all_n) < 1.26)
 
         
-def test_ralls_ratio() :
+def test_ralls_ratio_binary() :
     """
     Binary search for rall's power
     """
     all_p = []
     for node in stats._bif_points :
-        p = stats.bifurcation_ralls_ratio(node) 
+        p = stats.bifurcation_ralls_ratio_binary(node) 
+        all_p.append(p)
+        #print node, '-> p=', p
+    all_p = np.array(all_p)
+    all_pp = []
+    for n in all_p :
+        if not np.isnan(n) :
+            all_pp.append(n)
+    print 'min_p=%f,avg_p=%f media=%f, max_p=%f' % (np.min(all_pp),np.mean(all_pp),np.median(all_pp),np.max(all_pp))
+    # p = stats.bifurcation_ralls_ratio(stats._bif_points[1])
+    avg_rr = np.mean(all_pp)
+    assert(1.45 < avg_rr < 1.46)
+    
+def test_ralls_ratio3_fmin() :
+    """
+    scipy.optimize.fminsearch for rall's power
+    """
+    all_p = []
+    for node in stats._bif_points :
+        p = stats.bifurcation_ralls_ratio_fmin(node) 
         all_p.append(p)
         #print node, '-> p=', p
     all_p = np.array(all_p)

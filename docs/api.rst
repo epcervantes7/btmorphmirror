@@ -2,8 +2,6 @@ API Documentation
 =================
 
 
-.. automodule:: btmorph
-
 P3D2
 -------
 
@@ -20,22 +18,19 @@ SNode2
 
 
 STree2
------
+--------
 
 .. autoclass:: btmorph.STree2
    :members:
 
 BTStats
------
+--------
 
 .. autoclass:: btmorph.BTStats
    :members:
 
 Wrappers
 -----
-
-..
-  .. py:function:: analyze_1D_population.perform_1D_population_analysis
 
 .. automodule:: analyze_1D_population
    :members:

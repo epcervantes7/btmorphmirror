@@ -18,6 +18,7 @@ import os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
+
 sys.path.insert(0, os.path.abspath('../../'))
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('../tools/'))
@@ -163,7 +164,8 @@ numpydoc_show_class_members = True
 if on_rtd:
     html_theme = 'default'
 else:
-    html_theme = 'sphinxdoc'
+    html_theme_path = ["_themes", ]
+    html_theme = "sphinx_rtd_theme"
 
 
 # Theme options are theme-specific and customize the look and feel of a theme
