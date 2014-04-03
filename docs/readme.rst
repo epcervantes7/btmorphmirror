@@ -43,7 +43,7 @@ Design requirements
 
 A small set of library containing an efficient data structure and routines to quickly analyze morphometric features of neuronal morphologies. 
 
-The internal representation is based on a tree data-structure (rather then an adjacency matrix as in the `TREES toolbox <http://www.treestoolbox.org/>`_). 
+The internal representation is based on a tree data-structure (rather than an adjacency matrix as in the `TREES toolbox <http://www.treestoolbox.org/>`_). 
 
 Atomic functions are provided to allow usage in scripting and enable the user to built more complex morphometrics on top of the provided functionality. The code is serial (i.e., non-parallel) because single neuron morphometrics are fast to compute. When analyzing a batch of morphologies a parallel wrapper can be written (e.g., using Pythons's multiprocessing module or more fancy using MPI).
 
