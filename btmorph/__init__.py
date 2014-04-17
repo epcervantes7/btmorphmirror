@@ -7,6 +7,10 @@ from btviz import plot_2D_SWC
 from btviz import plot_3D_SWC
 from btviz import plot_dendrogram
 
+from btviz import true_2D_projections_equal
+from population_density_plots import population_density_projection
+from population_density_plots import population_2D_density_projections
+
 #import tools.analyze_1D_population
 from tools.analyze_1D_population import perform_1D_population_analysis
 from tools.analyze_2D_per_neuron import perform_2D_analysis

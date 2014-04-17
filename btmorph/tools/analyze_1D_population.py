@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 import btmorph
 
-def perform_1D_population_analysis(destination,filter="*.swc"):
+def perform_1D_population_analysis(destination,filter="*.swc",post_name=None):
     """
     Wrapper function to perform a complete analysis of a population of neuronal morphologies stored in SWC format (and three-point soma).
 
@@ -34,8 +34,14 @@ def perform_1D_population_analysis(destination,filter="*.swc"):
     -----------
     destination : string
         string with the location of where to find the SWC files.
+    filter :  string
+        filter to select SWC files. Default is "*.swc". See `glob
+        <https://docs.python.org/2/library/glob.html>`_ documentation for more advanced filters
+    post_name : string
+        string appended to the file name when saving. Default None
     """
     # change to a directory of choice for I/O
+    pwd = os.getcwd()
     os.chdir(destination)    
 
     # load morphologies and initialize statistics
@@ -51,9 +57,7 @@ def perform_1D_population_analysis(destination,filter="*.swc"):
         temp_stats = btmorph.BTStats(temp_tree)
         individual_stats[cell_name] = temp_stats
         plt.clf()
-        btmorph.plot_2D_SWC(f,outN=cell_name+"_2D.pdf")
-        plt.close()
-        btmorph.plot_3D_SWC(f,outN=cell_name+"_3D.pdf")
+        btmorph.plot_2D_SWC(f,outN=cell_name+"_2D.pdf",XZ=0)
         plt.close()
 
     """ 1D features, without dependencies on other quantities
@@ -133,9 +137,16 @@ def perform_1D_population_analysis(destination,filter="*.swc"):
         plt.hist(one_d_stats[func])
         plt.xlabel(func)
         plt.ylabel("#")
-        plt.savefig("pop_1D_"+func+"_hist.pdf")
-        p_name = "pop_1D_"+func+"_raw.pkl"
+        if post_name == None:
+            plt.savefig("pop_1D_"+func+"_hist.pdf")
+            p_name = "pop_1D_"+func+"_raw.pkl"
+        else:
+            plt.savefig("pop_1D_"+func+"_hist"+post_name+".pdf")
+            p_name = "pop_1D_"+func+"_raw"+post_name+".pkl"            
         pickle.dump(one_d_stats[func], open(p_name,"w"))
+
+    # and change back to the original directory where the command was given
+    os.chdir(pwd)
 
 if __name__=="__main__":
     destination = "."
