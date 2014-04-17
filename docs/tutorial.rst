@@ -120,7 +120,7 @@ For instance, it is straight-forward to save a cloud on which measurement relate
   import pickle
   pickle.dump(bif_cloud,open('bif_cloud.pkl','w'))
 
-Note that in this example only bifurcation points are considered. Through the ``STree.get_nodes()`` or ``stats._all_points``.
+Note that in this example only bifurcation points are considered. Through the ``STree.get_nodes()`` or ``stats._all_points`` all points can be retrieved.
 
 The cloud data can now be loaded and plotted (and serve for further analysis)
 ::

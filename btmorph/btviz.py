@@ -15,6 +15,8 @@ import matplotlib.cm as cm
 
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.gridspec as gridspec
+
 
 import btmorph
 
@@ -26,7 +28,158 @@ C = 'k'
 max_width = 0
 max_height = 0
 
-def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None,offset=None,show_axis=False,XZ=False,filter=range(10)) :
+def _plot_3D_figure(SWC,my_color_list = ['r','g','b','c','m','y','r--','b--','g--']):
+    """
+    Parameters
+    -----------
+    SWC: dict
+    """
+    for index in SWC.keys() : # not ordered but that has little importance here
+        # draw a line segment from parent to current point
+        current_SWC = SWC[index]
+        #print 'index: ', index, ' -> ', current_SWC
+        c_x = current_SWC[0]
+        c_y = current_SWC[1]
+        c_z = current_SWC[2]
+        c_r = current_SWC[3]
+        parent_index = current_SWC[4]
+                
+        if(index <= 3) :
+            #print 'do not draw the soma and its CNG, !!! 2 !!! point descriptions'
+            pass
+        else :
+            parent_SWC = SWC[parent_index]
+            p_x = parent_SWC[0]
+            p_y = parent_SWC[1]
+            p_z = parent_SWC[2]
+            p_r = parent_SWC[3]
+            # print 'index:', index, ', len(cs)=', len(cs)
+            pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r)
+
+def true_2D_projections_equal(file_name='P20-DEV139.CNG.swc',align=True,outN=None,bar=None,depth="Z"):
+    """
+    Three 2D projections
+
+    Parameters
+    -----------
+    file_name : string
+        File name of the SWC file to plots
+    depth : string
+        Set which axis represents "depth". In experimental work, the \
+        Z-axis is depth (as in my PPNeurMorphC) but in NeuroMorpho the \
+        Y-axis is the depth. (Depth is used to denote the axis from deep to superficial)
+    align : boolean
+        Translate the figure so that the soma is on the origin [0,0,0].
+
+    """
+    my_color_list = ['r','g','b','c','m','y','k','g','DarkGray']
+    # read the SWC into a dictionary: key=index, value=(x,y,z,d,parent)
+    x = open(file_name,'r')
+    soma = None
+    SWC = {}
+    for line in x :
+        if(not line.startswith('#')) :
+            splits = line.split()
+            index = int(splits[0])
+            if index == 1:
+                soma_x = float(splits[2])
+                soma_y = float(splits[3])
+                soma_z = float(splits[4])
+
+            n_type = int(splits[1])
+            if not align:
+                x = float(splits[2])
+                y = float(splits[3])
+                z = float(splits[4])
+            else:
+                x = float(splits[2])-soma_x
+                y = float(splits[3])-soma_y
+                z = float(splits[4])-soma_z         
+            r = float(splits[5])
+            parent = int(splits[-1])
+            SWC[index] = (x,y,z,r,parent,n_type)
+
+    fig = plt.figure()
+    
+    if depth == "Y":
+        ax = plt.subplot2grid((2,2), (0, 0))
+        for index in SWC.keys():
+            if index < 3:
+                continue
+            C = SWC[index]
+            P = SWC[C[4]] # C[4] is parent index
+            pl = plt.plot([P[0],C[0]],[P[1],C[1]],my_color_list[C[5]-1],linewidth=C[3])
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.xticks([0,bar[0]])
+        plt.yticks([0,bar[1]])
+
+        ax2 = plt.subplot2grid((2,2), (0, 1))
+        for index in SWC.keys():
+            if index < 3:
+                continue
+            C = SWC[index]
+            P = SWC[C[4]] # C[4] is parent index
+            pl2 = plt.plot([P[2],C[2]],[P[1],C[1]],my_color_list[C[5]-1],linewidth=C[3])
+        plt.xlabel("Z")
+        plt.ylabel("Y")
+        plt.xticks([0,bar[2]])
+        plt.yticks([0,bar[1]])
+        
+        ax3 = plt.subplot2grid((2,2), (1, 1))
+        for index in SWC.keys():
+            if index < 3:
+                continue
+            C = SWC[index]
+            P = SWC[C[4]] # C[4] is parent index            
+            pl3 = plt.plot([P[0],C[0]],[P[2],C[2]],my_color_list[C[5]-1],linewidth=C[3])
+        plt.xlabel("X")
+        plt.ylabel("Z")
+        plt.xticks([0,bar[0]])
+        plt.yticks([0,bar[2]])
+    else: # default for my code: Z is depth
+        ax = plt.subplot2grid((2,2), (0, 0))
+        for index in SWC.keys():
+            if index < 3:
+                continue
+            C = SWC[index]
+            P = SWC[C[4]] # C[4] is parent index
+            pl = plt.plot([P[0],C[0]],[P[2],C[2]],my_color_list[C[5]-1],linewidth=C[3])
+        plt.xlabel("X")
+        plt.ylabel("Z")
+        plt.xticks([0,bar[0]])
+        plt.yticks([0,bar[2]])
+
+        ax2 = plt.subplot2grid((2,2), (0, 1))
+        for index in SWC.keys():
+            if index < 3:
+                continue
+            C = SWC[index]
+            P = SWC[C[4]] # C[4] is parent index
+            pl2 = plt.plot([P[1],C[1]],[P[2],C[2]],my_color_list[C[5]-1],linewidth=C[3])
+        plt.xlabel("Y")
+        plt.ylabel("Z")
+        plt.xticks([0,bar[1]])
+        plt.yticks([0,bar[2]])
+        
+        ax3 = plt.subplot2grid((2,2), (1, 1))
+        for index in SWC.keys():
+            if index < 3:
+                continue
+            C = SWC[index]
+            P = SWC[C[4]] # C[4] is parent index            
+            pl3 = plt.plot([P[0],C[0]],[P[1],C[1]],my_color_list[C[5]-1],linewidth=C[3])
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.xticks([0,bar[0]])
+        plt.yticks([0,bar[1]])
+
+    plt.tight_layout()
+
+    if not outN == None:
+        plt.savefig(outN)
+
+def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None,align=True,offset=None,show_axis=False,XZ=False,filter=range(10)) :
     """
     2D matplotlib plot of a neuronal moprhology. Projection can be in XY and XZ.
     The SWC has to be formatted with a "three point soma".
@@ -44,14 +197,21 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
         Color of the synapses ('r','g', 'b', ...)
     outN : string
         File name of the output file. Extension of this file sets the file type
+    align : boolean
+        Translate the figure so that the soma is on the origin [0,0,0].
     offset : list on float
-        List of length 3 with X,Y and Z shift of the morphology to be plotted
+        List of length 3 with X,Y and Z shift of the morphology to be plotted. Not to be used in conjunction with the "align" option
     show_axis : boolean
         whether or not to draw the axis
+    filter : list
+        List of integers indicating the SWC types to be included (1:soma, 2:axon, 3:basal,4:apical,...). By default, all SWC types are included
     XZ : boolean
         Default False means the XY projection is drawn. If True, the XZ projection is drawn
 
     """
+    # resolve some potentially conflicting arguments
+    if not offset == None:
+        align = False
     # read the SWC into a dictionary: key=index, value=(x,y,z,d,parent)
     x = open(file_name,'r')
     SWC = {}
@@ -59,15 +219,24 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
         if(not line.startswith('#')) :
             splits = line.split()
             index = int(splits[0])
+            if index == 1:
+                soma_x = float(splits[2])
+                soma_y = float(splits[3])
+                soma_z = float(splits[4])
+            
             n_type = int(splits[1])
-            if offset == None :
+            if not offset == None :
+                x = float(splits[2])-offset[0]
+                y = float(splits[3])-offset[1]
+                z = float(splits[4])-offset[2]
+            elif not align:
                 x = float(splits[2])
                 y = float(splits[3])
                 z = float(splits[4])
-            else :
-                x = offset[0] + float(splits[2])
-                y = offset[1] + float(splits[3])
-                z = float(splits[4])
+            else:
+                x = float(splits[2])-soma_x
+                y = float(splits[3])-soma_y
+                z = float(splits[4])-soma_z 
             r = float(splits[5])
             parent = int(splits[-1])
             if n_type in filter:
@@ -115,16 +284,16 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
             # print 'index:', index, ', len(cs)=', len(cs)
             if(cs == None) :
                 if XZ:
-                    pl = plt.plot([p_z,c_z],[p_x,c_x],my_color_list[current_SWC[5]-1],linewidth=c_r)
+                    pl = plt.plot([p_z,c_z],[p_x,c_x],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
                     #pl = plt.plot([p_x,c_x],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r)
                 else:
-                    pl = plt.plot([p_x,c_x],[p_y,c_y],my_color_list[current_SWC[5]-1],linewidth=c_r)
+                    pl = plt.plot([p_x,c_x],[p_y,c_y],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
             else :
                 try :
                     if XZ:
-                        pl = plt.plot([p_x,c_x],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r)
+                        pl = plt.plot([p_x,c_x],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
                     else:
-                        pl = plt.plot([p_x,c_x],[p_y,c_y],my_color_list[current_SWC[5]-1],linewidth=c_r)                    
+                        pl = plt.plot([p_x,c_x],[p_y,c_y],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)                    
                 except Exception :
                     pass# it's ok: it's the list size...
 
@@ -154,11 +323,11 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
         frame1.axes.get_xaxis().set_visible(False)
         frame1.axes.get_yaxis().set_visible(False)
         
-    # draw a scale bar
-    if offset == None :
-        plt.plot([0,100],[min_y*1.1,min_y*1.1],'k',linewidth=5) # 250 for MN, 100 for granule
-    else :
-        pass # when offset is used, the figure is to scale and no scalebar needed
+    # # draw a scale bar
+    # if offset == None :
+    #     plt.plot([0,100],[min_y*1.1,min_y*1.1],'k',linewidth=5) # 250 for MN, 100 for granule
+    # else :
+    #     pass # when offset is used, the figure is to scale and no scalebar needed
     
     if(cs != None) :
         cb = plt.colorbar(CS3) # bit of a workaround, but it seems to work
@@ -170,7 +339,7 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
         plt.savefig(outN)
 
 
-def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None) :
+def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None,offset=None,align=True,filter=range(10)) :
     """
     3D matplotlib plot of a neuronal morphology. The SWC has to be formatted with a "three point soma".
     Colors can be provided and synapse location marked
@@ -187,9 +356,19 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
         Color of the synapses ('r','g', 'b', ...)
     outN : string
         File name of the output file. Extension of this file sets the file type
+    offset : list on float
+        List of length 3 with X,Y and Z shift of the morphology to be plotted. Not to be used in conjunction with the "align" option
+    show_axis : boolean
+        whether or not to draw the axis
+    filter : list
+        List of integers indicating the SWC types to be included (1:soma, 2:axon, 3:basal,4:apical,...). By default, all SWC types are included        
 
     """
     my_color_list = ['r','g','b','c','m','y','r--','b--','g--']
+
+    # resolve some potentially conflicting arguments
+    if not offset == None:
+        align = False    
     
     if(cs == None) :
         pass
@@ -204,17 +383,44 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
     # read the SWC into a dictionary: key=index, value=(x,y,z,d,parent)
     x = open(file_name,'r')
     SWC = {}
+    # for line in x :
+    #     if(not line.startswith('#')) :
+    #         splits = line.split()
+    #         index = int(splits[0])
+    #         n_type = int(splits[1])
+    #         x = float(splits[2])
+    #         y = float(splits[3])
+    #         z = float(splits[4])
+    #         r = float(splits[5])
+    #         parent = int(splits[-1])
+    #         SWC[index] = (x,y,z,r,parent,n_type)
+
     for line in x :
         if(not line.startswith('#')) :
             splits = line.split()
             index = int(splits[0])
+            if index == 1:
+                soma_x = float(splits[2])
+                soma_y = float(splits[3])
+                soma_z = float(splits[4])
+            
             n_type = int(splits[1])
-            x = float(splits[2])
-            y = float(splits[3])
-            z = float(splits[4])
+            if not offset == None :
+                x = float(splits[2])-offset[0]
+                y = float(splits[3])-offset[1]
+                z = float(splits[4])-offset[2]
+            elif not align:
+                x = float(splits[2])
+                y = float(splits[3])
+                z = float(splits[4])
+            else:
+                x = float(splits[2])-soma_x
+                y = float(splits[3])-soma_y
+                z = float(splits[4])-soma_z 
             r = float(splits[5])
             parent = int(splits[-1])
-            SWC[index] = (x,y,z,r,parent,n_type)
+            if n_type in filter:
+                SWC[index] = (x,y,z,r,parent,n_type)                        
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
@@ -239,7 +445,7 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
             p_r = parent_SWC[3]
             # print 'index:', index, ', len(cs)=', len(cs)
             if cs == None :
-                pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r)
+                pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
             else :
                 try :
                     pl = plt.plot([p_x,c_x],[p_y,c_y], \

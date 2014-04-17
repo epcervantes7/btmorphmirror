@@ -200,10 +200,10 @@ def test_ralls_ratio_brute():
             #print "N: ", n
             all_n.append(n)
     print 'min_p=%f,avg_p=%f media=%f, max_p=%f' % (np.min(all_n),np.mean(all_n),np.median(all_n),np.max(all_n))
-    assert(1.25 < np.mean(all_n) < 1.26)
+    assert(1.77 <= np.mean(all_n) < 1.80)
 
         
-def test_ralls_ratio_binary() :
+def ttest_ralls_ratio_binary() :
     """
     Binary search for rall's power
     """
@@ -239,5 +239,5 @@ def test_ralls_ratio3_fmin() :
     print 'min_p=%f,avg_p=%f media=%f, max_p=%f' % (np.min(all_pp),np.mean(all_pp),np.median(all_pp),np.max(all_pp))
     # p = stats.bifurcation_ralls_ratio(stats._bif_points[1])
     avg_rr = np.mean(all_pp)
-    assert(1.45 < avg_rr < 1.46)
+    assert(1.68 < avg_rr < 1.70)
     
