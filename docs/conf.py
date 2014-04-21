@@ -30,7 +30,9 @@ sys.path.insert(0, os.path.abspath('../btmorph/tools'))
 import os
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
-print 'used pythonpath:\n', sys.path
+print 'used pythonpath:'
+for p in sys.path:
+    print "path: ",p
 #raw_input("Press enter")
 
 # -- General configuration ------------------------------------------------
