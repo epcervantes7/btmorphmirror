@@ -14,6 +14,7 @@
 
 import sys
 import os
+import glob
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -22,6 +23,9 @@ import os
 #sys.path.insert(0, os.path.abspath('../../'))
 #sys.path.insert(0, os.path.abspath('../'))
 #sys.path.insert(0, os.path.abspath('../tools/'))
+
+for f in glob.glob("../*"):
+    print "glob f:", f
 
 #sys.path.append("../")
 sys.path.insert(0, os.path.abspath('../'))
