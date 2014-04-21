@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 import btmorph
 
-def perform_1D_population_analysis(destination,filter="*.swc",post_name=None):
+def perform_1D_population_analysis(destination,filter="*.swc",depth="Y",bar=[200,200,200],post_name=None):
     """
     Wrapper function to perform a complete analysis of a population of neuronal morphologies stored in SWC format (and three-point soma).
 
@@ -57,7 +57,8 @@ def perform_1D_population_analysis(destination,filter="*.swc",post_name=None):
         temp_stats = btmorph.BTStats(temp_tree)
         individual_stats[cell_name] = temp_stats
         plt.clf()
-        btmorph.plot_2D_SWC(f,outN=cell_name+"_2D.pdf",XZ=0)
+        #btmorph.plot_2D_SWC(f,outN=cell_name+"_2D.pdf",XZ=0)
+        btmorph.true_2D_projections_equal(f,outN=f.split(".swc")[0]+"_projections.pdf",depth=depth,bar=bar)
         plt.close()
 
     """ 1D features, without dependencies on other quantities

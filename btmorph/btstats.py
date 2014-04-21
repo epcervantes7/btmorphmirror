@@ -71,7 +71,7 @@ class BTStats :
         
         #r = abs(self._tree.get_node_with_index(2).get_content()['p3d'].xyz[1]) # abs(y_value)
         r = self._tree.get_node_with_index(1).get_content()['p3d'].radius
-        print 'r=',r
+        #print 'r=',r
         return 4.0*np.pi*r*r
 
     def no_bifurcations(self) :
