@@ -1,2 +1,2 @@
 numpydoc
-sphinx==1.2
+sphinx<1.2
