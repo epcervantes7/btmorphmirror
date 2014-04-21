@@ -29,7 +29,6 @@ for f in glob.glob("../*"):
 
 for f in glob.glob("../btmorph/*"):
     print "glob f:", f
-
     
 sys.path.insert(0, os.path.abspath('../'))
 # sys.path.insert(0, os.path.abspath('../btmorph'))
@@ -61,8 +60,8 @@ if on_rtd:
         'sphinx.ext.todo',
         'sphinx.ext.coverage',
         'sphinx.ext.mathjax',
-        'sphinx.ext.viewcode',
-        'numpydoc'
+        'sphinx.ext.viewcode'# ,
+        # 'numpydoc'
     ]
 else:
     extensions = [
