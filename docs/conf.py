@@ -26,8 +26,9 @@ import os
 sys.path.insert(0, os.path.abspath('../'))
 sys.path.insert(0, os.path.abspath('../btmorph'))
 sys.path.insert(0, os.path.abspath('../btmorph/tools'))
+sys.path.insert(0, os.path.abspath('../btmorph/btmorph'))
+sys.path.insert(0, os.path.abspath('../btmorph/btmorph/tools'))
 
-import os
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 print 'used pythonpath:'
