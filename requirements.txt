@@ -1,2 +1,0 @@
-numpydoc
-sphinx<=1.2

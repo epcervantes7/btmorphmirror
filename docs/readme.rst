@@ -9,6 +9,23 @@ Small Python library containing a data structure and tools to represent and anal
 Installation
 ------------
 
+Prerequisites 
+~~~~~~~~~~~~~~
+
+You will need Python (2.7), `Numpy <http://numpy.org>`_ / `Scipy <http://scipy.org>`_ and `Matplotlib <http://matplotlib.org/>`_ to run the code. `IPython <http://ipython.org>`_ is highly recommended because it provides an interactive environment (like Matlab) for Python. 
+
+
+* Linux: Most linux distributions contain versions of these packages in their package manager that can readily be installed.
+
+* Windows and Mac: There are "scientific python" bundles that are shipped with all the aforementioned packages; most famously from `Anaconda <http://docs.continuum.io/anaconda/install.html>`_ or `Enthough <https://www.enthought.com/products/epd/free/>`_. Alternatively check the Ipython `installation <http://ipython.org/install.html>`_.
+
+
+
+Proper installation
+~~~~~~~~~~~~~~~~~~~
+
+.. note:: The following instructions are for Linux and Max OSX systems and only use command line tools. Please follow the appropriate manuals for Windows systems or tools with graphical interfaces.
+
 Check out the git repository and adjust your :code:`$PYTHONPATH`. 
 ::
     git clone https://bitbucket.org/btorb/btmorph.git
@@ -47,7 +64,7 @@ The internal representation is based on a tree data-structure (rather than an ad
 
 Atomic functions are provided to allow usage in scripting and enable the user to built more complex morphometrics on top of the provided functionality. The code is serial (i.e., non-parallel) because single neuron morphometrics are fast to compute. When analyzing a batch of morphologies a parallel wrapper can be written (e.g., using Pythons's multiprocessing module or more fancy using MPI).
 
-The input is a digital representation of a neuronal morphology in the SWC format. This is the current *de facto* format also used on the curated NeuroMorpho.org  `website <http://neuromorpho.org>`_.org database. It is expected to use the standardized SWC-format that follows the three-point soma description (see `here <http://neuromorpho.org/neuroMorpho/SomaFormat.html>`_). Analysis is based on the whole neuron. 
+The input is a digital representation of a neuronal morphology in the SWC format. This is the current *de facto* format also used on the curated NeuroMorpho.org  `website <http://neuromorpho.org>`_.org database. It is expected to use the standardized SWC-format that follows the three-point soma description (see `here <http://neuromorpho.org/neuroMorpho/SomaFormat.html>`_). Analysis is based on the whole neuron but subtrees can be selectively analyzed based on the value of the SWC-type field.
 
 Morphometrics can be either scalar (= one value per morphology) or vector / distributed (= a distribution of values per morphology). For vector morphometrics, the features can be measures either a branching point, terminal points or both. Other 'points' specified in the SWC file are only used for the internal representation of the geometry.
 
@@ -93,6 +110,7 @@ Visualization
 
 * Dendrogram
 * 2D/3D plot as wires and/or with diameters
+* Three 2D projections for improved visual inspection
 
 
 
