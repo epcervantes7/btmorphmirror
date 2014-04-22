@@ -1,8 +1,9 @@
 """
-Basic visualization of neurite morphologies. Color coding for individual \
-sections is supported. Also synapse can be drawn.
+Basic visualization of neurite morphologies using matplotlib.
 
-B. Torben-Nielsen (legacy code)
+Usage is restricted to morphologies in the sWC format with the three-point soma `standard <http://neuromorpho.org/neuroMorpho/SomaFormat.html>`_
+
+B. Torben-Nielsen
 """
 import sys,time
 sys.setrecursionlimit(10000)
@@ -70,6 +71,13 @@ def true_2D_projections_equal(file_name='P20-DEV139.CNG.swc',align=True,outN=Non
         Y-axis is the depth. (Depth is used to denote the axis from deep to superficial)
     align : boolean
         Translate the figure so that the soma is on the origin [0,0,0].
+    outN : string
+        File name of the output file. Extension of this file sets the file type
+    bar : list of int or real
+        Three values to set the thicks and marks on the plot in X,Y and Z-dimension
+    depth : string
+        Set the axis representing the depth (= axis from superficial to deep). In most SWC files \
+        this is 'Y'. The other option is 'Z', that is more consistent with the usual Cartesian coordinate systems
 
     """
     my_color_list = ['r','g','b','c','m','y','k','g','DarkGray']
