@@ -545,71 +545,7 @@ class BTStats :
         # print t_node,' -> found a bif'
         return t_node
 
-    def bifurcation_ralls_ratio_binary(self,node,precision=0.05,max_loops=50,where='local') :
-        """
-        *Vector, local morphometric*
-
-        Approximation of Rall's ratio using binary search
-        The error function is :math:`F={D_{d1}}^n+{D_{d2}}^n-{D_p}^n`
-
-        This method is included for historical relevance but it is not \
-        guaranteed to produce correct results because for binary search \
-        to work the error should be monotously increasing over the search interval. \
-        *This assumption is not valid* with the used error function.
-
-        Parameters
-        ----------
-        node : :class:`btmorph.btstructs2.SNode2`
-        precision : float
-            Maximal precision. If the precision is reached, the best found value is returned
-        max_loops : int
-            Maximal number of division performed. Either this value or the precision ends the search process
-        where : string
-            either "local" or "remote". "Local" uses the immediate daughter \
-            points while "remote" uses the point just before the next bifurcation or terminal point.
-
-        Returns
-        -------
-        rr : float
-            Appriximation of Rall's ratio                
-        """
-        p_diam = node.get_content()['p3d'].radius*2
-        child1,child2 = self._get_child_nodes(node,where=where)
-        d1_diam = child1.get_content()['p3d'].radius*2
-        d2_diam = child2.get_content()['p3d'].radius*2
-        #print 'pd=%f,d1=%f,d2=%f' % (p_diam,d1_diam,d2_diam)
-
-        if d1_diam >= p_diam or d2_diam >= p_diam :
-            return np.nan
-
-        p_lower = 0.0
-        p_upper = 5.0 # THE associated mismatch MUST BE NEGATIVE
-
-        mismatch=100000000
-        count_outer = 0
-        while mismatch > precision and count_outer < max_loops:
-            lower_mismatch = (np.power(d1_diam,p_lower) + np.power(d2_diam,p_lower))-np.power(p_diam,p_lower)
-            upper_mismatch = (np.power(d1_diam,p_upper) + np.power(d2_diam,p_upper))-np.power(p_diam,p_upper)
-
-            # lower_mismatch = np.power((d1_diam/p_diam),p_lower) + np.power((d2_diam/p_diam),p_lower)-1
-            # upper_mismatch = np.power((d1_diam/p_diam),p_upper) + np.power((d2_diam/p_diam),p_upper)-1 
-
-            p_mid = (p_lower + p_upper)/2.0
-            #p_mid = p_lower + (p_upper-p_lower)*np.random.random()
-                
-            mid_mismatch = (np.power(d1_diam,p_mid) + np.power(d2_diam,p_mid))-np.power(p_diam,p_mid)
-            #mid_mismatch = np.power((d1_diam/p_diam),p_mid) + np.power((d2_diam/p_diam),p_mid)-1
-            if np.abs(lower_mismatch) < np.abs(upper_mismatch) :
-                p_upper = p_mid
-            else:
-                p_lower = p_mid
-            
-            mismatch = p_upper - p_lower
-            count_outer = count_outer + 1
-        return p_mid
-
-
-    def bifurcation_ralls_ratio_fmin(self,node,where='local') :
+    def bifurcation_ralls_power_fmin(self,node,where='local') :
         """
         *Vector, local morphometric*
 
@@ -648,14 +584,42 @@ class BTStats :
             return best_n
         else:
             return np.nan
-    
-    def bifurcation_ralls_ratio_brute(self,node,precision=0.05,max_loops=50,where='local') :
+
+    def bifurcation_rall_ratio_classic(self,node,where='local'):
+        """
+        *Vector, local morphometric*
+
+        The ratio :math:`\\frac{ {d_1}^p + {d_2}^p  }{D^p}` computed with :math:`p=1.5`
+
+        """
+        p_diam = node.get_content()['p3d'].radius*2
+        child1,child2 = self._get_child_nodes(node,where=where)
+        d1_diam = child1.get_content()['p3d'].radius*2
+        d2_diam = child2.get_content()['p3d'].radius*2
+
+        return ( np.power(d1_diam,1.5) + np.power(d2_diam,1.5)) / np.power(p_diam,1.5)
+        
+    def bifurcation_ralls_power_brute(self,node,where='local',min_v=0,max_v=5,steps=1000) :
         """
         *Vector, local morphometric*
 
         Approximation of Rall's ratio.
-        D^p = d1^p + d2^p, p is approximated by brute-force checking the \
-        interval [0,5] in 1000 steps.
+        :math:`D^p = {d_1}^p + {d_2}^p`, p is approximated by brute-force checking the \
+        interval [0,5] in 1000 steps (by default, but the exact search \
+        dimensions can be specified by keyworded arguments.
+
+        Parameters
+        -----------
+        node : :class:`btmorph.btstructs2.SNode2`
+        where : string
+            either 'local or 'remote'. 'Local' uses the immediate daughter \
+            points while "remote" uses the point just before the next bifurcation or terminal point.
+
+        Returns
+        -------
+        rr : float
+            Approximation of Rall's power, p
+        
         """
         p_diam = node.get_content()['p3d'].radius*2
         child1,child2 = self._get_child_nodes(node,where=where)
@@ -666,7 +630,7 @@ class BTStats :
         if d1_diam >= p_diam or d2_diam >= p_diam :
             return None
 
-        test_v = np.linspace(0.0,5.0,1000)
+        test_v = np.linspace(min_v,max_v,steps)
         min_mismatch=100000000000.0
         best_n = -1
         for n in test_v:

@@ -13,10 +13,11 @@ Validation & testing
 Comparison with L-Measure
 --------------------------
 
-We compare our library with the "golden standard", L-Measure and the results generated
-by L-Measure that are accessible through `NeuroMorpo.org <NeuroMorpho.org>`_.
+We compare our library with the "golden standard", L-Measure through the results generated
+by L-Measure that are publicly accessible through `NeuroMorpo.org <NeuroMorpho.org>`_.
 
-In most cases the results obtained with the btmorph library are similar; there are some slight differences that reflect slight implementation details and some measures are interpreted differently; implementation details of L-Measure can be found `(here) <http://cng.gmu.edu:8080/Lm/help/index.htm>`_.
+In most cases the results obtained with the btmorph library are similar; there are some slight differences that reflect slight implementation details and some measures are interpreted differently; implementation details of L-Measure can be found `(here) <http://cng.gmu.edu:8080/Lm/help/index.htm>`_ and the meaning of the morphometrics displayed on NeuroMorpho.org are explained `here <http://neuromorpho.org/neuroMorpho/myfaq.jsp>`_.
+
 We explain the similarities and differences by means of an exemplar analysis performed on one
 morphology: `v_e_moto1` `(from here) <http://neuromorpho.org/neuroMorpho/neuron_info.jsp?neuron_name=v_e_moto1>`_. 
 
@@ -66,7 +67,7 @@ morphology: `v_e_moto1` `(from here) <http://neuromorpho.org/neuroMorpho/neuron_
 | Partition Asymmetry | 0.43            | :green:`0.43` [#f9]_      |
 +---------------------+-----------------+---------------------------+
 | Average Rall's      |                 |                           |
-| Ratio               |1.25             | :red:`1.69` [#f10]_       |
+| Ratio               |1.25             | :green:`1.25`             |
 +---------------------+-----------------+---------------------------+
 | Average Bifurcation |                 |                           |
 | Angle Local         | 46.83°          | :green:`46.83°`           |
@@ -77,7 +78,7 @@ morphology: `v_e_moto1` `(from here) <http://neuromorpho.org/neuroMorpho/neuron_
 
 .. [#f0] In accordance with the three-point soma format, the somatic surface is computed as :math:`A = 4 \times \pi \times r^2`.
 .. [#f1] Computed by `stats.no_bifurcations() + stats.no_terminals()`
-.. [#f2] We compute the raw, untranslated extend in X,Y and Z dimension. This is different from the translated and truncated extend used by L-Measure.
+.. [#f2] We compute the raw, untranslated extend in X,Y and Z dimension. This is different from aligning the axis with the first three principal components and including 95% of the data as is done in L-Measure and NeuroMorpho.org.
 .. [#f3] Computed by `np.mean(stats.get_diameters())`
 .. [#f4] Unclear how the NeuroMorpho.org value is generated. We compute the euclidean distance between each terminal point and the soma. A visual inspection shows that our value is correct.
 
@@ -102,8 +103,6 @@ morphology: `v_e_moto1` `(from here) <http://neuromorpho.org/neuroMorpho/neuron_
    for node in stats._bif_points:
        pas.append(stats.partition_asymmetry(node))
    mean(pas)
-
-.. [#f10] Rall's ratio, :math:`n`, :math:`{D_p}^n={D_{d1}}^n+{D_{d2}}^n` We use two distinct implementations. One based on the L-Measure documentation, namely, brute-force looking for the best :math:`n` over :math:`[0,5]` in 1000 steps. This yielded an average of :math:`n=1.77`, a value that differs from the value reported on NeuroMorpho.org (:math:`n=1.25`). Although, in accordance to the L-Measure documentation many segments are being "discarded" and it is unclear why such a large number is discarded. We only discard the branching points where :math:`d_1 > D_p` or :math:`d_2 > D_p`. In another implementation we use the scipy.optimize module to perform a simplex search for the optimal value of :math:`p` and this yields :math:`p=1.69`. In this second implementation we discard more points, namely points where :math:`p` is not on :math:`[0,5]`.
 
 .. _unit_testing:
 

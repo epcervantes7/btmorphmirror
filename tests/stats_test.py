@@ -190,10 +190,10 @@ def test_bifurcation_amplitude_remote() :
     print 'min=%f max(ample)=%f, mean(ampl)=%f' % (np.min(all_ampl),np.max(all_ampl),np.mean(all_ampl))
     assert(45.7 < np.mean(all_ampl) < 45.8)
 
-def test_ralls_ratio_brute():
+def test_ralls_power_brute():
     all_n = []
     for node in stats._bif_points :
-        n = stats.bifurcation_ralls_ratio_brute(node, where='local')
+        n = stats.bifurcation_ralls_power_brute(node, where='local')
         if n == None or n ==-1:
             pass
         else:
@@ -202,33 +202,13 @@ def test_ralls_ratio_brute():
     print 'min_p=%f,avg_p=%f media=%f, max_p=%f' % (np.min(all_n),np.mean(all_n),np.median(all_n),np.max(all_n))
     assert(1.77 <= np.mean(all_n) < 1.80)
 
-        
-def ttest_ralls_ratio_binary() :
-    """
-    Binary search for rall's power
-    """
-    all_p = []
-    for node in stats._bif_points :
-        p = stats.bifurcation_ralls_ratio_binary(node) 
-        all_p.append(p)
-        #print node, '-> p=', p
-    all_p = np.array(all_p)
-    all_pp = []
-    for n in all_p :
-        if not np.isnan(n) :
-            all_pp.append(n)
-    print 'min_p=%f,avg_p=%f media=%f, max_p=%f' % (np.min(all_pp),np.mean(all_pp),np.median(all_pp),np.max(all_pp))
-    # p = stats.bifurcation_ralls_ratio(stats._bif_points[1])
-    avg_rr = np.mean(all_pp)
-    assert(1.45 < avg_rr < 1.46)
-    
-def test_ralls_ratio3_fmin() :
+def test_ralls_power_fmin() :
     """
     scipy.optimize.fminsearch for rall's power
     """
     all_p = []
     for node in stats._bif_points :
-        p = stats.bifurcation_ralls_ratio_fmin(node) 
+        p = stats.bifurcation_ralls_power_fmin(node) 
         all_p.append(p)
         #print node, '-> p=', p
     all_p = np.array(all_p)
@@ -240,4 +220,16 @@ def test_ralls_ratio3_fmin() :
     # p = stats.bifurcation_ralls_ratio(stats._bif_points[1])
     avg_rr = np.mean(all_pp)
     assert(1.68 < avg_rr < 1.70)
-    
+
+
+def test_ralls_ratio_classic():
+    all_n = []
+    for node in stats._bif_points :
+        n = stats.bifurcation_rall_ratio_classic(node, where='local')
+        if n == None or n ==-1:
+            pass
+        else:
+            #print "N: ", n
+            all_n.append(n)
+    print 'min_p=%f,avg_p=%f media=%f, max_p=%f' % (np.min(all_n),np.mean(all_n),np.median(all_n),np.max(all_n))
+    assert(1.25 <= np.mean(all_n) < 1.26)    
