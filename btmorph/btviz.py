@@ -57,7 +57,7 @@ def _plot_3D_figure(SWC,my_color_list = ['r','g','b','c','m','y','r--','b--','g-
             # print 'index:', index, ', len(cs)=', len(cs)
             pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r)
 
-def true_2D_projections_equal(file_name='P20-DEV139.CNG.swc',align=True,outN=None,bar=None,depth="Z"):
+def true_2D_projections(file_name='P20-DEV139.CNG.swc',align=True,outN=None,bar=None,depth="Z"):
     """
     Three 2D projections
 

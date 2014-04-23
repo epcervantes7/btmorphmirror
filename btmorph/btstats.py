@@ -591,6 +591,18 @@ class BTStats :
 
         The ratio :math:`\\frac{ {d_1}^p + {d_2}^p  }{D^p}` computed with :math:`p=1.5`
 
+        Parameters
+        -----------
+        node : :class:`btmorph.btstructs2.SNode2`
+        where : string
+            either 'local or 'remote'. 'Local' uses the immediate daughter \
+            points while "remote" uses the point just before the next bifurcation or terminal point.
+
+        Returns
+        -------
+        rr : float
+            Approximation of Rall's ratio
+        
         """
         p_diam = node.get_content()['p3d'].radius*2
         child1,child2 = self._get_child_nodes(node,where=where)

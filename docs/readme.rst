@@ -1,8 +1,6 @@
 btmorph
 =======
 
-Online documentation can be found `here <http://b-torbennielsen.home.oist.jp/btmorph/>`_.
-
 Introduction
 ------------
 

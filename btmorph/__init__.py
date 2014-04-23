@@ -7,7 +7,7 @@ from btviz import plot_2D_SWC
 from btviz import plot_3D_SWC
 from btviz import plot_dendrogram
 
-from btviz import true_2D_projections_equal
+from btviz import true_2D_projections
 from population_density_plots import population_density_projection
 from population_density_plots import population_2D_density_projections
 

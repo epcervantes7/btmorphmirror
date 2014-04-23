@@ -13,8 +13,7 @@ Validation & testing
 Comparison with L-Measure
 --------------------------
 
-We compare our library with the "golden standard", L-Measure through the results generated
-by L-Measure that are publicly accessible through `NeuroMorpo.org <NeuroMorpho.org>`_.
+Btmorph is compared to the "golden standard" L-Measure through the publicly available data at `NeuroMorpo.org <NeuroMorpho.org>`_.
 
 In most cases the results obtained with the btmorph library are similar; there are some slight differences that reflect slight implementation details and some measures are interpreted differently; implementation details of L-Measure can be found `(here) <http://cng.gmu.edu:8080/Lm/help/index.htm>`_ and the meaning of the morphometrics displayed on NeuroMorpho.org are explained `here <http://neuromorpho.org/neuroMorpho/myfaq.jsp>`_.
 
@@ -62,7 +61,7 @@ morphology: `v_e_moto1` `(from here) <http://neuromorpho.org/neuroMorpho/neuron_
 +---------------------+-----------------+---------------------------+
 | Average Contraction | 0.94            | :green:`0.9359` [#f7]_    |
 +---------------------+-----------------+---------------------------+
-| Total Fragmentation | 559             | na [#f8]_                 |
+| Total Fragmentation | 559             | :green:`599` [#f8]_       |
 +---------------------+-----------------+---------------------------+
 | Partition Asymmetry | 0.43            | :green:`0.43` [#f9]_      |
 +---------------------+-----------------+---------------------------+
@@ -94,7 +93,7 @@ morphology: `v_e_moto1` `(from here) <http://neuromorpho.org/neuroMorpho/neuron_
        pls.append(stats.get_segment_pathlength(node))
    mean(array(eds)/array(pls))
 
-.. [#f8] Not implemented. Depends mostly on the person performing the reconstruction and hence not an important morphometric. Although, this measure can be easily retrieved by counting the compartment in the `get_segment_pathlength` method.
+.. [#f8] The fragmentation can be computed by :code:`len(stats._all_nodes)-3`, where 3 is subtracted to discount the three soma points.
 
 .. [#f9] Computed as follows:
 ::

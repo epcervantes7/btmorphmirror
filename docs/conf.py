@@ -29,7 +29,7 @@ for f in glob.glob("../*"):
 
 for f in glob.glob("../btmorph/*"):
     print "glob f:", f
-    
+
 sys.path.insert(0, os.path.abspath('../'))
 # sys.path.insert(0, os.path.abspath('../btmorph'))
 # sys.path.insert(0, os.path.abspath('../btmorph/tools'))
