@@ -27,6 +27,12 @@ Visualization
    :undoc-members:
    :show-inheritance:
 
+.. automodule:: btmorph.population_density_plots
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 Wrappers / Tools
 -----------------
 
@@ -36,6 +42,11 @@ Wrappers / Tools
    :show-inheritance:
 
 .. automodule:: btmorph.tools.analyze_2D_per_neuron
+   :members:
+   :undoc-members:
+   :show-inheritance:  
+
+.. automodule:: btmorph.tools.filter_and_save_swc
    :members:
    :undoc-members:
    :show-inheritance:  

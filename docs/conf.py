@@ -132,7 +132,7 @@ exclude_patterns = ['_build']
 pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
-modindex_common_prefix = ['btmorph.']
+modindex_common_prefix = ['btmorph']
 
 autosummary_generate = True
 autodoc_default_flags = ['show-inheritance']
@@ -179,11 +179,12 @@ numpydoc_show_class_members = True
 # a list of builtin themes.
 if on_rtd:
     html_theme = 'default'
-    html_theme = "sphinxdoc"
+    #html_theme = "sphinxdoc"
 else:
     html_theme_path = ["_themes", ]
     html_theme = "sphinx_rtd_theme"
-    html_theme = "sphinxdoc"
+    #html_theme = "sphinxdoc"
+    #html_theme="nature"
 
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -230,6 +231,7 @@ html_static_path = ['_static']
 
 # Custom sidebar templates, maps document names to template names.
 #html_sidebars = {}
+html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html'], }
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.

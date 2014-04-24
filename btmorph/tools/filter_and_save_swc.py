@@ -11,7 +11,11 @@ def filter_and_save_SWC(destination,filter,types=range(10),prefix="_filtered"):
     Removes points from a SWC structure and saves the new SWC to a file.
 
     Can be used to remove unwanted structures that are identifiable by \
-    the type-field in the SWC description.
+    the type-field in the SWC description. Specification of (standard) \
+    SWC type fields can be found `here <http://www.neuronland.org/NLMorphologyConverter/MorphologyFormats/SWC/Spec.html>`_.
+
+    To select the basal dendrites only, use the argument `types=[1,3]`:\
+    1 to select the soma and 3 for the basal dendrites themselves.
 
     Parameters
     -----------

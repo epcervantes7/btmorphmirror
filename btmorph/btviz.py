@@ -486,8 +486,7 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
     return ax
 
 def plot_dendrogram(file_name,transform='plain',shift=0,c='k',radius=True,rm=20000.0,ra=200,outN=None) :
-    global C, RM, RA, max_width, max_height # n.a.s.t.y.
-    '''
+    """
     Generate a dendrogram from an SWC file. The SWC has to be formatted with a "three point soma"
 
     Parameters
@@ -508,8 +507,9 @@ def plot_dendrogram(file_name,transform='plain',shift=0,c='k',radius=True,rm=200
        Axial resistance. Only needed when transform = 'lambda'
     outN : string
         File name of the output file. Extension of this file sets the file type
-
-    '''
+    """
+    global C, RM, RA, max_width, max_height # n.a.s.t.y.
+    
     swc_tree = btmorph.STree2()
     swc_tree = swc_tree.read_SWC_tree_from_file(file_name)
     RM = rm
