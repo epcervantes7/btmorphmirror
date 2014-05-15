@@ -6,7 +6,7 @@ Visualization is highly customizable in btmorph because you can access the data 
 
 In addition to the "DIY" method btmorph also contains several wrappers to quickly generate some standard visualizations of neurites. Below we illustrate the plotting capabilities included in btmorph. Please consult the API for more details about the visualization wrappers. All wrapper use standard Matplotlib functionality. 
 
-.. note:: As in the previous tutorial, we assume the user is in the :code:`examples` directory of the btmorph package. We exemplar neurons are from the Kawaguchi archive downloaded from `NeuroMorpho.org <http://neuromorpho.org/neuroMorpho/neuron_info.jsp?neuron_name=CTh5080306F>`_. Using the btmorph function `filter_and_save_SWC` we obtained "filtered" versions only contain the basal and apical trees. These data files can be found in the folder `examples/data`.
+.. note:: As in the previous tutorial, we assume the user is in the :code:`examples` directory of the btmorph package. The exemplar neurons are from the Kawaguchi archive and downloaded from `NeuroMorpho.org <http://neuromorpho.org/neuroMorpho/neuron_info.jsp?neuron_name=CTh5080306F>`_. Using the btmorph function `filter_and_save_SWC` we obtained "filtered" versions that only contain the basal and apical trees. These data files can be found in the folder `examples/data`.
 
 
 2D plotting
@@ -19,7 +19,7 @@ Basic 2D plotting is provided and entails a straightforward projection onto the 
    basal_fn = "data/CTh5080306F.CNG_filtered_basal.swc"
    apical_fn = "data/CTh5080306F.CNG_filtered_apical.swc"
 
-The color scheme used for 2D plotting can be adjusted. Currently only two schemes are in use: a default one and the one used by `NeuroMorpho.org <http://www.neuromorpho.org>`_, execute the following command:
+The color scheme used for 2D plotting can be adjusted. Currently only two schemes are in use: a default one and the one used by `NeuroMorpho.org <http://www.neuromorpho.org>`_. Execute the following command:
 ::
    import btmorph
    btmorph.plot_2D_SWC(full_fn,show_axis=False,color_scheme='default',depth='Y')
@@ -88,11 +88,11 @@ A similar pseudo 3D version is also available for the density plot.
 
 .. note:: 3D plotting is currently under construction. The final API can change in the near future.
 
-A 3D plot can still be convenient especially when you can interactively adjust the point of view using :code:`Ipython --pylab -i`.
+A 3D plot can still be convenient especially when you can interactively adjust the point of view using :code:`ipython --pylab -i`.
 
 Invoke the following code to generate a plot as illustrated below (left). A rotated version is plotted on the right.
 ::
-   btmorph.plot_3D(filtered_fn)
+   btmorph.plot_3D_SWC(filtered_fn)
 
 .. |p3d| image:: figures/plain_3D.png
   :scale: 37
