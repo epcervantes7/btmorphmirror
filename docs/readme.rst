@@ -147,3 +147,9 @@ References
 
 .. [#f1] Cannon et al. *An online archive of reconstructed hippocampal neurons.*, J. Neurosci. methods (pubmed `<http://www.ncbi.nlm.nih.gov/pubmed/9821633>`_).
 
+Citation
+---------
+
+If you use this software, please cite the following peer-reviewed news item published in the Neuroinformatics journal.
+
+*B. Torben-Nielsen, An efficient and extendable Python library to analyze neuronal morphologies. Neuroinformatics, 2014 (in press)*
