@@ -179,7 +179,7 @@ numpydoc_show_class_members = True
 # a list of builtin themes.
 if on_rtd:
     html_theme = 'default'
-    #html_theme = "sphinxdoc"
+    html_theme = "sphinxdoc"
 else:
     html_theme_path = ["_themes", ]
     html_theme = "sphinx_rtd_theme"
