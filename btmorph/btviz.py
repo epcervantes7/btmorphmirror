@@ -18,8 +18,8 @@ import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.gridspec as gridspec
 
-
 import btmorph
+from btmorph import config
 
 """ internal constants required for the dendrogram generation """
 H_SPACE = 20
@@ -187,7 +187,12 @@ def true_2D_projections(file_name='P20-DEV139.CNG.swc',align=True,outN=None,bar=
     if not outN == None:
         plt.savefig(outN)
 
-def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None,align=True,offset=None,show_axis=False,XZ=False,filter=range(10)) :
+def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,\
+                synapses=None,syn_cs='ro',\
+                outN=None,align=True,offset=None,\
+                show_axis=False,depth="Y",filter=range(10),\
+                show_radius=True,bar_L=None,bar=[50,50,50],\
+                new_fig=True,color_scheme="default"):
     """
     2D matplotlib plot of a neuronal moprhology. Projection can be in XY and XZ.
     The SWC has to be formatted with a "three point soma".
@@ -202,7 +207,8 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
     synapses : list of int
         Indices of the compartments where synapses (= small circles) should be drawn
     syn_c : string
-        Color of the synapses ('r','g', 'b', ...)
+        Color of the synapses ('r','g', 'b', ...). String follows matplotlib conventions. You can \
+        include the marker style as well. Default `syn_c='ro'`
     outN : string
         File name of the output file. Extension of this file sets the file type
     align : boolean
@@ -213,45 +219,79 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
         whether or not to draw the axis
     filter : list
         List of integers indicating the SWC types to be included (1:soma, 2:axon, 3:basal,4:apical,...). By default, all SWC types are included
-    XZ : boolean
-        Default False means the XY projection is drawn. If True, the XZ projection is drawn
+    show_radius : boolean
+        Default "True" plots the diameter; "False" will render a wire plot.
+    bar_L : float
+        Add a scale bar to the plot. *Currently only works with align=True*
+    bar : list of real
+        When the axis are shown (`show_axis=True`), ticks will be plotted according to this list.\
+        List contains 3 values for X, Y and Z ticks. Default [50,50,50]
+    depth : string
+        Default "Y" means that X represents the superficial to deep axis. \
+        Otherwise, use "Z" to conform the mathematical standard of having the Z axis.
+    new_fig : boolean
+        True if matplotlib has to plot in a new figure. False, if otherwise.
+    color_scheme : string
+        Set the color scheme used for background and neurite types. Default `default`. Other option `neuromorpho`
+
+    Notes
+    -----
+    If the soma is not located at [0,0,0], the scale bar (`bar_L`) and the ticks (`bar`) might not work \
+    as expected
 
     """
+
+    #print "scheme: ", config.c_scheme_nm
+    
+    #my_color_list = ['r','g','b','c','m','y','k','g','DarkGray']
+    if color_scheme == 'default':
+        my_color_list = config.c_scheme_default['neurite']
+    elif color_scheme == 'neuromorpho':
+        my_color_list = config.c_scheme_nm['neurite']
+    print 'my_color_list: ', my_color_list
+        
     # resolve some potentially conflicting arguments
     if not offset == None:
         align = False
+        
     # read the SWC into a dictionary: key=index, value=(x,y,z,d,parent)
     x = open(file_name,'r')
+    soma = None
     SWC = {}
     for line in x :
         if(not line.startswith('#')) :
             splits = line.split()
             index = int(splits[0])
             if index == 1:
-                soma_x = float(splits[2])
-                soma_y = float(splits[3])
-                soma_z = float(splits[4])
-            
+                if offset == None:
+                    soma_x = float(splits[2])
+                    soma_y = float(splits[3])
+                    soma_z = float(splits[4])
+                else:
+                    soma_x = float(splits[2]) + offset[0]
+                    soma_y = float(splits[3]) + offset[1]
+                    soma_z = float(splits[4]) + offset[2]
+
             n_type = int(splits[1])
-            if not offset == None :
-                x = float(splits[2])-offset[0]
-                y = float(splits[3])-offset[1]
-                z = float(splits[4])-offset[2]
-            elif not align:
-                x = float(splits[2])
-                y = float(splits[3])
-                z = float(splits[4])
+            if not align:
+                if offset == None:
+                    x = float(splits[2])
+                    y = float(splits[3])
+                    z = float(splits[4])
+                else:
+                    x = float(splits[2]) + offset[0]
+                    y = float(splits[3]) + offset[1]
+                    z = float(splits[4]) + offset[2]           
             else:
                 x = float(splits[2])-soma_x
                 y = float(splits[3])-soma_y
-                z = float(splits[4])-soma_z 
+                z = float(splits[4])-soma_z         
             r = float(splits[5])
             parent = int(splits[-1])
             if n_type in filter:
                 SWC[index] = (x,y,z,r,parent,n_type)
 
-    my_color_list = ['r','g','b','c','m','y','r--','b--','g--']
-            
+    # setting up for a colormap
     if cs == None :
         pass
     else :
@@ -260,92 +300,92 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
         levels=range(int(np.min(cs)),int(np.max(cs)),100)
         levels = np.linspace(np.min(cs),np.max(cs),100)
         CS3 = plt.contourf(Z,levels,cmap=cm.jet)
-        plt.clf()
+        plt.clf()            
 
-    min_y = 100000.0
+    if new_fig:
+        fig = plt.figure()
 
-    syn_index = -1
-    for index in SWC.keys() : # not ordered but that has little importance here
-        # draw a line segment from parent to current point
-        current_SWC = SWC[index]
-        #print 'index: ', index, ' -> ', current_SWC
-        c_x = current_SWC[0]
-        c_y = current_SWC[1]
-        c_z = current_SWC[2]
-        c_r = current_SWC[3]
-        parent_index = current_SWC[4]
+    min_depth=100    
+    if depth == "Y":
+        #ax = plt.subplot2grid((2,2), (0, 0))
+        for index in SWC.keys():
+            if index < 3:
+                continue
+            C = SWC[index]
+            P = SWC[C[4]] # C[4] is parent index
+            line_width = C[3] if show_radius else 1.0
+            if cs == None:
+                pl = plt.plot([P[0],C[0]],[P[1],C[1]],my_color_list[C[5]-1],linewidth=line_width)
+            else:
+                #c=cm.jet(norm(cs[index]))
+                pl = plt.plot([P[0],C[0]],[P[1],C[1]],c=cm.jet(norm(cs[index])),linewidth=line_width)
 
-        if(c_y < min_y) :
-            min_y = c_y
-                
-        if(index <= 3) :
-            #print 'do not draw the soma and its CNG, 2 point descriptions'
-            pass
-        else :
-            parent_SWC = SWC[parent_index]
-            p_x = parent_SWC[0]
-            p_y = parent_SWC[1]
-            p_z = parent_SWC[2]
-            p_r = parent_SWC[3]
-            if(p_y < min_y) :
-                min_y= p_y
-            # print 'index:', index, ', len(cs)=', len(cs)
-            if(cs == None) :
-                if XZ:
-                    pl = plt.plot([p_z,c_z],[p_x,c_x],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
-                    #pl = plt.plot([p_x,c_x],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r)
-                else:
-                    pl = plt.plot([p_x,c_x],[p_y,c_y],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
-            else :
-                try :
-                    if XZ:
-                        pl = plt.plot([p_x,c_x],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
-                    else:
-                        pl = plt.plot([p_x,c_x],[p_y,c_y],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)                    
-                except Exception :
-                    pass# it's ok: it's the list size...
+            # add the synapses
+            if not synapses == None :
+                if index in synapses :
+                    plt.plot([C[0]],C[1],syn_cs)
+            
+            min_depth = C[1] if C[1] < min_depth else min_depth
+            # TODO: insert synapses here
+        plt.xlabel("X")
+        plt.ylabel("Y")
+        plt.xticks([0,bar[0]])
+        plt.yticks([0,bar[1]])
+    else: # default for my code: Z is depth
+        #ax = plt.subplot2grid((2,2), (0, 0))
+        for index in SWC.keys():
+            if index < 3:
+                continue
+            C = SWC[index]
+            P = SWC[C[4]] # C[4] is parent index
+            line_width = C[3] if show_radius else 1.0
+            pl = plt.plot([P[0],C[0]],[P[2],C[2]],my_color_list[C[5]-1],linewidth=line_width)
 
-        # add the synapses
-        if(synapses != None) :
-            if index in synapses :
-                syn_index = syn_index + 1
-                if syn_cs :
-                    if XZ:
-                        plt.plot(c_x,c_z,syn_cs)
-                    else:
-                        plt.plot(c_x,c_y,syn_cs)
-                    
-                else :
-                    if XZ:
-                        plt.plot(c_x,c_z,syn_cs,'ro')
-                    else:
-                        plt.plot(c_x,c_y,syn_cs,'ro')
-                    
+            # add the synapses
+            if(synapses != None) :
+                if index in synapses :
+                    plt.plot([C[0]],C[2],syn_cs)
+                                
+            min_depth = C[2] if C[2] < min_depth else min_depth
+            # TODO: insert synapses here
+        plt.xlabel("X")
+        plt.ylabel("Z")
+        plt.xticks([0,bar[0]])
+        plt.yticks([0,bar[2]])
+    plt.tight_layout()
+    plt.axis("equal")
 
-
+    # axes or not?
     frame1 = plt.gca()
-
-    if show_axis :
+    if not show_axis :
         frame1.axes.get_xaxis().set_ticks([])
         frame1.axes.get_yaxis().set_ticks([])
         frame1.axes.get_xaxis().set_visible(False)
         frame1.axes.get_yaxis().set_visible(False)
-        
-    # # draw a scale bar
-    # if offset == None :
-    #     plt.plot([0,100],[min_y*1.1,min_y*1.1],'k',linewidth=5) # 250 for MN, 100 for granule
-    # else :
-    #     pass # when offset is used, the figure is to scale and no scalebar needed
-    
-    if(cs != None) :
+
+    # scale bar or not?
+    if offset == None and not bar_L == None:
+        plt.plot([0,bar_L],[min_depth*1.1,min_depth*1.1],'k',linewidth=5)
+    else :
+        pass # when offset is used, the figure is to scale and no scalebar needed
+
+    # color bar? in case `cs` is used
+    if not cs ==None :
         cb = plt.colorbar(CS3) # bit of a workaround, but it seems to work
         ticks_f = np.linspace(np.min(cs)-1,np.max(cs)+1,5)
         ticks_i = map(int,ticks_f)
+        print "ticks_i: ", ticks_i
         cb.set_ticks(ticks_i)
 
-    if(outN != None) :
+    # set the bg color
+    ax = fig.gca()
+    if color_scheme == 'default':
+        ax.set_axis_bgcolor(config.c_scheme_default['bg'])
+    elif color_scheme == 'neuromorpho':
+        ax.set_axis_bgcolor(config.c_scheme_nm['bg'])
+        
+    if not outN == None:
         plt.savefig(outN)
-
 
 def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None,offset=None,align=True,filter=range(10)) :
     """

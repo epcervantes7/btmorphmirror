@@ -20,7 +20,7 @@ def _get_node_features(stats,node,term=False):
         AMP = stats.bifurcation_angle_vec(node)
         return O,D,ED,PL,SPL,SED,PA,AMP
 
-def perform_2D_analysis(destination,filter="*.swc"):
+def perform_2D_analysis(destination,filter="*.swc",max_n=None):
     """
     Wrapper function to perform an analysis of the vector features of one neuronal morphology (in the SWC format and with 3-point soma)
 
@@ -48,6 +48,8 @@ def perform_2D_analysis(destination,filter="*.swc"):
     
     # load morphologies and initialize statistics
     all_f = glob.glob(filter)
+    if not max_n == None:
+        all_f = all_f[:max_n]
     swc_trees = {}
     individual_stats = {}
     for f in all_f:

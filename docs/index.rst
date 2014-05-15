@@ -12,6 +12,7 @@ Welcome to btmorph's documentation!
 
    readme
    tutorial
+   visualization
    validation
    api
 
