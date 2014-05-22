@@ -661,3 +661,35 @@ class BTStats :
         pos_angle = lambda x: x if x > 0 else 180 + (180+x)
         a = np.rad2deg(np.arctan2(node.get_content()['p3d'].y,node.get_content()['p3d'].x))
         return pos_angle(a)
+        
+    def local_horton_strahler(self, node) :
+        """
+        We assign Horton-Strahler number to all nodes of a tree, in bottom-up order, as follows:
+
+        If the node is a leaf (has no children), its Strahler number is one.
+        If the node has one child with Strahler number i, and all other children have Strahler numbers less than i, then the Strahler number of the node is i again.
+        If the node has two or more children with Strahler number i, and no children with greater number, then the Strahler number of the node is i + 1.
+        *If the node has only one child, the Strahler number of the node equals to the Strahler number of the child
+        The Strahler number of a tree is the number of its root node.
+        
+        See wikipedia for more information: http://en.wikipedia.org/wiki/Strahler_number
+        
+        Parameters
+        ---------
+        node : :class:`btmorph.btstructs2.SNode2`
+            Node of interest
+        Returns
+        ---------
+        hs : int
+            The Horton-Strahler number (Strahler number) of the node
+        """
+        # Empy tree
+        if None == node:
+            return -1
+        children = node.get_child_nodes()
+        # Leaf => HS=1
+        if len(children) == 0:
+            return 1
+        # Not leaf
+        childrenHS = map(self.local_horton_strahler, children)
+        return max(childrenHS + [(min(childrenHS)+1)])

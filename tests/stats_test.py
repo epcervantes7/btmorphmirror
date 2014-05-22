@@ -6,6 +6,7 @@ import sys
 
 import numpy as np
 import matplotlib.pyplot as plt
+from nose.tools import with_setup
 
 # import btstructs
 # import btstats
@@ -232,4 +233,36 @@ def test_ralls_ratio_classic():
             #print "N: ", n
             all_n.append(n)
     print 'min_p=%f,avg_p=%f media=%f, max_p=%f' % (np.min(all_n),np.mean(all_n),np.median(all_n),np.max(all_n))
-    assert(1.25 <= np.mean(all_n) < 1.26)    
+    assert(1.25 <= np.mean(all_n) < 1.26)
+    
+""" New fucntions by Irina - test"""
+test_trees = []
+    
+def setup_func_small_tree():
+    """
+    Setup function for Horton-Strahler number testing
+    """
+    global test_trees
+    #0 - Only soma tree
+    test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/soma_only.swc")) 
+    #1 - Wiki test tree
+    test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/horton-strahler_test_wiki_3pointsoma.swc"))    
+
+def teardown_func_small_tree():
+    """
+    Teardown function for Horton-Strahler number testing
+    """
+    global test_trees
+    test_trees = []
+    
+@with_setup(setup_func_small_tree, teardown_func_small_tree)    
+def test_local_horton_strahler():
+    global test_trees
+    # Trivial cases
+    assert(-1 == stats.local_horton_strahler(None))
+    # Real test     
+    all_nodes = test_trees[1].get_nodes()
+    for node in all_nodes:
+        r = int(node.get_content()['p3d'].radius)
+        assert(r == stats.local_horton_strahler(node))
+    pass

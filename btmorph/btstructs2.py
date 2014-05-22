@@ -279,7 +279,7 @@ class STree2 :
 
     def get_nodes(self) :
         """
-        Obtain a list of all nodes int he tree
+        Obtain a list of all nodes int the tree
 
         Returns
         -------
