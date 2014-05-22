@@ -378,6 +378,7 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,\
         cb.set_ticks(ticks_i)
 
     # set the bg color
+    fig = plt.gcf()
     ax = fig.gca()
     if color_scheme == 'default':
         ax.set_axis_bgcolor(config.c_scheme_default['bg'])

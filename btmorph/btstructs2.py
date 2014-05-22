@@ -30,7 +30,9 @@ class P3D2 :
         self.type = type
 
     def __str__(self) :
-        return "P3DD " + self.xyz + ", R=",self.radius, ", T=",self.type
+        #return "P3DD " + str(self.xyz) + ", R=",str(self.radius)+ ", T="+str(self.type)
+        return "P3D2 [%.2f %.2f %.2f], R=%.2f" % (self.xyz[0],self.xyz[1],self.xyz[2],self.radius)
+        #Return "P3D2 ".format, self.xyz)
 
 class SNode2 :
     """
