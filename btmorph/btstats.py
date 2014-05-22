@@ -253,6 +253,20 @@ class BTStats :
         dy = np.sqrt((maxY-minY)*(maxY-minY))
         dz = np.sqrt((maxZ-minZ)*(maxZ-minZ))
         return dx,dy,dz, [minX,maxX,minY,maxY,minZ,maxZ]
+        
+    def global_horton_strahler(self):
+        """
+        Calculate Horton-Strahler number at the root
+        See :func:`local_horton_strahler`
+    
+        Parameters
+        ---------
+        
+        Returns
+        ---------
+        Horton-Strahler number at the root
+        """
+        return self.local_horton_strahler(self._tree.get_root())
 
     """
     Local measures

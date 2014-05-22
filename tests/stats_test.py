@@ -237,16 +237,19 @@ def test_ralls_ratio_classic():
     
 """ New fucntions by Irina - test"""
 test_trees = []
+test_stats = None
     
 def setup_func_small_tree():
     """
     Setup function for Horton-Strahler number testing
     """
     global test_trees
+    global test_stats
     #0 - Only soma tree
     test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/soma_only.swc")) 
     #1 - Wiki test tree
     test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/horton-strahler_test_wiki_3pointsoma.swc"))    
+    test_stats = btmorph.BTStats(test_trees[1])
 
 def teardown_func_small_tree():
     """
@@ -254,6 +257,7 @@ def teardown_func_small_tree():
     """
     global test_trees
     test_trees = []
+    test_stats = None
     
 @with_setup(setup_func_small_tree, teardown_func_small_tree)    
 def test_local_horton_strahler():
@@ -265,4 +269,10 @@ def test_local_horton_strahler():
     for node in all_nodes:
         r = int(node.get_content()['p3d'].radius)
         assert(r == stats.local_horton_strahler(node))
+    pass
+
+@with_setup(setup_func_small_tree, teardown_func_small_tree) 
+def test_global_horton_strahler():
+    global test_stats
+    assert(4  == test_stats.global_horton_strahler())
     pass
