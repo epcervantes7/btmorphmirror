@@ -59,7 +59,7 @@ def perform_1D_population_analysis(destination,filter="*.swc",depth="Y",bar=[200
         temp_stats = btmorph.BTStats(temp_tree)
         individual_stats[cell_name] = temp_stats
         plt.clf()
-        btmorph.plot_2D_SWC_B(f,outN=cell_name+"_2D.pdf",align=True,depth=depth,show_axis=True)
+        btmorph.plot_2D_SWC(f,outN=cell_name+"_2D.pdf",align=True,depth=depth,show_axis=True)
         #btmorph.true_2D_projections_equal(f,outN=f.split(".swc")[0]+"_projections.pdf",depth=depth,bar=bar)
         plt.close()
 
