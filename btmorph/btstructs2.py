@@ -559,3 +559,23 @@ class STree2 :
 
     def __str__(self) :
         return "STree2 ("+str(len(self.get_nodes()))+" nodes)"
+        
+class VoxelGrid :
+    """
+    Represents voxelized 3D model of an object with given dimensions and resolution
+    """
+    def __init__(self, dimensions, resolution):
+        """
+        Generate a voxel grid for given dimensions and resolution
+        Note: the dimensions ratio (x:y:z) must be the same as resolution ratio (rx:ry:rz)
+        If this is not the case, the dimensions will be expanded to meet this criteria
+        
+        Parameters
+        ----------
+        dimensions : numpy.array
+        The grid's real dimensions
+        resolution : array(int)
+        The grid's resolution (number of voxels in each dimension). Must be a power of two
+        """
+        self.dim = dimensions
+        self.res = resolution
