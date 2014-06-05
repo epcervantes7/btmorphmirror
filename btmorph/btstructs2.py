@@ -564,6 +564,46 @@ class VoxelGrid :
     """
     Represents voxelized 3D model of an object with given dimensions and resolution
     """
+    @staticmethod
+    def checkKey(dims, key):
+        """
+        Check key type and range
+        """
+        if not isinstance(key, tuple) :
+            raise TypeError("The key must be a tuple of 3 integers")
+        if len(key) < 3:
+            raise TypeError("The key must be a tuple of 3 integers")        
+        (x,y,z) = key
+        if not (isinstance(x, int) and isinstance(y, int) and isinstance(z, int)):
+            raise TypeError("The key must be a tuple of 3 integers") 
+        if (x < 0 or x > dims[0]):
+            raise IndexError("Index is out of range")
+        if (y < 0 or y > dims[1]):
+            raise IndexError("Index is out of range")
+        if (z < 0 or z > dims[2]):
+            raise IndexError("Index is out of range")
+        return True
+        
+    def __getitem__(self, key):
+        """
+        Right [] operator overload
+        """
+        VoxelGrid.checkKey(self.res, key)
+        if not key in self.grid:
+            return False
+        else:
+            return True
+            
+    def __setitem_(self, key, value):
+        """
+        Left [] operator overload
+        """
+        VoxelGrid.checkKey(self.res, key)
+        if not isinstance(value, bool):
+            raise TypeError("The value must be boolean")
+        if key in self.grid and value == False:
+            del self.grid[key]
+        
     def __init__(self, dimensions, resolution):
         """
         Generate a voxel grid for given dimensions and resolution
@@ -577,8 +617,14 @@ class VoxelGrid :
         resolution : array(int)
         The grid's resolution (number of voxels in each dimension). Must be a power of two
         """
-        self.dim = dimensions
+        if not (len(dimensions) == 3 and len(resolution) == 3):
+            raise TypeError("Dimensions and resolution must be number iterables of length 3")
+        for i in range(0,3):
+            if not VoxelGrid.isPowerOfTwo(resolution[i]):
+                raise IndexError("Resolution must be power of 2")
+        self.dim = VoxelGrid.adjustDimensions(dimensions, resolution)
         self.res = resolution
+        self.grid = {}
     
     @staticmethod    
     def adjustDimensions(dimensions, resolution):
@@ -598,6 +644,11 @@ class VoxelGrid :
         New dimensions :  numpy.array
         An expanded (if neccessary) dimensions
         """
+        if not (len(dimensions) == 3 and len(resolution) == 3):
+            raise TypeError("Dimension and resolution must be number iterables of length 3")
+        for i in range(0,3):
+            if not (dimensions[i] >= 0 and resolution[i] >= 0):
+                raise IndexError("Dimensions and resolution must be positive")
         # Check if all dimensions match
         # Is more than one dimension and/or resolution is zero?
         if (resolution.count(0) > 1 or (len(dimensions) - numpy.count_nonzero(dimensions)) > 1):
@@ -624,4 +675,20 @@ class VoxelGrid :
             else:
                 z_new = y * float(rz)/float(ry)  
         return [x_new,y_new,z_new]
+    
+    @staticmethod
+    def isPowerOfTwo(int_num) :
+        """
+        Checks if the number is a power of two
         
+        Parameters
+        ----------
+        int_num : int
+        Input number
+        
+        Returns
+        ----------
+        True if N=2^m and False otherwise
+        """
+        return isinstance(int_num, int) and int_num > 0 and (int_num & (int_num - 1) == 0)
+    

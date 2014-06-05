@@ -5,7 +5,7 @@ Test routines for the btstructs2.py file
 import sys
 import numpy
 import random as rndm
-import itertools
+from  nose.tools import raises
 #sys.path.append('..')
 
 #from btstructs import STree, SNode,P3D
@@ -44,6 +44,20 @@ def test_load_and_write_swc():
 if __name__ == '__main__' :
     test_load_swc()
 
+@raises(TypeError)
+def VoxelGrid_adjustDim_junk(d, r):
+    """
+    Test if adjustDimensions raises TypeError if fed with junk
+    """
+    VoxelGrid.adjustDimensions(d, r)
+
+@raises(IndexError, Exception)
+def VoxelGrid_adjustDim_negative(d, r):
+    """
+    Test if adjustDimensions raises IndexError if fed with negative value
+    """
+    VoxelGrid.adjustDimensions(d, r)
+
 def test_voxelGrid_adjust_dimensions():
     """
     Test whether x:y:z = rx:ry:rz, where (x,y,z) - output dimensions, (rx,ry,rz) - resolution.
@@ -53,19 +67,21 @@ def test_voxelGrid_adjust_dimensions():
                    One or more dimension/resolution is zero while corresponding resolution/dimension is not => return nothing
     """   
     epsilon = 0.001
-    # One dimension and corresponding resolution are zero
-    for i in range(0, 3):
+    # Should not accept junk and values less than zero
+    junk = [None, [], [4, 't', 4], "str"]
+    dimensions = numpy.array([rndm.randint(1000, 2000)/10.0, rndm.randint(1000, 2000)/10.0, rndm.randint(1000, 2000)/10.0]) #[x, y, z]
+    resolution = [rndm.randint(1000, 2000), rndm.randint(1000, 2000), rndm.randint(1000, 2000)]    
+    for el in junk:
+        yield VoxelGrid_adjustDim_junk, dimensions, junk
+        yield VoxelGrid_adjustDim_junk, junk, resolution
+    for i in range(0,3):
         dimensions = numpy.array([rndm.randint(1000, 2000)/10.0, rndm.randint(1000, 2000)/10.0, rndm.randint(1000, 2000)/10.0]) #[x, y, z]
-        resolution = [rndm.randint(1000, 2000), rndm.randint(1000, 2000), rndm.randint(1000, 2000)] #[rx, ry, rz]        
-        #One of the dimensions is zero
-        dimensions[i] = 0
-        resolution[i] = 0
-        # No need to expand anything
-        #[x,y,z] = dimensions
-        #[rx,ry,rz] = VoxelGrid.adjustDimensions(dimensions, resolution)
-        #assert(abs(x - rx) < epsilon)
-        #assert(abs(y - ry) < epsilon)
-        #assert(abs(z - rz) < epsilon)
+        resolution = [rndm.randint(1000, 2000), rndm.randint(1000, 2000), rndm.randint(1000, 2000)]    
+        resolution[i] = -100
+        yield VoxelGrid_adjustDim_negative, dimensions, resolution
+        resolution = [rndm.randint(1000, 2000), rndm.randint(1000, 2000), rndm.randint(1000, 2000)]    
+        dimensions[i] = -100
+        yield VoxelGrid_adjustDim_negative, dimensions, resolution
     # More than one dimension is zero => return nothing
     dimensions = numpy.array([0, 0, 0])
     resolution = [0, 0, 0]
@@ -96,8 +112,8 @@ def test_voxelGrid_adjust_dimensions():
         resolution[i] = 0
         assert(VoxelGrid.adjustDimensions(dimensions, resolution) == None)
     # Everything is not zero
-    # Random floating point from 100 to 200 with 1 digit after comma
     for i in range(0,10):
+        # Random floating point from 100 to 200 with 1 digit after comma
         dimensions = numpy.array([rndm.randint(1000, 2000)/10.0, rndm.randint(1000, 2000)/10.0, rndm.randint(1000, 2000)/10.0]) #[x, y, z]
         resolution = [rndm.randint(1000, 2000), rndm.randint(1000, 2000), rndm.randint(1000, 2000)] #[rx, ry, rz]
         print(dimensions)
@@ -115,5 +131,100 @@ def test_voxelGrid_adjust_dimensions():
         assert(abs(nx/ny - float(rx)/float(ry)) < epsilon)
         assert(abs(ny/nz - float(ry)/float(rz)) < epsilon)    
     
+def test_isPowerOfTwo() :
+    """
+    Tests VoxelGrid.isPowerOfTwo function
+    Must return True for 2^m and False otherwise
+    """
+    assert(VoxelGrid.isPowerOfTwo(-100) == False)
+    assert(VoxelGrid.isPowerOfTwo(120.56) == False)
+    for i in range(0,32):
+        res_true = VoxelGrid.isPowerOfTwo(pow(2, i))
+        res_false = VoxelGrid.isPowerOfTwo(pow(2, i)*3)
+        assert(res_true == True)
+        assert(res_false == False)
+        
+@raises(TypeError)     
+def voxelGrid_check_key_bad_type(key):
+    """
+    The key must be a tuple of tree integers greater or equal than zero and 
+    less than the cossesponding resolution
+    Here testing: bad type
+    """
+    VoxelGrid.checkKey([100,100, 100], key)
     
-    
+@raises(IndexError)
+def voxelGrid_check_key_out_of_boundary(key):
+    """
+    The key must be a tuple of tree integers greater or equal than zero and 
+    less than the cossesponding resolution
+    Here testing: out of boundary
+    """
+    VoxelGrid.checkKey([200,200,200], key)
+
+def test_gen_voxelgrid_checkKey():
+    """
+    The key must be a tuple of tree integers greater or equal than zero and 
+    less than the cossesponding resolution
+    """    
+    bad_type = [100.4, ['r', 'r'], "str", None, (10.8, 30, 190), (40, 15.7, 90), (78, 15, 87.9)]
+    bad_num = [(100, -1, 100), (-1, 100, 100), (100, 100, -1)]
+    bad_index = [(100, 1000, 100), (1000, 100, 100), (100, 100, 1000)]
+    good = [(100, 120, 40), (11, 33, 90)]
+    #bad type 
+    for el in bad_type:
+        yield voxelGrid_check_key_bad_type, el
+    #bad number
+    for el in bad_num:        
+        yield voxelGrid_check_key_out_of_boundary, el
+    #out of boundary
+    for el in bad_index:
+        yield voxelGrid_check_key_out_of_boundary, el
+    #good
+    for el in good:
+        assert(VoxelGrid.checkKey([200,200,200], el) == True)
+
+@raises(IndexError)
+def VoxelGrid_init_not_pow2(dims, res):
+    """
+    Test if VoxelGrid initialization raises an exception if not power of two
+    """
+    VoxelGrid(dims, res)
+
+@raises(TypeError)
+def VoxelGrid_init_wrongType(dims, res):
+    """
+    Test if VoxelGrid initialization raises an exception if fed with junk
+    """
+    VoxelGrid(dims, res)
+
+def test_VoxelGrid_init():
+    """
+    Test if VoxelGrid initialization was successfull
+    """
+    epsilon = 0.001
+    #Should not accept junk
+    junk = [None, [], [4, 't', 4], "str"]
+    for el in junk:
+        yield VoxelGrid_init_wrongType, junk, junk
+    # Random floating point from 100 to 200 with 1 digit after comma
+    dimensions = numpy.array([rndm.randint(100, 200)/10.0, rndm.randint(100, 200)/10.0, rndm.randint(100, 200)/10.0]) #[x, y, z]
+    # Should accept only power of two as resolution
+    for i in range(0,3):
+        resolution = [1024, 1024, 1024] #[rx, ry, rz]
+        resolution[i] = 5*1024
+        print (dimensions)
+        print (resolution)
+        print('----')
+        yield VoxelGrid_init_not_pow2, dimensions, resolution        
+    resolution = [64, 128, 64] #[rx, ry, rz]
+    vg = VoxelGrid(dimensions, resolution)
+    good_dim = VoxelGrid.adjustDimensions(dimensions, resolution)
+    #check dimensions
+    for i in range(0, 3):
+        assert(abs(good_dim[i] - vg.dim[i]) < epsilon)
+    #check grid - should be all blank
+    for i in range(0, resolution[0]):
+        for j in range(0, resolution[1]):
+            for k in range(0, resolution[2]):
+                assert(vg[(i,j,k)] == False)
