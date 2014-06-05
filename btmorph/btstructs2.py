@@ -3,10 +3,10 @@ File contains:
     P3D2
     SNode2   
     STree2
-
+    VoxelGrid (Irina Reshodko)
 B. Torben-Nielsen (legacy code)
 """
-
+import numpy
 
 class P3D2 :
     """
@@ -579,3 +579,49 @@ class VoxelGrid :
         """
         self.dim = dimensions
         self.res = resolution
+    
+    @staticmethod    
+    def adjustDimensions(dimensions, resolution):
+        """
+        Adjusts the grid dimensions(x,y,z) in such a way so their ratio is the same as resolution (rx,ry,rz) ratio.
+        x:y:z = rx:ry:rz
+        
+        Parameters
+        ----------
+        dimensions : numpy.array
+        The grid's real dimensions
+        resolution : array(int)
+        The grid's resolution (number of voxels in each dimension). Must be a power of two
+        
+        Returns
+        ----------
+        New dimensions :  numpy.array
+        An expanded (if neccessary) dimensions
+        """
+        # Check if all dimensions match
+        # Is more than one dimension and/or resolution is zero?
+        if (resolution.count(0) > 1 or (len(dimensions) - numpy.count_nonzero(dimensions)) > 1):
+            return None
+        # Is there a case where dimension/resolution is zero but not both of them are zero?
+        for i in range(0, 3):
+            if resolution[i]*dimensions[i] == 0 and resolution[i]+dimensions[i] != 0:
+                return None
+        [x,y,z] = dimensions
+        [x_new,y_new,z_new] = [x,y,z]
+        [rx,ry,rz] = resolution
+        if x > y * float(rx)/float(ry):
+            y_new = x * float(ry)/float(rx)
+            if z > x * float(rz)/float(rx):
+                x_new = z * float(rx)/float(rz)
+                y_new = x_new * float(ry)/float(rx)
+            else:
+                z_new = x * float(rz)/float(rx)
+        else:
+            x_new = y * float(rx)/float(ry)
+            if z > y * float(rz)/float(ry):
+                y_new = z * float(ry)/float(rz)
+                x_new = y_new * float(rx)/float(ry)
+            else:
+                z_new = y * float(rz)/float(ry)  
+        return [x_new,y_new,z_new]
+        
