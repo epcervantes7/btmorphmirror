@@ -594,7 +594,7 @@ class VoxelGrid :
         else:
             return True
             
-    def __setitem_(self, key, value):
+    def __setitem__(self, key, value):
         """
         Left [] operator overload
         """
@@ -603,6 +603,8 @@ class VoxelGrid :
             raise TypeError("The value must be boolean")
         if key in self.grid and value == False:
             del self.grid[key]
+        else:
+            self.grid[key] = value
         
     def __init__(self, dimensions, resolution):
         """

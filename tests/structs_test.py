@@ -228,3 +228,114 @@ def test_VoxelGrid_init():
         for j in range(0, resolution[1]):
             for k in range(0, resolution[2]):
                 assert(vg[(i,j,k)] == False)
+
+@raises(TypeError)
+def VoxelGrid_setitem_badtype(vg, tpl):
+    """
+    VoxelGrid.setitem method should raise an error if the type of the key is invalid
+    """
+    vg[tpl] = True
+
+@raises(TypeError)
+def VoxelGrid_setitem_badassign(vg, tpl, val):
+    """
+    VoxelGrid.setitem method should raise an error if the type of the value to be assigned is not boolean
+    """
+    vg[tpl] = val
+
+@raises(IndexError)
+def VoxelGrid_setitem_badindex(vg, tpl):
+    """
+    VoxelGrid.setitem method should raise an error if index is out of range
+    """
+    vg[tpl] = True
+    
+@raises(TypeError)
+def VoxelGrid_getitem_badtype(vg, tpl):
+    """
+    VoxelGrid.getitem method should raise an error if the type of the key is invalid
+    """
+    vg[tpl]
+
+@raises(IndexError)
+def VoxelGrid_getitem_badindex(vg, tpl):
+    """
+    VoxelGrid.getitem method should raise an error if index is out of range
+    """
+    vg[tpl]
+
+def test_VoxelGrid_setitem():
+    """
+    Test if VoxelGrid setitem method works properly
+    """
+    # Random floating point from 100 to 200 with 1 digit after comma
+    dimensions = numpy.array([rndm.randint(100, 200)/10.0, rndm.randint(100, 200)/10.0, rndm.randint(100, 200)/10.0]) #[x, y, z]
+    resolution = [64, 128, 64]
+    vg = VoxelGrid(dimensions, resolution)    
+    # Bad type
+    bad_type = [1, 20.5, (1,2), ["s"], ("1", 2, 3), (1, "2", 3), (1, 2, "3"), "str", None]
+    for el in bad_type:
+        yield VoxelGrid_setitem_badtype, vg, el
+    # bad index
+    for i in range(0, 3):
+        key = [30, 100, 60]
+        key[i] = -40
+        yield VoxelGrid_setitem_badindex, vg, tuple(key)
+    key = (30, 100, 60)
+    # Value to be assigned is not boolean
+    for el in bad_type:
+        yield VoxelGrid_setitem_badassign, vg, key, el
+     # Good example
+    vg[key] = True            
+    assert(key in vg.grid and vg.grid[key] == True)
+    for i in range(0, resolution[0]):
+        for j in range(0, resolution[1]):
+            for k in range(0, resolution[2]):
+                if i == key[0] and j == key[1] and k == key[2]:
+                    continue
+                assert(not (i,j,k) in vg.grid)
+    vg[key] = False
+    assert(len(vg.grid) == 0)
+    
+def test_VoxelGrid_getitem():
+    """
+    Test if VoxelGrid getitem method works properly
+    """
+    # Random floating point from 100 to 200 with 1 digit after comma
+    dimensions = numpy.array([rndm.randint(100, 200)/10.0, rndm.randint(100, 200)/10.0, rndm.randint(100, 200)/10.0]) #[x, y, z]
+    resolution = [64, 128, 64]
+    vg = VoxelGrid(dimensions, resolution)    
+    # Bad type
+    bad_type = [1, 20.5, (1,2), ["s"], ("1", 2, 3), (1, "2", 3), (1, 2, "3"), "str", None]
+    for el in bad_type:
+        yield VoxelGrid_getitem_badtype, vg, el
+    # bad index
+    for i in range(0, 3):
+        key = [30, 100, 60]
+        key[i] = -40
+        yield VoxelGrid_getitem_badindex, vg, tuple(key)
+    # Good example
+    key = (30, 100, 60)
+    vg.grid[key] = True
+    r = vg[key]
+    assert(r == True)
+    for i in range(0, resolution[0]):
+        for j in range(0, resolution[1]):
+            for k in range(0, resolution[2]):
+                if i == key[0] and j == key[1] and k == key[2]:
+                    continue
+                print (key)
+                assert(vg[(i,j,k)] == False)
+
+def test_VoxelGrid_getsetitem():
+    """
+    Test if setitem/getitem combination is correct for VoxelGrid
+    """
+    # Random floating point from 100 to 200 with 1 digit after comma
+    dimensions = numpy.array([rndm.randint(100, 200)/10.0, rndm.randint(100, 200)/10.0, rndm.randint(100, 200)/10.0]) #[x, y, z]
+    resolution = [64, 128, 64]
+    vg = VoxelGrid(dimensions, resolution)    
+    key = (30, 100, 60)
+    vg[key] = True
+    assert(vg[key] == True)
+    
