@@ -296,6 +296,8 @@ def test_VoxelGrid_setitem():
                 assert(not (i,j,k) in vg.grid)
     vg[key] = False
     assert(len(vg.grid) == 0)
+    vg[key] = False
+    assert(len(vg.grid) == 0)
     
 def test_VoxelGrid_getitem():
     """
@@ -324,7 +326,6 @@ def test_VoxelGrid_getitem():
             for k in range(0, resolution[2]):
                 if i == key[0] and j == key[1] and k == key[2]:
                     continue
-                print (key)
                 assert(vg[(i,j,k)] == False)
 
 def test_VoxelGrid_getsetitem():
@@ -338,4 +339,140 @@ def test_VoxelGrid_getsetitem():
     key = (30, 100, 60)
     vg[key] = True
     assert(vg[key] == True)
+
+def test_VoxelGrid_plot():
+    """
+    Plotting the Voxel Grid
+    """
+    # Random floating point from 100 to 200 with 1 digit after comma
+    dimensions = numpy.array([rndm.randint(100, 200)/10.0, rndm.randint(100, 200)/10.0, rndm.randint(100, 200)/10.0]) #[x, y, z]
+    resolution = [64, 128, 64**2]
+    vg = VoxelGrid(dimensions, resolution)
+    for i in range(0, 64):
+        for j in range(0, 128):
+            vg[(i,j,i**2)] = True
+    vg.plot()
+    assert(True)
+
+def test_VoxelGrid_calcEncBox_sphere():
+    """
+    Test if the encompassing box for a sphere is calculated properly
+    """
+    epsilon = 1.1
+    dimensions = numpy.array([64, 128, 64])
+    resolution = [2*64, 2*128, 2*64]
+    vg = VoxelGrid(dimensions, resolution)
+    # If radius is less than zero => return None
+    center = (dimensions[0]/2, dimensions[1]/2, dimensions[2]/2)
+    radius = -10
+    assert(vg.calcEncompassingBox_sphere(center, radius) == None)
+    # If radius is zero => one point
+    radius = 0
+    res = vg.calcEncompassingBox_sphere(center, radius)
+    assert(res != None)
+    [(x1,x2), (y1,y2), (z1,z2)] = res
+    assert(x1 == x2 == resolution[0]/2)
+    assert(y1 == y2 == resolution[1]/2)
+    assert(z1 == z2 == resolution[2]/2)
+    # If the sphere is completely out of the grid, should return None
+    center = (1000, 1000, 1000)
+    radius = 100
+    assert(vg.calcEncompassingBox_sphere(center, radius) == None)
+    # If the sphere is completely inside the grid, should return:
+    # x: [(x0-r)*rx/dx, (x0+r)*rx/dx], analog. for y and z
+    center = (dimensions[0]/2, dimensions[1]/2, dimensions[2]/2) # <- the very center
+    radius = dimensions[0]/4 # <- well inside the grid
+    res = vg.calcEncompassingBox_sphere(center, radius)
+    assert(res != None)
+    [(x1,x2), (y1,y2), (z1,z2)] = res
+    assert(abs(x1 - 2*(center[0] - radius)) < epsilon) # Resolution is twice the corr. dimension
+    assert(abs(x2 - 2*(center[0] + radius)) < epsilon)
+    assert(abs(y1 - 2*(center[1] - radius)) < epsilon)
+    assert(abs(y2 - 2*(center[1] + radius)) < epsilon)
+    assert(abs(z1 - 2*(center[2] - radius)) < epsilon)
+    assert(abs(z2 - 2*(center[2] + radius)) < epsilon)
+    # Partial intersection cases
+    center1 = (0, 0, 0)
+    center2 = (dimensions[0], dimensions[1], dimensions[2])
+    res = vg.calcEncompassingBox_sphere(center1, radius)
+    assert(res != None)    
+    [(x1,x2), (y1,y2), (z1,z2)] = res
+    assert(abs(x1 - 0) < epsilon)
+    assert(abs(x2 - 2*(center1[0] + radius)) < epsilon)
+    assert(abs(y1 - 0) < epsilon)
+    assert(abs(y2 - 2*(center1[1] + radius)) < epsilon)
+    assert(abs(z1 - 0) < epsilon)
+    assert(abs(z2 - 2*(center1[2] + radius)) < epsilon)
+    res = vg.calcEncompassingBox_sphere(center2, radius)
+    assert(res != None)    
+    [(x1,x2), (y1,y2), (z1,z2)] = res
+    assert(abs(x1 - 2*(center2[0] - radius)) < epsilon)
+    assert(abs(x2 - resolution[0]) < epsilon)
+    assert(abs(y1 - 2*(center2[1] - radius)) < epsilon)
+    assert(abs(y2 - resolution[1]) < epsilon)
+    assert(abs(z1 - 2*(center2[2] - radius)) < epsilon)
+    assert(abs(z2 - resolution[2]) < epsilon)
+
+def test_VoxelGrid_fallsIntoSphere():
+    """
+    Test VoxelGrid.fallsIntoSphere
+    """
+    dimensions = numpy.array([64, 128, 64])
+    resolution = [2*64, 2*128, 2*64]
+    vg = VoxelGrid(dimensions, resolution)
+    center = (dimensions[0]/2, dimensions[1]/2, dimensions[2]/2) # <- the very center
+    radius = dimensions[0]/4 # <- well inside the grid
+    not_inside = [(0,0,0), (-100,0,0), (2*resolution[0], 0, 0)]
+    voxel_center = (resolution[0]/2, resolution[1]/2, resolution[2]/2)
+    inside = [voxel_center, (resolution[0]/2 + resolution[0]/4 -3, voxel_center[1], voxel_center[2])]
+    # If radius is < 0 => False
+    assert(vg.fallsIntoSphere((1,1,1), center, -100) == False)
+    # If radius is == 0 => only the center
+    assert(vg.fallsIntoSphere(voxel_center, center, 0) == True)
+    assert(vg.fallsIntoSphere((voxel_center[0], voxel_center[1]+1, voxel_center[2]), center, 0) == False)
+    # Radius > 0
+    for el in inside:
+        assert(vg.fallsIntoSphere(el, center, radius) == True)
+    for el in not_inside:
+        assert(vg.fallsIntoSphere(el, center, radius) == False)
+
+def test_VoxelGrid_addSphere():
+    """
+    Tests if a sphere is added properly
+    """
+    dimensions = numpy.array([64, 128, 64])    
+    center = (dimensions[0]/2, dimensions[1]/2, dimensions[2]/2)
+    resolution = [2*64, 2*128, 2*64]
+    vg = VoxelGrid(dimensions, resolution)
+    voxel_center = (resolution[0]/2, resolution[1]/2, resolution[2]/2)
+    # If radius < zero => nothing is added
+    vg.addSphere(center, -100)
+    assert(len(vg.grid) == 0)
+    # If radius == 0 => only one point is added
+    vg = VoxelGrid(dimensions, resolution)
+    vg.addSphere(center, 0)
+    assert(len(vg.grid) == 1)
+    assert(vg[voxel_center] == True)
+    # If sphere is too far => nothing is added
+    vg = VoxelGrid(dimensions, resolution)
+    center = (1000, 1000, 1000)
+    radius = 100
+    vg.addSphere(center, radius)
+    assert(len(vg.grid) == 0)
+    # Sphere is completely inside the grid
+    epsilon = 0.001
+    center = (dimensions[0]/2, dimensions[1]/2, dimensions[2]/2) # <- the very center
+    radius = 32.0 # <- well inside the grid    
+    V_r = (4*numpy.pi*radius**3)/3.0
+#    for i in range(1, 6):
+#        resolution = [(2**i)*64, (2**i)*128, (2**i)*64]
+#        voxel_vol = (dimensions[0]/float(resolution[0])) * (dimensions[1]/float(resolution[1])) * (dimensions[2]/float(resolution[2]))
+#        vg = VoxelGrid(dimensions, resolution)
+#        vg.addSphere(center, radius)
+#        print ("diff",len(vg.grid), voxel_vol , V_r, len(vg.grid)*voxel_vol)
+#        if abs(len(vg.grid)*voxel_vol - V_r) < epsilon:
+#            assert(True)
+    assert(False)
+        
+        
     

@@ -7,6 +7,8 @@ File contains:
 B. Torben-Nielsen (legacy code)
 """
 import numpy
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 class P3D2 :
     """
@@ -563,6 +565,8 @@ class STree2 :
 class VoxelGrid :
     """
     Represents voxelized 3D model of an object with given dimensions and resolution
+    Dimensions: real dimensions of an object in micrometers
+    Resolution: resolution in voxels
     """
     @staticmethod
     def checkKey(dims, key):
@@ -603,7 +607,7 @@ class VoxelGrid :
             raise TypeError("The value must be boolean")
         if key in self.grid and value == False:
             del self.grid[key]
-        else:
+        elif value == True:
             self.grid[key] = value
         
     def __init__(self, dimensions, resolution):
@@ -693,4 +697,92 @@ class VoxelGrid :
         True if N=2^m and False otherwise
         """
         return isinstance(int_num, int) and int_num > 0 and (int_num & (int_num - 1) == 0)
+        
+    def plot(this):
+        """ 
+        Plot the grid as a scattered 3d plot
+        """
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        keys = this.grid.keys();
+        xs = map(lambda (x,y,z): x, keys)
+        ys = map(lambda (x,y,z): y, keys)
+        zs = map(lambda (x,y,z): z, keys)
+        ax.scatter(xs, ys, zs, zdir="z")
+    
+    def calcEncompassingBox_sphere(self, center, radius):
+        """
+        Calculate encompassing box for a sphere of the given radius and center
+        
+        Parameters
+        ------------
+        center : array or tuple of numbers (real dimensions)
+        The center of the sphere
+        radius : number (real dimension)
+        The sphere's radius
+        
+        Returns
+        ------------
+        Array of ranges (mapped to resolution) for x, y and z: [(x1,x2), (y1,y2), (z1,z2)]
+        or None if there is no intersection between the sphere and the grid
+        """
+        if radius < 0:
+            return None
+        if radius == 0:
+            c = (round(center[0]*self.res[0]/self.dim[0]), round(center[1]*self.res[1]/self.dim[1]), round(center[2]*self.res[2]/self.dim[2]))
+            return [(int(c[0]), int(c[0])), (int(c[1]), int(c[1])), (int(c[2]), int(c[2]))]
+        ranges = [0, 0, 0]
+        for i in range(0,3):
+            ranges[i] = (round(center[i] - radius)*self.res[i]/self.dim[i], round(center[i] + radius)*self.res[i]/self.dim[i])
+            if ranges[i][0] > self.res[i] and ranges[i][1] > self.res[i] or ranges[i][0] < 0 and ranges[i][1] < 0:
+                return None
+            ranges[i]= (int(max(ranges[i][0], 0)), int(min(ranges[i][1], self.res[i])))
+        return ranges
+        
+    def fallsIntoSphere(self, point, center, radius):
+        """
+        Check if the point falls into the sphere of given radius and center
+        
+        Parameters
+        ------------
+        point : coordinates of the point of interest (voxel coordinates)
+        center : array or tuple of numbers (real dimensions)
+        The center of the sphere
+        radius : number (real dimension)
+        The sphere's radius
+        
+        Returns:
+        True or False
+        """
+        if radius < 0:
+            return False
+        if radius == 0:
+            center_vox = (round(center[0]*self.res[0]/self.dim[0]), round(center[1]*self.res[1]/self.dim[1]), round(center[2]*self.res[2]/self.dim[2]))
+            return bool(center_vox == point)
+        s = 0
+        for i in range(0, 3):
+            s += (point[i]*self.dim[i]/self.res[i] - center[i])**2
+        return bool(s <= radius**2)
+    
+    def addSphere(self, center, radius):
+        """
+        Adds a voxelized filled sphere of the given radius and center to the grid
+        Parameters
+        ------------
+        center : array or tuple of numbers (real dimensions)
+        The center of the sphere
+        radius : number (real dimension)
+        The sphere's radius
+        """
+        ranges = self.calcEncompassingBox_sphere(center, radius)
+        if ranges == None:
+            return
+        [(x1,x2), (y1,y2), (z1,z2)] = ranges
+        for x in range(x1, x2+1):
+            for y in range(y1, y2+1):
+                for z in range(z1, z2+1):
+                    self[(x,y,z)] = self.fallsIntoSphere((x,y,z), center, radius)
+        
+        
+
     
