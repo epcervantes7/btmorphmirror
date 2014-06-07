@@ -6,6 +6,7 @@ import sys
 import numpy
 import random as rndm
 from  nose.tools import raises
+import math
 #sys.path.append('..')
 
 #from btstructs import STree, SNode,P3D
@@ -474,5 +475,31 @@ def test_VoxelGrid_addSphere():
 #            assert(True)
     assert(False)
         
+def test_VoxelGrid_calcRotationMatrix():
+    """
+    Test if matrix rotation calculation is correct
+    """
+    # Should return None if one of the arguments is none
+    assert(VoxelGrid.calcRotMatrix(None, (1,1,1)) == None)
+    assert(VoxelGrid.calcRotMatrix((1,1,1), None) == None)
+    epsilon = 0.002
+    p1 = (1, 1, 1)
+    p2 = (2, 2, 2)
+    #R = numpy.matrix("-0.365, -0.211, -0.578; -0.211, 1.865, -0.578; 0.578, 0.578, 0.578")
+    #assert(numpy.array_equal(R, VoxelGrid.calcRotMatrix(p1, p2)))
+    zP = numpy.matrix("0, 0, " + str(math.sqrt(3)))
+    R = VoxelGrid.calcRotMatrix(p1, p2)
+    p = [y for x in (zP *VoxelGrid.calcRotMatrix(p1, p2)).tolist() for y in x]
+    for i in range(0, 3):
+        assert(abs(p[i] - 1) < epsilon)
+    p1 = (-1, -1, -1)
+    p2 = (-2, -2, -2)
+    #R = numpy.matrix("-0.365, -0.211, -0.578; -0.211, 1.865, -0.578; 0.578, 0.578, 0.578")
+    #assert(numpy.array_equal(R, VoxelGrid.calcRotMatrix(p1, p2)))
+    zP = numpy.matrix("0, 0, " + str(math.sqrt(3)))
+    R = VoxelGrid.calcRotMatrix(p1, p2)
+    p = [y for x in (zP *VoxelGrid.calcRotMatrix(p1, p2)).tolist() for y in x]
+    for i in range(0, 3):
+        assert(abs(p[i] + 1) < epsilon)
         
     

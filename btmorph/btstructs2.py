@@ -9,6 +9,7 @@ B. Torben-Nielsen (legacy code)
 import numpy
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import math
 
 class P3D2 :
     """
@@ -782,7 +783,40 @@ class VoxelGrid :
             for y in range(y1, y2+1):
                 for z in range(z1, z2+1):
                     self[(x,y,z)] = self.fallsIntoSphere((x,y,z), center, radius)
+    
+    @staticmethod                
+    def calcRotMatrix(p1, p2):
+        """ 
+        Calculate rotation matrix to rotate vector of the same length as (p1,p2) collinear to Z axis to (p1,p2).
         
+        Parameters
+        ------------
+        p1 : tuple of 3 int - coordinates of the first point of the vector
+        p2 : tuple of 3 int - coordinates of the second point of the vector
+        
+        Returns
+        ------------
+        resulting matrix : numpy.matrix
+        """
+        if p1 == None or p2 == None:
+            return None
+        p = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]]
+        abs_p = math.sqrt(p[0]**2 + p[1]**2 + p[2]**2)
+        pp = [0, 0, abs_p]
+        c = (p[0]*pp[0] + p[1]*pp[1] + p[2]*pp[2])/abs_p**2
+        n = numpy.cross(p, pp)
+        nrm = numpy.linalg.norm(n)
+        if nrm != 0:
+            n = n / nrm
+        x = n[0]
+        y = n[1]
+        z = n[2]
+        s = math.sqrt(1 - c*c)
+        t = 1 - c
+        R = numpy.matrix([[t*x*x + c,   t*x*y -z*s,  t * x *z + y*s], [t*x*y + z*s, t*y*y + c,   t*y*z - x*s], [t*x*z - y*s, t*y*z + x*s, t*z*z + c]])
+        return R
+        
+        return None
         
 
     
