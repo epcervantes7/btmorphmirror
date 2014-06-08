@@ -739,6 +739,37 @@ class VoxelGrid :
                 return None
             ranges[i]= (int(max(ranges[i][0], 0)), int(min(ranges[i][1], self.res[i])))
         return ranges
+    
+    def calcEncompassingBox_frustum(self, center1, radius1, center2, radius2):
+        """
+        Calculate encompassing box for a frustum (cut cone) with given base centers and radii
+        Aligns the frustum to z axis before calculations        
+        
+        Parameters
+        -----------
+        center1 : tuple of 3 numbers 
+        Center of the first base
+        radius1 : number
+        Radius of the first base
+        center2 : tuple of 3 numbers 
+        Center of the second base
+        radius12 : number
+        Radius of the second base 
+        """
+        if (center1 == None or center2 == None or radius1 == None or radius2 == None):
+            return None
+        if radius1 < 0 or radius2 < 0:
+            return None
+        c1 = (round(center1[0]*self.res[0]/self.dim[0]), round(center1[1]*self.res[1]/self.dim[1]), round(center1[2]*self.res[2]/self.dim[2]))
+        ranges = [0, 0, 0]
+        radius = max(radius1, radius2)
+        for i in range(0,3):
+            ranges[i] = (round(center1[i] - radius)*self.res[i]/self.dim[i], round(center1[i] + radius)*self.res[i]/self.dim[i])
+        #r = (max(radius1, radius2)*self.res[0]/self.dim[0], max(radius1, radius2)*self.res[1]/self.dim[1], max(radius1, radius2)*self.res[2]/self.dim[2])         
+        if center1 == center2:            
+            return [ranges[0], ranges[1], (c1[2], c1[2])]
+        h = math.sqrt((center2[0] - center1[0])**2 + (center2[1] - center1[1])**2 + (center2[2] - center1[2])**2)
+        return [ranges[0], ranges[1], (c1[2], round((c1[2] + h)*self.res[2]/self.dim[2]))]
         
     def fallsIntoSphere(self, point, center, radius):
         """

@@ -461,18 +461,19 @@ def test_VoxelGrid_addSphere():
     vg.addSphere(center, radius)
     assert(len(vg.grid) == 0)
     # Sphere is completely inside the grid
-    epsilon = 0.001
+    epsilon = 0.01
     center = (dimensions[0]/2, dimensions[1]/2, dimensions[2]/2) # <- the very center
-    radius = 32.0 # <- well inside the grid    
+    radius = 20.0 # <- well inside the grid    
     V_r = (4*numpy.pi*radius**3)/3.0
-#    for i in range(1, 6):
-#        resolution = [(2**i)*64, (2**i)*128, (2**i)*64]
-#        voxel_vol = (dimensions[0]/float(resolution[0])) * (dimensions[1]/float(resolution[1])) * (dimensions[2]/float(resolution[2]))
-#        vg = VoxelGrid(dimensions, resolution)
-#        vg.addSphere(center, radius)
-#        print ("diff",len(vg.grid), voxel_vol , V_r, len(vg.grid)*voxel_vol)
-#        if abs(len(vg.grid)*voxel_vol - V_r) < epsilon:
-#            assert(True)
+    for i in range(1, 6):
+        resolution = [(2**i)*64, (2**i)*128, (2**i)*64]
+        voxel_vol = (dimensions[0]/float(resolution[0])) * (dimensions[1]/float(resolution[1])) * (dimensions[2]/float(resolution[2]))
+        vg = VoxelGrid(dimensions, resolution)
+        vg.addSphere(center, radius)
+        #print ("diff",len(vg.grid), voxel_vol , V_r, len(vg.grid)*voxel_vol)
+        if abs(len(vg.grid)*voxel_vol - V_r) < epsilon*V_r:
+            assert(True)
+            return
     assert(False)
         
 def test_VoxelGrid_calcRotationMatrix():
@@ -496,10 +497,74 @@ def test_VoxelGrid_calcRotationMatrix():
     p2 = (-2, -2, -2)
     #R = numpy.matrix("-0.365, -0.211, -0.578; -0.211, 1.865, -0.578; 0.578, 0.578, 0.578")
     #assert(numpy.array_equal(R, VoxelGrid.calcRotMatrix(p1, p2)))
-    zP = numpy.matrix("0, 0, " + str(math.sqrt(3)))
+    zP = numpy.matrix([0, 0, math.sqrt(3)])
     R = VoxelGrid.calcRotMatrix(p1, p2)
-    p = [y for x in (zP *VoxelGrid.calcRotMatrix(p1, p2)).tolist() for y in x]
+    p = [y for x in (zP * R).tolist() for y in x]
     for i in range(0, 3):
         assert(abs(p[i] + 1) < epsilon)
-        
-    
+
+def test_VoxelGrid_calcEncBox_frustum():
+    """
+    Test if encompassing box of a frustum is calculated properly
+    """
+    epsilon = 1.1
+    dimensions = numpy.array([64, 128, 64])
+    resolution = [64, 128, 64]
+    vg = VoxelGrid(dimensions, resolution)
+    # If one of the parameters is None then must return None
+    c1 = (2,1,1)
+    c2 = (1, 1,1)
+    r1 = 1
+    r2 = 2
+    assert(vg.calcEncompassingBox_frustum(None, r1, c2, r2) == None)
+    assert(vg.calcEncompassingBox_frustum(c1, None, c2, r2) == None)
+    assert(vg.calcEncompassingBox_frustum(c1, r1, None, r2) == None)
+    assert(vg.calcEncompassingBox_frustum(c1, r1, c2, None) == None)
+    # if r1 or r2 is less than zero => None
+    r1 = -1
+    r2 = 2
+    assert(vg.calcEncompassingBox_frustum(c1, r1, c2, r2) == None)
+    assert(vg.calcEncompassingBox_frustum(c1, r2, c2, r1) == None) 
+    # If center1 == center2 then must return 2d square
+    c1 = (0,0,0)
+    r1 = 1
+    r2 = 3
+    res = vg.calcEncompassingBox_frustum(c1, r1, c1, r2)
+    assert(res != None)
+    [(x1,x2), (y1,y2), (z1,z2)] = res 
+    assert(abs(x1 - (c1[0] - r2)) < epsilon)
+    assert(abs(x2 - (c1[0] + r2)) < epsilon)
+    assert(abs(y1 - (c1[1] - r2)) < epsilon)
+    assert(abs(y2 - (c1[1] + r2)) < epsilon)
+    assert(z1 == z2 == c1[2])
+    # A frustum completely inside the grid
+    c1 = (dimensions[0]/4, dimensions[1]/4, dimensions[2]/4)
+    c2 = (dimensions[0]/2, dimensions[1]/2, dimensions[2]/2)
+    r1 = 5
+    r2 = 10
+    h = math.sqrt((c2[0] - c1[0])**2 + (c2[1] - c1[1])**2 + (c2[2] - c1[2])**2)
+    res = vg.calcEncompassingBox_frustum(c1, r1, c2, r2)
+    assert(res != None)
+    [(x1,x2), (y1,y2), (z1,z2)] = res
+    assert(abs(x1 - (c1[0] - r2)) < epsilon)
+    assert(abs(x2 - (c1[0] + r2)) < epsilon)
+    assert(abs(y1 - (c1[1] - r2)) < epsilon)
+    assert(abs(y2 - (c1[1] + r2)) < epsilon)
+    assert(z1 == c1[2])
+    assert(abs(z2 - (z1 + h)) < epsilon)
+    #A  frustum partially intersecting the grid
+    # A frustum partially intersecting the grid will be properly dealt with only after rotation
+    c1 = (-dimensions[0]/4, dimensions[1]/4, dimensions[2]/4)
+    c2 = (dimensions[0]/2, dimensions[1]/2, dimensions[2]/2)
+    r1 = 5
+    r2 = 10
+    h = math.sqrt((c2[0] - c1[0])**2 + (c2[1] - c1[1])**2 + (c2[2] - c1[2])**2)
+    res = vg.calcEncompassingBox_frustum(c1, r1, c2, r2)
+    assert(res != None)
+    [(x1,x2), (y1,y2), (z1,z2)] = res       
+    assert(abs(x1 - (c1[0] - r2)) < epsilon)
+    assert(abs(x2 - (c1[0] + r2)) < epsilon)
+    assert(abs(y1 - (c1[1] - r2)) < epsilon)
+    assert(abs(y2 - (c1[1] + r2)) < epsilon)
+    assert(z1 == c1[2])
+    assert(abs(z2 - (z1 + h)) < epsilon)
