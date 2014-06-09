@@ -437,6 +437,44 @@ def test_VoxelGrid_fallsIntoSphere():
     for el in not_inside:
         assert(vg.fallsIntoSphere(el, center, radius) == False)
 
+def test_VoxelGrid_fallsIntoFrustum():
+    """
+    Test VoxelGrid.fallsIntoFrustum
+    """
+    dimensions = numpy.array([64, 128, 64])
+    resolution = [2*64, 2*128, 2*64]
+    vg = VoxelGrid(dimensions, resolution)
+    # A frustum completely inside the grid
+    c1 = (dimensions[0]/4, dimensions[1]/4, dimensions[2]/4)
+    c2 = (dimensions[0]/2, dimensions[1]/2, dimensions[2]/2)
+    c1_v = (resolution[0]/4, resolution[1]/4, resolution[2]/4)
+    #c2_v = (resolution[0]/2, resolution[1]/2, resolution[2]/2)
+    r1 = 5
+    r2 = 10
+    h = math.sqrt((c2[0] - c1[0])**2 + (c2[1] - c1[1])**2 + (c2[2] - c1[2])**2)
+    not_inside = [(0,0,0), (-100,0,0), (2*resolution[0], 0, 0)]
+    inside = [c1_v, (c1_v[0], c1_v[1],  resolution[2]/3.0)]
+    # If radius is < 0 => False
+    assert(vg.fallsIntoFrustum(c1_v, c1, h, -r1, r2) == False)
+    assert(vg.fallsIntoFrustum(c1_v, c1, h, r1, -r2) == False)    
+    # If h is == 0 => only the first base
+    assert(vg.fallsIntoFrustum(c1_v, c1, 0, r1, r2) == True)
+    assert(vg.fallsIntoFrustum((c1_v[0]+1, c1_v[1],  c1_v[2]), c1, 0, r1, r2) == True)
+    assert(vg.fallsIntoFrustum((c1_v[0], c1_v[1],  c1_v[2]+2), c1, 0, r1, r2) == False)    
+    # If h == r1 == r2 == 0 => only the center of the first base
+    assert(vg.fallsIntoFrustum(c1_v, c1, 0, 0, 0) == True)
+    assert(vg.fallsIntoFrustum((c1_v[0], c1_v[1],  c1_v[2]+2), c1, 0, 0, 0) == False)
+    assert(vg.fallsIntoFrustum((c1_v[0]+1, c1_v[1]+1,  c1_v[2]), c1, 0, 0, 0) == False)
+    # If both radii are zero => Only the z axis
+    assert(vg.fallsIntoFrustum(c1_v, c1, h, 0, 0) == True)
+    assert(vg.fallsIntoFrustum((c1_v[0]+1, c1_v[1],  c1_v[2]), c1, h, 0, 0) == False)
+    assert(vg.fallsIntoFrustum((c1_v[0], c1_v[1],  c1_v[2]+2), c1, h, 0, 0) == True)
+    # Normal case
+    for el in inside:
+        assert(vg.fallsIntoFrustum(el, c1, h, r1, r2) == True)
+    for el in not_inside:
+        assert(vg.fallsIntoFrustum(el, c1, h, r1, r2) == False)
+
 def test_VoxelGrid_addSphere():
     """
     Tests if a sphere is added properly

@@ -796,6 +796,33 @@ class VoxelGrid :
             s += (point[i]*self.dim[i]/self.res[i] - center[i])**2
         return bool(s <= radius**2)
     
+    def fallsIntoFrustum(self, point, center, h, radius1, radius2):
+        """
+        Check if the point falls into the frustum aligned to z axis with given radii and center
+        
+        Parameters
+        ------------
+        point : coordinates of the point of interest (voxel coordinates)
+        center : array or tuple of numbers (real dimensions)
+        The center of the aligned frustum
+        h : number
+        The frustum height
+        radius1 : number (real dimension)
+        Radius of the first base
+        radius2 : number (real dimension)
+        Radius of the second base
+        """
+        if radius1 < 0 or radius2 < 0:
+            return False
+        s = 0
+        for i in range(0, 2):
+            s += (point[i]*self.dim[i]/self.res[i] - center[i])**2
+        if h == 0:
+            r = max(radius1, radius2)
+            return point[2] == round(center[2]*self.res[2]/self.dim[0]) and s <= r
+        r = point[2]*(radius2 - radius1)/h + radius1        
+        return bool(s <= r**2)
+    
     def addSphere(self, center, radius):
         """
         Adds a voxelized filled sphere of the given radius and center to the grid
@@ -846,8 +873,3 @@ class VoxelGrid :
         t = 1 - c
         R = numpy.matrix([[t*x*x + c,   t*x*y -z*s,  t * x *z + y*s], [t*x*y + z*s, t*y*y + c,   t*y*z - x*s], [t*x*z - y*s, t*y*z + x*s, t*z*z + c]])
         return R
-        
-        return None
-        
-
-    
