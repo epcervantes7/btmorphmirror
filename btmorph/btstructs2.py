@@ -740,37 +740,6 @@ class VoxelGrid :
             ranges[i]= (int(max(ranges[i][0], 0)), int(min(ranges[i][1], self.res[i])))
         return ranges
     
-    def calcEncompassingBox_frustum(self, center1, radius1, center2, radius2):
-        """
-        Calculate encompassing box for a frustum (cut cone) with given base centers and radii
-        Aligns the frustum to z axis before calculations        
-        
-        Parameters
-        -----------
-        center1 : tuple of 3 numbers 
-        Center of the first base
-        radius1 : number
-        Radius of the first base
-        center2 : tuple of 3 numbers 
-        Center of the second base
-        radius12 : number
-        Radius of the second base 
-        """
-        if (center1 == None or center2 == None or radius1 == None or radius2 == None):
-            return None
-        if radius1 < 0 or radius2 < 0:
-            return None
-        c1 = (round(center1[0]*self.res[0]/self.dim[0]), round(center1[1]*self.res[1]/self.dim[1]), round(center1[2]*self.res[2]/self.dim[2]))
-        ranges = [0, 0, 0]
-        radius = max(radius1, radius2)
-        for i in range(0,3):
-            ranges[i] = (round(center1[i] - radius)*self.res[i]/self.dim[i], round(center1[i] + radius)*self.res[i]/self.dim[i])
-        #r = (max(radius1, radius2)*self.res[0]/self.dim[0], max(radius1, radius2)*self.res[1]/self.dim[1], max(radius1, radius2)*self.res[2]/self.dim[2])         
-        if center1 == center2:            
-            return [ranges[0], ranges[1], (c1[2], c1[2])]
-        h = math.sqrt((center2[0] - center1[0])**2 + (center2[1] - center1[1])**2 + (center2[2] - center1[2])**2)
-        return [ranges[0], ranges[1], (c1[2], round((c1[2] + h)*self.res[2]/self.dim[2]))]
-        
     def fallsIntoSphere(self, point, center, radius):
         """
         Check if the point falls into the sphere of given radius and center
@@ -784,7 +753,7 @@ class VoxelGrid :
         The sphere's radius
         
         Returns:
-        True or False
+        True if the point falls within the sphere and False otherwise
         """
         if radius < 0:
             return False
@@ -795,37 +764,128 @@ class VoxelGrid :
         for i in range(0, 3):
             s += (point[i]*self.dim[i]/self.res[i] - center[i])**2
         return bool(s <= radius**2)
-    
-    def fallsIntoFrustum(self, point, center, h, radius1, radius2):
+        
+    def fallsIntoFrustum(self, point, center1, radius1, center2, radius2):
         """
-        Check if the point falls into the frustum aligned to z axis with given radii and center
+        Check if the point falls into the frustum with given radii and centers
         
         Parameters
         ------------
         point : coordinates of the point of interest (voxel coordinates)
-        center : array or tuple of numbers (real dimensions)
-        The center of the aligned frustum
-        h : number
-        The frustum height
+        center1 : array or tuple of numbers (real dimensions)
+        The center of the first base
+        center2 : array or tuple of numbers (real dimensions)
+        The center of the second base
         radius1 : number (real dimension)
         Radius of the first base
         radius2 : number (real dimension)
         Radius of the second base
+        
+        Returns:
+        True if the point falls within the frustum and False otherwise
         """
         if radius1 < 0 or radius2 < 0:
             return False
-        s = 0
-        for i in range(0, 2):
-            s += (point[i]*self.dim[i]/self.res[i] - center[i])**2
-        if h == 0:
-            r = max(radius1, radius2)
-            return point[2] == round(center[2]*self.res[2]/self.dim[0]) and s <= r
-        r = point[2]*(radius2 - radius1)/h + radius1        
-        return bool(s <= r**2)
+        point = self.voxelToDimension(point)
+        point = (point[0] - center1[0], point[1] - center1[1], point[2] - center1[2])
+        abs_p = math.sqrt(point[0]**2 + point[1]**2 + point[2]**2)
+        if center1 == center2:
+            return point[2] == 0 and abs_p <= max(radius1,radius2)
+        a = (center2[0]-center1[0], center2[1]-center1[1], center2[2]-center1[2])
+        if abs_p == 0 or point == a:
+            return True
+        abs_a = math.sqrt(a[0]**2 + a[1]**2 + a[2]**2)
+        n = (a[0]/abs_a, a[1]/abs_a, a[2]/abs_a)
+        dot_pn = point[0]*n[0] + point[1]*n[1] + point[2]*n[2]        
+        l = dot_pn
+        if l < 0 or l > abs_a:
+            return False
+        epsilon = 0.0001
+        c = dot_pn/abs_p
+        if abs(c - 1) < epsilon or abs(c + 1) < epsilon:
+            c = 1.0
+        s = math.sqrt(1 - c**2)
+        proj_plane = abs_p * s
+        r = l * (radius2-radius1)/abs_a + radius1   
+        return proj_plane <= r
+    
+    def calcEncompassingBox_frustum(self, center1, radius1, center2, radius2):
+        """
+        Calculate encompassing box for a frustum (cut cone) with given base centers and radii
+        
+        Parameters
+        -----------
+        center1 : tuple of 3 numbers 
+        Center of the first base
+        radius1 : number
+        Radius of the first base
+        center2 : tuple of 3 numbers 
+        Center of the second base
+        radius12 : number
+        Radius of the second base 
+        
+        Returns
+        -----------
+        List of ranges for each axis (in voxels)
+        [(x1,x2), (y1,y2), (z1,z2)]
+        """
+        if radius1 == None or radius2 == None or center1 == None or center2 == None:
+            return None
+        if radius1 < 0 or radius2 < 0 :
+            return None
+        (x1,y1,z1) = center1
+        (x2,y2,z2) = center2
+        r1 = radius1
+        r2 = radius2
+        rangeX = (max(min(x1-r1, x2-r2), 0), min(max(x1+r1,x2+r2),self.dim[0]))
+        rangeY = (max(min(y1-r1, y2-r2), 0), min(max(y1+r1,y2+r2),self.dim[1]))
+        rangeZ = (max(min(z1-r1, z2-r2), 0), min(max(z1+r1,z2+r2),self.dim[2]))
+        rangeX = (int(round(rangeX[0]*self.res[0]/self.dim[0])), int(round(rangeX[1]*self.res[0]/self.dim[0])))
+        rangeY = (int(round(rangeY[0]*self.res[1]/self.dim[1])), int(round(rangeY[1]*self.res[1]/self.dim[1])))  
+        rangeZ = (int(round(rangeZ[0]*self.res[2]/self.dim[2])), int(round(rangeZ[1]*self.res[2]/self.dim[2])))
+        return [rangeX, rangeY, rangeZ]
+    
+       
+    def addFrustum(self, center1, radius1, center2, radius2):
+        """
+        Adds a voxelized filled frustum of the given radii and base centers to the grid
+        
+        Parameters
+        ------------
+        center1 : array or tuple of numbers (real dimensions)
+        The center of the first base
+        radius1 : number (real dimension)
+        The first base's radius
+        center2 : array or tuple of numbers (real dimensions)
+        The center of the second base
+        radius2 : number (real dimension)
+        The second base's radius
+        """
+        if radius1 < 0 or radius2 < 0:
+            return
+        # Filter out frustums completely out of grid
+        if min(center1[0] - radius1, center2[0] - radius2) > self.dim[0] or\
+           min(center1[1] - radius1, center2[1] - radius2) > self.dim[1] or\
+           min(center1[2], center2[2]) > self.dim[2] or\
+           max(center1[0] + radius1, center2[0] + radius2) < 0 or\
+           max(center1[1] + radius1, center2[1] + radius2) < 0 or\
+           max(center1[2], center2[2]) < 0:
+               return
+        # Calculate encompassing box
+        ranges = self.calcEncompassingBox_frustum(center1, radius1, center2, radius2)
+        if ranges == None:
+            return
+        [(x1,x2), (y1,y2), (z1,z2)] = ranges
+        for x in range(x1, x2+1):
+            for y in range(y1, y2+1):
+                for z in range(z1, z2+1):                    
+                    if self.fallsIntoFrustum((x,y,z), center1, radius1, center2, radius2):
+                        self[(x,y,z)] = True
     
     def addSphere(self, center, radius):
         """
         Adds a voxelized filled sphere of the given radius and center to the grid
+        
         Parameters
         ------------
         center : array or tuple of numbers (real dimensions)
@@ -842,34 +902,40 @@ class VoxelGrid :
                 for z in range(z1, z2+1):
                     self[(x,y,z)] = self.fallsIntoSphere((x,y,z), center, radius)
     
-    @staticmethod                
-    def calcRotMatrix(p1, p2):
-        """ 
-        Calculate rotation matrix to rotate vector of the same length as (p1,p2) collinear to Z axis to (p1,p2).
+            
+    def voxelToDimension(self, point):
+        """
+        Converts voxel coordinates to dimension coordinates
         
         Parameters
         ------------
-        p1 : tuple of 3 int - coordinates of the first point of the vector
-        p2 : tuple of 3 int - coordinates of the second point of the vector
+        point : tuple of 3 numbers
+        A point to convert
         
         Returns
         ------------
-        resulting matrix : numpy.matrix
+        Coordinates in real dimension values (micrometers)
         """
-        if p1 == None or p2 == None:
+        if point == None:
             return None
-        p = [p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]]
-        abs_p = math.sqrt(p[0]**2 + p[1]**2 + p[2]**2)
-        pp = [0, 0, abs_p]
-        c = (p[0]*pp[0] + p[1]*pp[1] + p[2]*pp[2])/abs_p**2
-        n = numpy.cross(p, pp)
-        nrm = numpy.linalg.norm(n)
-        if nrm != 0:
-            n = n / nrm
-        x = n[0]
-        y = n[1]
-        z = n[2]
-        s = math.sqrt(1 - c*c)
-        t = 1 - c
-        R = numpy.matrix([[t*x*x + c,   t*x*y -z*s,  t * x *z + y*s], [t*x*y + z*s, t*y*y + c,   t*y*z - x*s], [t*x*z - y*s, t*y*z + x*s, t*z*z + c]])
-        return R
+        return (point[0]*self.dim[0]/self.res[0], point[1]*self.dim[1]/self.res[1], point[2]*self.dim[2]/self.res[2])
+        
+
+    def dimensionToVoxel(self, point):
+        """
+        Converts real dimension coordinates to voxel coordinates
+        
+        Parameters
+        ------------
+        point : tuple of 3 numbers
+        A point to convert
+        
+        Returns
+        ------------
+        Voxel coordinates
+        """
+        if point == None:
+            return None
+        return (int(round(point[0]*self.res[0]/self.dim[0])), int(round(point[1]*self.res[1]/self.dim[1])), int(round(point[2]*self.res[2]/self.dim[2])))
+    
+       
