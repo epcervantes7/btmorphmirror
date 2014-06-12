@@ -2,7 +2,6 @@
 Test routines for the btstructs2.py file
 '''
 
-import sys
 import numpy
 import random as rndm
 from  nose.tools import raises

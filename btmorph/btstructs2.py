@@ -609,6 +609,11 @@ class VoxelGrid :
         if key in self.grid and value == False:
             del self.grid[key]
         elif value == True:
+            for i in range(0,3):
+                if key[i] < self.encompassingBox[i][0]:
+                    self.encompassingBox[i][0] = key[i]
+                if key[i] > self.encompassingBox[i][1]:
+                    self.encompassingBox[i][1] = key[i]            
             self.grid[key] = value
         
     def __init__(self, dimensions, resolution):
@@ -632,6 +637,11 @@ class VoxelGrid :
         self.dim = VoxelGrid.adjustDimensions(dimensions, resolution)
         self.res = resolution
         self.grid = {}
+        self.dV = self.dim[0]/float(self.res[0])
+        self.encompassingBox = [[], [], []]
+        self.encompassingBox[0] = [self.res[0], 0]
+        self.encompassingBox[1] = [self.res[1], 0]
+        self.encompassingBox[2] = [self.res[2], 0]
     
     @staticmethod    
     def adjustDimensions(dimensions, resolution):
@@ -730,14 +740,14 @@ class VoxelGrid :
         if radius < 0:
             return None
         if radius == 0:
-            c = (round(center[0]*self.res[0]/self.dim[0]), round(center[1]*self.res[1]/self.dim[1]), round(center[2]*self.res[2]/self.dim[2]))
-            return [(int(c[0]), int(c[0])), (int(c[1]), int(c[1])), (int(c[2]), int(c[2]))]
+            c = self.dimensionToVoxel(center)
+            return [(c[0], c[0]), (c[1], c[1]), (c[2], c[2])]
         ranges = [0, 0, 0]
         for i in range(0,3):
-            ranges[i] = (round(center[i] - radius)*self.res[i]/self.dim[i], round(center[i] + radius)*self.res[i]/self.dim[i])
+            ranges[i] = (int(round((center[i] - radius)/self.dV)), int(round((center[i] + radius)/self.dV)))
             if ranges[i][0] > self.res[i] and ranges[i][1] > self.res[i] or ranges[i][0] < 0 and ranges[i][1] < 0:
                 return None
-            ranges[i]= (int(max(ranges[i][0], 0)), int(min(ranges[i][1], self.res[i])))
+            ranges[i]= (max(ranges[i][0], 0), min(ranges[i][1], self.res[i]))
         return ranges
     
     def fallsIntoSphere(self, point, center, radius):
@@ -758,11 +768,11 @@ class VoxelGrid :
         if radius < 0:
             return False
         if radius == 0:
-            center_vox = (round(center[0]*self.res[0]/self.dim[0]), round(center[1]*self.res[1]/self.dim[1]), round(center[2]*self.res[2]/self.dim[2]))
+            center_vox = self.dimensionToVoxel(center)
             return bool(center_vox == point)
         s = 0
         for i in range(0, 3):
-            s += (point[i]*self.dim[i]/self.res[i] - center[i])**2
+            s += (point[i]*self.dV - center[i])**2
         return bool(s <= radius**2)
         
     def fallsIntoFrustum(self, point, center1, radius1, center2, radius2):
@@ -840,9 +850,9 @@ class VoxelGrid :
         rangeX = (max(min(x1-r1, x2-r2), 0), min(max(x1+r1,x2+r2),self.dim[0]))
         rangeY = (max(min(y1-r1, y2-r2), 0), min(max(y1+r1,y2+r2),self.dim[1]))
         rangeZ = (max(min(z1-r1, z2-r2), 0), min(max(z1+r1,z2+r2),self.dim[2]))
-        rangeX = (int(round(rangeX[0]*self.res[0]/self.dim[0])), int(round(rangeX[1]*self.res[0]/self.dim[0])))
-        rangeY = (int(round(rangeY[0]*self.res[1]/self.dim[1])), int(round(rangeY[1]*self.res[1]/self.dim[1])))  
-        rangeZ = (int(round(rangeZ[0]*self.res[2]/self.dim[2])), int(round(rangeZ[1]*self.res[2]/self.dim[2])))
+        rangeX = (int(round(rangeX[0]/self.dV)), int(round(rangeX[1]/self.dV)))
+        rangeY = (int(round(rangeY[0]/self.dV)), int(round(rangeY[1]/self.dV)))  
+        rangeZ = (int(round(rangeZ[0]/self.dV)), int(round(rangeZ[1]/self.dV)))
         return [rangeX, rangeY, rangeZ]
     
        
@@ -918,7 +928,7 @@ class VoxelGrid :
         """
         if point == None:
             return None
-        return (point[0]*self.dim[0]/self.res[0], point[1]*self.dim[1]/self.res[1], point[2]*self.dim[2]/self.res[2])
+        return (point[0]*self.dV, point[1]*self.dV, point[2]*self.dV)
         
 
     def dimensionToVoxel(self, point):
@@ -936,6 +946,6 @@ class VoxelGrid :
         """
         if point == None:
             return None
-        return (int(round(point[0]*self.res[0]/self.dim[0])), int(round(point[1]*self.res[1]/self.dim[1])), int(round(point[2]*self.res[2]/self.dim[2])))
+        return (int(round(point[0]/self.dV)), int(round(point[1]/self.dV)), int(round(point[2]/self.dV)))
     
        
