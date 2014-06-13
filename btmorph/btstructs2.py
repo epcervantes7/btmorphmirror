@@ -8,7 +8,6 @@ B. Torben-Nielsen (legacy code)
 """
 import numpy
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import math
 
 class P3D2 :
@@ -569,6 +568,12 @@ class VoxelGrid :
     Dimensions: real dimensions of an object in micrometers
     Resolution: resolution in voxels
     """
+    def __str__(self):
+        return "VoxelGrid, dimensions=" + str(self.dim) + ",resoultion=" + str(self.res) + ",size=" + \
+            str(len(self.grid)) + ", encompassing box=" +str(self.encompassingBox) + \
+            ", voxel dimension:=" + str(self.dV) + ", total volume=" + str(len(self.grid)*(self.dV**3))\
+            + ", offset=" +str(self.offset)
+            
     @staticmethod
     def checkKey(dims, key):
         """
@@ -616,7 +621,7 @@ class VoxelGrid :
                     self.encompassingBox[i][1] = key[i]            
             self.grid[key] = value
         
-    def __init__(self, dimensions, resolution):
+    def __init__(self, dimensions, resolution, tree = None):
         """
         Generate a voxel grid for given dimensions and resolution
         Note: the dimensions ratio (x:y:z) must be the same as resolution ratio (rx:ry:rz)
@@ -634,6 +639,7 @@ class VoxelGrid :
         for i in range(0,3):
             if not VoxelGrid.isPowerOfTwo(resolution[i]):
                 raise IndexError("Resolution must be power of 2")
+        dimensions = [dimensions[0],dimensions[1], dimensions[2]]
         self.dim = VoxelGrid.adjustDimensions(dimensions, resolution)
         self.res = resolution
         self.grid = {}
@@ -642,7 +648,9 @@ class VoxelGrid :
         self.encompassingBox[0] = [self.res[0], 0]
         self.encompassingBox[1] = [self.res[1], 0]
         self.encompassingBox[2] = [self.res[2], 0]
-    
+        self.offset = (0,0,0)
+        self.addTree(tree)
+        
     @staticmethod    
     def adjustDimensions(dimensions, resolution):
         """
@@ -797,6 +805,7 @@ class VoxelGrid :
         if radius1 < 0 or radius2 < 0:
             return False
         point = self.voxelToDimension(point)
+        voxel_c = point
         point = (point[0] - center1[0], point[1] - center1[1], point[2] - center1[2])
         abs_p = math.sqrt(point[0]**2 + point[1]**2 + point[2]**2)
         if center1 == center2:
@@ -816,8 +825,11 @@ class VoxelGrid :
             c = 1.0
         s = math.sqrt(1 - c**2)
         proj_plane = abs_p * s
-        r = l * (radius2-radius1)/abs_a + radius1   
-        return proj_plane <= r
+        r = l * (radius2-radius1)/abs_a + radius1
+        # One of the points falls into the voxel
+        fiv = False#center1[0] - voxel_c[0] < self.dV or center1[1] - voxel_c[1] < self.dV or center1[2] - voxel_c[2] < self.dV
+        # Voxel falls in frustum or frustum falls intro voxel        
+        return proj_plane <= r or fiv
     
     def calcEncompassingBox_frustum(self, center1, radius1, center2, radius2):
         """
@@ -912,6 +924,55 @@ class VoxelGrid :
                 for z in range(z1, z2+1):
                     self[(x,y,z)] = self.fallsIntoSphere((x,y,z), center, radius)
     
+    def addTree(self, tree):
+        """
+        Voxelize the whole tree
+        
+        Parameters
+        ------------
+        tree : STree2
+        A tree to be voxelized
+        """
+        # If tree == None => do nothing
+        if None == tree:
+            return
+        nodes = tree.get_nodes()
+        if None == nodes or len(nodes) == 0:
+            return
+        # point with min x y and z
+        minX = self.dim[0]
+        minY = self.dim[1]
+        minZ = self.dim[2]
+        for node in nodes:
+            p = node.get_content()['p3d']
+            (x,y,z) = tuple(p.xyz)
+            if x < minX:
+                minX = x
+            if y < minY:
+                minY = y
+            if z < minZ:
+                minZ = z
+        self.offset = (minX, minY, minZ)
+        # Add soma as sphere
+        p = tree.get_node_with_index(1).get_content()['p3d']
+        r = p.radius
+        (x,y,z) = tuple(p.xyz)
+        center = (x - minX, y - minY, z - minZ)
+        self.addSphere(center, r)
+        # Add all segments
+        for node in nodes:
+            p = node.get_content()['p3d']
+            (x,y,z) = tuple(p.xyz)
+            center1 = (x - minX, y - minY, z - minZ)
+            r1 = p.radius
+            pNode = node.get_parent_node()
+            if pNode == None:
+                continue
+            parentP = pNode.get_content()['p3d']
+            (x,y,z) = tuple(parentP.xyz)
+            center2 = (x - minX, y - minY, z - minZ)
+            r2 = parentP.radius
+            self.addFrustum(center1, r1, center2, r2)
             
     def voxelToDimension(self, point):
         """

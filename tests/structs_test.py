@@ -6,6 +6,7 @@ import numpy
 import random as rndm
 from  nose.tools import raises
 import math
+from nose.tools import with_setup
 #sys.path.append('..')
 
 #from btstructs import STree, SNode,P3D
@@ -14,6 +15,7 @@ import math
 import btmorph
 from btmorph import STree2
 from btmorph import VoxelGrid
+from btmorph import BoxCounter
 
 def test_load_swc():
     '''
@@ -609,4 +611,94 @@ def test_VoxelGrid_calcEncBox_frustum():
             assert(right[i] == vg.res[i])
         else:
             assert(right[i] >= round((c1[i]+r1)*vg.res[i]/vg.dim[i]) and right[i] >= round((c2[i]+r2)*vg.res[i]/vg.dim[i]))
+    
+""" New fucntions by Irina - test"""
+test_trees = []
+test_stats = []
+    
+def setup_func_small_tree():
+    """
+    Setup function for tree initialization and loading
+    """
+    global test_trees
+    global test_stats
+    #0 - Only soma tree
+    #test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/soma_only.swc")) 
+    #1 - Wiki test tree moto_1_outputted
+    #test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/horton-strahler_test_wiki_3pointsoma.swc"))    
+    test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/moto_1_outputted.swc"))        
+    test_stats = [btmorph.BTStats(test_trees[0])]
+
+def teardown_func_small_tree():
+    """
+    Teardown function for tree initialization and loading
+    """
+    global test_trees
+    global test_stats
+    test_trees = []
+    test_stats = []
+
+@with_setup(setup_func_small_tree, teardown_func_small_tree) 
+def test_VoxelizeTree():
+    """
+    Crudely test if a tree is voxelized properly
+    """
+    global test_trees
+    global test_stats
+    res = [256,128,256]
+    for i in range(0, len(test_trees)):
+        dx,dy,dz = test_stats[i].total_dimension()
+        dims = [dx,dy,dz]
+        print(dims, res)
+        vg = VoxelGrid(dims, res)
+        vg.addTree(test_trees[i])
+        print vg
+        print "stats volume:" + str(test_stats[i].total_volume()[0])
+        vg.plot()
+        assert(len(vg.grid) > 0)
+        
+@with_setup(setup_func_small_tree, teardown_func_small_tree) 
+def test_BoxCounter_init():
+    """
+    Test if BoxCounter is initialized properly
+    """
+    global test_trees
+    global test_stats
+    res = [256,128,256]
+    dx,dy,dz = test_stats[0].total_dimension()
+    dims = [dx,dy,dz]
+    vg = VoxelGrid(dims, res, test_trees[0])
+    bc = BoxCounter(vg)
+    assert(len(bc.countVals) == 8)
+
+@with_setup(setup_func_small_tree, teardown_func_small_tree) 
+def test_gridCount():
+    """
+    Test if standard box counting works properly
+    """
+    # if startDim < 0 => return -1
+    startDim = -20
+    global test_trees
+    global test_stats
+    res = [64,32,64]
+    dx,dy,dz = test_stats[0].total_dimension()
+    dims = [dx,dy,dz]
+    vg = VoxelGrid(dims, res, test_trees[0])
+    bc = BoxCounter(vg)
+    assert(bc.gridCount(startDim) == -1)
+    # if not power of two => -1
+    startDim = 14
+    assert(bc.gridCount(startDim) == -1)
+    # if > smallest dim => -1
+    assert(bc.gridCount(res[0]) == -1)
+    # Normal case
+    # All sums must be the same
+    bc.gridCount(res[1])
+    s_t = len(bc.vg.grid)
+    print(bc.vg)
+    for i in range(1,len(bc.countVals)):
+       s = sum(bc.countVals[i])
+       print(s_t, s)
+       assert(s == s_t)
+       
     

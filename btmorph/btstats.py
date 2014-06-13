@@ -1,9 +1,12 @@
 import sys
 import numpy as np
+import math
 import scipy
 import scipy.optimize
 import matplotlib.pyplot as plt
 import pylab as p, time
+from btstructs2 import VoxelGrid
+from box_counting import BoxCounter
 
 class BTStats :
     '''
@@ -697,7 +700,7 @@ class BTStats :
         hs : int
             The Horton-Strahler number (Strahler number) of the node
         """
-        # Empy tree
+        # Empty tree
         if None == node:
             return -1
         children = node.get_child_nodes()
@@ -707,3 +710,38 @@ class BTStats :
         # Not leaf
         childrenHS = map(self.local_horton_strahler, children)
         return max(childrenHS + [(min(childrenHS)+1)])
+        
+    def lacunarity_standard(self, voxelSize):
+        """
+        Calculate lacunarity based on standard fixed grid box counting method with coef. of variation
+        See wikipedia for more information: http://en.wikipedia.org/wiki/Lacunarity#equation_1
+        Note: here we ignore orientations (all boxes start from (0,0,0)) and box sizes are always power of two
+        Parameters
+        ----------
+        voxelSize : number
+        Desired voxel size, affects resolution. Lacunarity measure uses voxelization of the 3D tree for calculations
+        
+        Returns
+        ----------
+        Lacunarity measure for the tree (standard fixed grid)        
+        """
+        # Best resolution
+        dx,dy,dz = self.total_dimension()
+        res = [int(2**round(math.log(dx/voxelSize, 2))), int(2**round(math.log(dy/voxelSize, 2))), int(2**round(math.log(dz/voxelSize, 2)))]
+        dim = [dx, dy, dz]
+        print(dim, res)
+        self.vg = VoxelGrid(dim, res, self._tree)
+        print("Vox", self.vg.dim, self.vg.res)
+        bc = BoxCounter(self.vg)
+        bc.gridCount(min(res)/2)
+        lambdas = []
+        for el in bc.countVals[1:-1]:
+            print len(el), np.std(el), np.mean(el)
+            lambdas.append((np.std(el)/np.mean(el))**2)
+            print lambdas
+        #lambdas = map(lambda arr: (np.std(arr)/np.mean(arr))**2, bc.countVals[1:])
+        lac = np.mean(lambdas)
+        return lac
+            
+        
+        

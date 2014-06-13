@@ -276,3 +276,39 @@ def test_global_horton_strahler():
     global test_stats
     assert(4  == test_stats.global_horton_strahler())
     pass
+
+    
+def setup_func_small_tree_lac():
+    """
+    Setup function for tree initialization and loading
+    """
+    global test_trees
+    global test_stats
+    #0 - Only soma tree
+    #test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/soma_only.swc")) 
+    #1 - Wiki test tree moto_1_outputted
+    #test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/horton-strahler_test_wiki_3pointsoma.swc"))    
+    test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/moto_1_outputted.swc"))        
+    test_stats = [btmorph.BTStats(test_trees[0])]
+
+def teardown_func_small_tree_lac():
+    """
+    Teardown function for tree initialization and loading
+    """
+    global test_trees
+    global test_stats
+    test_trees = []
+    test_stats = []
+    
+@with_setup(setup_func_small_tree_lac, teardown_func_small_tree_lac) 
+def test_standard_lacunarity():
+    """
+    Test if lacunarity method is working properly
+    """
+    global test_trees
+    global test_stats
+    vD = 20.0
+    lac = test_stats[0].lacunarity_standard(vD)
+    print(test_stats[0].vg)
+    print("Lac=", lac)
+    assert(False)
