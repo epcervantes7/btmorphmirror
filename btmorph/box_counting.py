@@ -27,11 +27,55 @@ class BoxCounter:
         [dx, dy, dz] = vg.res
         nSizes = int(math.log(min(vg.res), 2)) + 1
         self.countVals = [[]]*nSizes
+        self.coverageVals = [0]*nSizes
         for i in range(0, len(self.countVals)):
             self.countVals[i] = []
-        #for i in range(1, nSizes):
-        #    sz = int(dx*dy*dz/(2**(3*i)))
-        #    self.countVals[i] = [0]*sz
+            
+    def gridCoverage(self, startDim, coords = None):
+        """
+        Box counting for coverage (standard grid method)
+        Works faster than gridCount
+        
+        Parameters
+        ----------
+        startDim : int
+        Dimension of the box in voxels
+        coords : tuple of ints
+        Grid position
+        """
+        if startDim < 1:
+            return -1
+        # Should be a power of two
+        if not VoxelGrid.isPowerOfTwo(startDim):
+            return -1
+        # startDim should not be greater than smallest dimension
+        if startDim > min(self.vg.res):
+            return -1
+        if coords != None:
+            if 1 == startDim:
+                if True == self.vg[coords]:
+                    return True
+                else:
+                    return False
+            else:
+                m = int(math.log(startDim, 2))
+                newDim = startDim/2
+                new_c = [coords[0]*2, coords[1]*2, coords[2]*2]
+                tmp = False
+                for i in [new_c[0], new_c[0] + 1]:
+                    for j in [new_c[1], new_c[1] + 1]:
+                        for k in [new_c[2], new_c[2] + 1]:
+                            tmp = self.gridCoverage(newDim, (i,j,k)) or tmp
+                self.coverageVals[m] += tmp
+                return tmp
+        else:
+            dx = self.vg.res[0]/startDim
+            dy = self.vg.res[1]/startDim
+            dz = self.vg.res[2]/startDim
+            for i in range(0, dx):
+                for j in range(0, dy):
+                    for k in range(0, dz):                        
+                        self.gridCoverage(startDim, (i, j, k))
     
     def gridCount(self, startDim, coords = None):
         """
@@ -41,6 +85,8 @@ class BoxCounter:
         ----------
         startDim : int
         Dimension of the box in voxels
+        coords : tuple of ints
+        Grid position
         """
         if startDim < 1:
             return -1

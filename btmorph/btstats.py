@@ -742,6 +742,64 @@ class BTStats :
         #lambdas = map(lambda arr: (np.std(arr)/np.mean(arr))**2, bc.countVals[1:])
         lac = np.mean(lambdas)
         return lac
-            
         
+    def fractalDimension_boxCounting_core(self, vg):
+        """
+        Calculates fractal dimension of the given voxel grid by this formula:
+        D = lim e -> 0 of (log(Ne)/log(e))
+        http://rsbweb.nih.gov/ij/plugins/fraclac/FLHelp/Glossary.htm#db
+        """
+        # Box counting
+        bc = BoxCounter(vg)
+        startDim = min(vg.res)/2
+        bc.gridCoverage(startDim)
+        print("Start dime",startDim)
+        print(bc.coverageVals)
+        szs = map(lambda x: 2**(3*x), range(1, int(math.log(startDim, 2))+1))
+        cover = bc.coverageVals[1:-1]
+        slope,intercept=np.polyfit(np.log(cover),np.log(szs),1)
+        return -slope
+    
+    def lacunarity_boxCounting_core(self, vg):
+        """
+        Calculate lacunarity based on standard fixed grid box counting method with coef. of variation
+        See wikipedia for more information: http://en.wikipedia.org/wiki/Lacunarity#equation_1
+        Note: here we ignore orientations (all boxes start from (0,0,0)) and box sizes are always power of two
+        Parameters
+        ----------
+        vg : :class:'btmorph.btstructs2.VoxelGrid'
+            Ready to use voxel grid
+        """
+        bc = BoxCounter(vg)
+        bc.gridCount(min(vg.res)/2)
+        lambdas = []
+        for el in bc.countVals[1:-1]:
+            #print len(el), np.std(el), np.mean(el)
+            lambdas.append((np.std(el)/np.mean(el))**2)
+            #print lambdas
+        #lambdas = map(lambda arr: (np.std(arr)/np.mean(arr))**2, bc.countVals[1:])
+        lc = np.mean(lambdas)
+        return lc
         
+    def fracDim_Lac(self, vg):
+        """
+        Compute both lacunarity and fractal dimension
+        """
+        bc = BoxCounter(vg)
+        startDim = min(vg.res)/2
+        bc.gridCount(startDim)
+        lambdas = []
+        for el in bc.countVals[1:-1]:
+            #print len(el), np.std(el), np.mean(el)
+            lambdas.append((np.std(el)/np.mean(el))**2)
+            #print lambdas
+        #lambdas = map(lambda arr: (np.std(arr)/np.mean(arr))**2, bc.countVals[1:])
+        lc = np.mean(lambdas)
+        for i in range(1,len(bc.countVals)):
+            s = sum(1 for e in bc.countVals[i] if e)
+            bc.coverageVals[i] = s
+        szs = map(lambda x: 2**(3*x), range(1, int(math.log(startDim, 2))+1))
+        cover = bc.coverageVals[1:-1]
+        print("Coverage", cover)
+        slope,intercept=np.polyfit(np.log(cover),np.log(szs),1)
+        return (lc, -slope)

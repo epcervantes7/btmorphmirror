@@ -3,7 +3,7 @@ Test routines for the btstructs.py file
 """
 
 import sys
-
+import Image
 import numpy as np
 import matplotlib.pyplot as plt
 from nose.tools import with_setup
@@ -11,7 +11,8 @@ from nose.tools import with_setup
 # import btstructs
 # import btstats
 import btmorph
-
+from btmorph import VoxelGrid
+from btmorph import BoxCounter
 swc_tree = None
 stats = None
 
@@ -300,8 +301,7 @@ def teardown_func_small_tree_lac():
     test_trees = []
     test_stats = []
     
-@with_setup(setup_func_small_tree_lac, teardown_func_small_tree_lac) 
-def test_standard_lacunarity():
+def standard_lacunarity():
     """
     Test if lacunarity method is working properly
     """
@@ -311,4 +311,31 @@ def test_standard_lacunarity():
     lac = test_stats[0].lacunarity_standard(vD)
     print(test_stats[0].vg)
     print("Lac=", lac)
+    assert(False)
+    
+def generateVoxelGrid_fromImage(fn):
+    im = Image.open(fn)
+    sz = im.size[0]
+    res = (sz, sz, sz)
+    vg = VoxelGrid(res, res)
+    for x in range(0, sz):
+        for y in range(0, sz):
+            if sum(im.getpixel((x,y))) > 0:
+                for z in range(0, sz):
+                    vg[(x, y, z)] = True
+    return vg
+
+
+@with_setup(setup_func_small_tree_lac, teardown_func_small_tree_lac)    
+def test_FractalDimension_lac_box_core():
+    """
+    Test fractalDimension_boxCounting_core and lacunarity_boxCounting_core
+    """
+    global test_trees
+    global test_stats
+    fn = 'tests/testimage_fracla_256.bmp'
+    vg = generateVoxelGrid_fromImage(fn)
+    (lac, fd) = test_stats[0].fracDim_Lac(vg)
+    print("FD", fd)
+    print("Lac", lac)
     assert(False)

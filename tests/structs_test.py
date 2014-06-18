@@ -700,5 +700,54 @@ def test_gridCount():
        s = sum(bc.countVals[i])
        print(s_t, s)
        assert(s == s_t)
+
+def test_coverage_and_count():
+    """
+    Test coverage count and box count together
+    """
+    res = [32, 32, 32]
+    dim = [32.0, 32.0, 32.0]
+    vg = VoxelGrid(dim, res)
+    bc = BoxCounter(vg)
+    # Generate solid box inside the grid
+    a = 16
+    for i in range(8,8+a):
+        for j in range(8, 8+ a):
+            for k in range(8, 8 + a):
+                bc.vg[(i,j,k)] = True
+    startDim = res[0]/2
+    bc.gridCoverage(startDim)
+    bc.gridCount(startDim)
+    for i in range(1,len(bc.countVals)):
+        s = sum(1 for e in bc.countVals[i] if e)
+        assert(s == bc.coverageVals[i])
        
-    
+def test_coverageCount():
+    """
+    Test if gridCoverage method in BoxCounter works properly
+    """     
+    res = [32, 32, 32]
+    dim = [32.0, 32.0, 32.0]
+    vg = VoxelGrid(dim, res)
+    bc = BoxCounter(vg)
+    # if startDim < 0 => return -1
+    startDim = -20
+    assert(bc.gridCount(startDim) == -1)
+    # if not power of two => -1
+    startDim = 14
+    assert(bc.gridCount(startDim) == -1)
+    # if > smallest dim => -1
+    assert(bc.gridCount(res[0]*2) == -1)
+    # Generate solid box inside the grid
+    a = 16
+    for i in range(8,8+a):
+        for j in range(8, 8+ a):
+            for k in range(8, 8 + a):
+                bc.vg[(i,j,k)] = True
+    startDim = res[0]/2
+    bc.gridCoverage(startDim)
+    print(bc.coverageVals)
+    assert(bc.coverageVals[1] == 8**3)
+    assert(bc.coverageVals[2] == 4**3)
+    assert(bc.coverageVals[3] == 2**3)
+    assert(bc.coverageVals[4] == 2**3)
