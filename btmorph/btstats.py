@@ -729,9 +729,7 @@ class BTStats :
         dx,dy,dz = self.total_dimension()
         res = [int(2**round(math.log(dx/voxelSize, 2))), int(2**round(math.log(dy/voxelSize, 2))), int(2**round(math.log(dz/voxelSize, 2)))]
         dim = [dx, dy, dz]
-        print(dim, res)
         self.vg = VoxelGrid(dim, res, self._tree)
-        print("Vox", self.vg.dim, self.vg.res)
         bc = BoxCounter(self.vg)
         bc.gridCount(min(res)/2)
         lambdas = []
@@ -742,6 +740,47 @@ class BTStats :
         #lambdas = map(lambda arr: (np.std(arr)/np.mean(arr))**2, bc.countVals[1:])
         lac = np.mean(lambdas)
         return lac
+    
+    def fractal_dim_box_counting(self, voxelSize):
+        """
+        Calculate fractal dimension based on box counting algorithm
+        http://en.wikipedia.org/wiki/Fractal_dimension
+        
+        Parameters
+        ----------
+        voxelSize : number
+        Desired voxel size, affects resolution. Fractal dimension measure uses voxelization of the 3D tree for calculations
+        
+        Returns
+        ----------
+        Fractal dimension of a tree
+        """
+        # Best resolution
+        dx,dy,dz = self.total_dimension()
+        res = [int(2**round(math.log(dx/voxelSize, 2))), int(2**round(math.log(dy/voxelSize, 2))), int(2**round(math.log(dz/voxelSize, 2)))]
+        dim = [dx, dy, dz]
+        self.vg = VoxelGrid(dim, res, self._tree)
+        return self.fractalDimension_boxCounting_core(self.vg)
+    
+    def fractalDimension_Lacunarity(self, voxelSize):
+        """
+        Calculate both lacunarity and fractal dimension of a tree.
+        Faster than calling fractal_dim_box_counting and lacunarity_standard separately
+        Parameters
+        ----------
+        voxelSize : number
+        Desired voxel size, affects resolution. Both measures use voxelization of the 3D tree for calculations
+        
+        Returns
+        ----------
+        (lacunarity, fractal_dimension)
+        """
+        # Best resolution
+        dx,dy,dz = self.total_dimension()
+        res = [int(2**round(math.log(dx/voxelSize, 2))), int(2**round(math.log(dy/voxelSize, 2))), int(2**round(math.log(dz/voxelSize, 2)))]
+        dim = [dx, dy, dz]
+        self.vg = VoxelGrid(dim, res, self._tree)
+        return self.fracDim_Lac(self.vg)
         
     def fractalDimension_boxCounting_core(self, vg):
         """
@@ -750,14 +789,18 @@ class BTStats :
         http://rsbweb.nih.gov/ij/plugins/fraclac/FLHelp/Glossary.htm#db
         """
         # Box counting
-        bc = BoxCounter(vg)
-        startDim = min(vg.res)/2
+        bc = BoxCounter(vg)        
+        if vg.res[2] == 0 or vg.res[2] == 1:
+            startDim = min(vg.res[:-1])/2
+        else:
+            startDim = min(vg.res)/2
         bc.gridCoverage(startDim)
         print("Start dime",startDim)
         print(bc.coverageVals)
         szs = map(lambda x: 2**(3*x), range(1, int(math.log(startDim, 2))+1))
+        szs2 = map(lambda x: 2**x/float(max(vg.res)), range(1, int(math.log(startDim, 2))+1))
         cover = bc.coverageVals[1:-1]
-        slope,intercept=np.polyfit(np.log(cover),np.log(szs),1)
+        slope,intercept=np.polyfit(np.log(szs2), np.log(cover),1)
         return -slope
     
     def lacunarity_boxCounting_core(self, vg):
@@ -771,7 +814,11 @@ class BTStats :
             Ready to use voxel grid
         """
         bc = BoxCounter(vg)
-        bc.gridCount(min(vg.res)/2)
+        if vg.res[2] == 0 or vg.res[2] == 1:
+            startDim = min(vg.res[:-1])/2
+        else:
+            startDim = min(vg.res)/2
+        bc.gridCount(startDim)
         lambdas = []
         for el in bc.countVals[1:-1]:
             #print len(el), np.std(el), np.mean(el)
@@ -786,7 +833,10 @@ class BTStats :
         Compute both lacunarity and fractal dimension
         """
         bc = BoxCounter(vg)
-        startDim = min(vg.res)/2
+        if vg.res[2] == 0 or vg.res[2] == 1:
+            startDim = min(vg.res[:-1])/2
+        else:
+            startDim = min(vg.res)/2
         bc.gridCount(startDim)
         lambdas = []
         for el in bc.countVals[1:-1]:
@@ -799,7 +849,13 @@ class BTStats :
             s = sum(1 for e in bc.countVals[i] if e)
             bc.coverageVals[i] = s
         szs = map(lambda x: 2**(3*x), range(1, int(math.log(startDim, 2))+1))
+        szs2 = map(lambda x: 2**x/float(max(vg.res)), range(1, int(math.log(startDim, 2))+1))
         cover = bc.coverageVals[1:-1]
         print("Coverage", cover)
-        slope,intercept=np.polyfit(np.log(cover),np.log(szs),1)
+        mock = [2367, 956, 369, 131, 48, 16]
+        (s,ip) = slope,intercept=np.polyfit(np.log(szs2[:-1]), np.log(mock),1)
+        print("Mock cover", mock, "slope", s, "szs", szs2)
+        slope,intercept=np.polyfit(np.log(szs2), np.log(cover),1)
+        #----
+        lc_slope,interc_lac = np.polyfit(np.log(lambdas), np.log(szs), 1)
         return (lc, -slope)

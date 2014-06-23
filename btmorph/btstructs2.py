@@ -587,11 +587,11 @@ class VoxelGrid :
         if not (isinstance(x, int) and isinstance(y, int) and isinstance(z, int)):
             raise TypeError("The key must be a tuple of 3 integers") 
         if (x < 0 or x > dims[0]):
-            raise IndexError("Index is out of range")
+            raise IndexError("Index is out of range:"  + str(key))
         if (y < 0 or y > dims[1]):
-            raise IndexError("Index is out of range")
+            raise IndexError("Index is out of range:"+ str(key))
         if (z < 0 or z > dims[2]):
-            raise IndexError("Index is out of range")
+            raise IndexError("Index is out of range:" + str(key))
         return True
         
     def __getitem__(self, key):

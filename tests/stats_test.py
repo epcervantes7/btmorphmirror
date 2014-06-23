@@ -313,15 +313,17 @@ def standard_lacunarity():
     print("Lac=", lac)
     assert(False)
     
-def generateVoxelGrid_fromImage(fn):
+def generateVoxelGrid_fromImage(fn, twoD = True):
     im = Image.open(fn)
     sz = im.size[0]
     res = (sz, sz, sz)
+    if twoD:
+        res = (sz, sz, 1)
     vg = VoxelGrid(res, res)
-    for x in range(0, sz):
-        for y in range(0, sz):
+    for x in range(0, res[0]):
+        for y in range(0, res[1]):
             if sum(im.getpixel((x,y))) > 0:
-                for z in range(0, sz):
+                for z in range(0, res[2]):
                     vg[(x, y, z)] = True
     return vg
 
@@ -334,6 +336,7 @@ def test_FractalDimension_lac_box_core():
     global test_trees
     global test_stats
     fn = 'tests/testimage_fracla_256.bmp'
+    fn = 'tests/line_test.bmp'
     vg = generateVoxelGrid_fromImage(fn)
     (lac, fd) = test_stats[0].fracDim_Lac(vg)
     print("FD", fd)

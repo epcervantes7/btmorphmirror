@@ -25,7 +25,11 @@ class BoxCounter:
         # Resolution is power of two
         self.vg = vg
         [dx, dy, dz] = vg.res
-        nSizes = int(math.log(min(vg.res), 2)) + 1
+        if vg.res[2] == 0 or vg.res[2] == 1:
+            startDim = min(vg.res[:-1])
+        else:
+            startDim = min(vg.res)
+        nSizes = int(math.log(startDim, 2)) + 1
         self.countVals = [[]]*nSizes
         self.coverageVals = [0]*nSizes
         for i in range(0, len(self.countVals)):
@@ -49,7 +53,10 @@ class BoxCounter:
         if not VoxelGrid.isPowerOfTwo(startDim):
             return -1
         # startDim should not be greater than smallest dimension
-        if startDim > min(self.vg.res):
+        if self.vg.res[2] == 0 or self.vg.res[2] == 1:
+            if startDim > min(self.vg.res[:-1]):
+                return -1
+        elif startDim > min(self.vg.res):
             return -1
         if coords != None:
             if 1 == startDim:
@@ -61,22 +68,33 @@ class BoxCounter:
                 m = int(math.log(startDim, 2))
                 newDim = startDim/2
                 new_c = [coords[0]*2, coords[1]*2, coords[2]*2]
+                if self.vg.res[2] == 0 or self.vg.res[2] == 1:
+                    new_c[2] = coords[2]
                 tmp = False
                 for i in [new_c[0], new_c[0] + 1]:
                     for j in [new_c[1], new_c[1] + 1]:
-                        for k in [new_c[2], new_c[2] + 1]:
+                        if self.vg.res[2] == 0 or self.vg.res[2] == 1:
+                            k = new_c[2]
                             tmp = self.gridCoverage(newDim, (i,j,k)) or tmp
+                        else:
+                            for k in [new_c[2], new_c[2] + 1]:
+                                tmp = self.gridCoverage(newDim, (i,j,k)) or tmp
                 self.coverageVals[m] += tmp
                 return tmp
         else:
             dx = self.vg.res[0]/startDim
-            dy = self.vg.res[1]/startDim
-            dz = self.vg.res[2]/startDim
+            dy = self.vg.res[1]/startDim            
+            if self.vg.res[2] == 0 or self.vg.res[2] == 1:
+                    dz = 1
+            else:
+                dz = self.vg.res[2]/startDim
             for i in range(0, dx):
                 for j in range(0, dy):
                     for k in range(0, dz):                        
                         self.gridCoverage(startDim, (i, j, k))
-    
+
+                
+        
     def gridCount(self, startDim, coords = None):
         """
         Box counting for grid method (standard)
@@ -94,7 +112,10 @@ class BoxCounter:
         if not VoxelGrid.isPowerOfTwo(startDim):
             return -1
         # startDim should not be greater than smallest dimension
-        if startDim > min(self.vg.res):
+        if self.vg.res[2] == 0 or self.vg.res[2] == 1:
+            if startDim > min(self.vg.res[:-1]):
+                return -1
+        elif startDim > min(self.vg.res):
             return -1
         if coords != None:
             if 1 == startDim:
@@ -106,17 +127,26 @@ class BoxCounter:
                 m = int(math.log(startDim, 2))
                 newDim = startDim/2
                 new_c = [coords[0]*2, coords[1]*2, coords[2]*2]
+                if self.vg.res[2] == 0 or self.vg.res[2] == 1:
+                    new_c[2] = coords[2]
                 s = 0
                 for i in [new_c[0], new_c[0] + 1]:
                     for j in [new_c[1], new_c[1] + 1]:
-                        for k in [new_c[2], new_c[2] + 1]:
+                        if self.vg.res[2] == 0 or self.vg.res[2] == 1:
+                            k = new_c[2]
                             s += self.gridCount(newDim, (i,j,k))
+                        else:
+                            for k in [new_c[2], new_c[2] + 1]:
+                                s += self.gridCount(newDim, (i,j,k))
                 self.countVals[m].append(s)
                 return s
         else:
             dx = self.vg.res[0]/startDim
             dy = self.vg.res[1]/startDim
-            dz = self.vg.res[2]/startDim
+            if self.vg.res[2] == 0 or self.vg.res[2] == 1:
+                    dz = 1
+            else:
+                dz = self.vg.res[2]/startDim
             for i in range(0, dx):
                 for j in range(0, dy):
                     for k in range(0, dz):                        
