@@ -117,6 +117,9 @@ class BoxCounter:
                 return -1
         elif startDim > min(self.vg.res):
             return -1
+        encBX = self.vg.encompassingBox[0]
+        encBY = self.vg.encompassingBox[1]
+        encBZ = self.vg.encompassingBox[2]
         if coords != None:
             if 1 == startDim:
                 if True == self.vg[coords]:
@@ -127,28 +130,37 @@ class BoxCounter:
                 m = int(math.log(startDim, 2))
                 newDim = startDim/2
                 new_c = [coords[0]*2, coords[1]*2, coords[2]*2]
+                rangeX = [math.trunc(encBX[0]/float(newDim)), int(math.ceil(encBX[1]/float(newDim)))]
+                rangeY = [math.trunc(encBY[0]/float(newDim)), int(math.ceil(encBY[1]/float(newDim)))]
+                rangeZ = [math.trunc(encBZ[0]/float(newDim)), int(math.ceil(encBZ[1]/float(newDim)))]
                 if self.vg.res[2] == 0 or self.vg.res[2] == 1:
                     new_c[2] = coords[2]
+                    rangeZ = [0, 1]
                 s = 0
-                for i in [new_c[0], new_c[0] + 1]:
-                    for j in [new_c[1], new_c[1] + 1]:
+                for i in [new_c[0], new_c[0]+1]:#[max(new_c[0], rangeX[0]), min(new_c[0] + 1, rangeX[1])]:
+                    for j in [new_c[1], new_c[1]+1]:#[max(new_c[1], rangeY[0]), min(new_c[1] + 1, rangeY[1])]:
                         if self.vg.res[2] == 0 or self.vg.res[2] == 1:
                             k = new_c[2]
                             s += self.gridCount(newDim, (i,j,k))
                         else:
-                            for k in [new_c[2], new_c[2] + 1]:
+                            for k in [new_c[2], new_c[2]+1]:#[max(new_c[2], rangeZ[0]), min(new_c[2] + 1, rangeZ[1])]:
                                 s += self.gridCount(newDim, (i,j,k))
-                self.countVals[m].append(s)
+                if s > 0 :
+                    self.countVals[m].append(s)
                 return s
-        else:
+        else:            
             dx = self.vg.res[0]/startDim
             dy = self.vg.res[1]/startDim
+            rangeX = [math.trunc(encBX[0]/float(startDim)), int(math.ceil(encBX[1]/float(startDim)))]
+            rangeY = [math.trunc(encBY[0]/float(startDim)), int(math.ceil(encBY[1]/float(startDim)))]
             if self.vg.res[2] == 0 or self.vg.res[2] == 1:
                     dz = 1
+                    rangeZ = [0, 1]
             else:
                 dz = self.vg.res[2]/startDim
-            for i in range(0, dx):
-                for j in range(0, dy):
-                    for k in range(0, dz):                        
+                rangeZ = [math.trunc(encBZ[0]/float(startDim)), int(math.ceil(encBZ[1]/float(startDim)))]
+            for i in range(rangeX[0], rangeX[1]):
+                for j in range(rangeY[0], rangeY[1]):
+                    for k in range(rangeZ[0], rangeZ[1]):                        
                         self.gridCount(startDim, (i, j, k))
         
