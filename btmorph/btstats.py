@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import pylab as p, time
 from btstructs2 import VoxelGrid
 from box_counting import BoxCounter
+from numpy import mean,cov,double,cumsum,dot,linalg,array,rank
+from pylab import plot,subplot,axis,stem,show,figure
 
 class BTStats :
     '''
@@ -766,7 +768,9 @@ class BTStats :
         """
         # Best resolution
         dx,dy,dz = self.total_dimension()
-        res = [int(2**round(math.log(dx/voxelSize, 2))), int(2**round(math.log(dy/voxelSize, 2))), int(2**round(math.log(dz/voxelSize, 2)))]
+        res = [int(2**round(math.log(dx/voxelSize, 2))), int(2**round(math.log(dy/voxelSize, 2))), 1]
+        if dz > 0.0:
+            res[2] = int(2**round(math.log(dz/voxelSize, 2)))
         dim = [dx, dy, dz]
         self.vg = VoxelGrid(dim, res, self._tree)
         return self.fracDim_Lac(self.vg)
@@ -809,3 +813,27 @@ class BTStats :
         #----
         lc_slope,interc_lac = np.polyfit(np.log(szs), np.log(lambdas), 1)
         return (lc, -slope)
+        
+    def pca(self, A):
+        """ performs principal components analysis 
+         (PCA) on the n-by-p data matrix A
+         Rows of A correspond to observations, columns to variables. 
+        
+         Returns :  
+          coeff :
+        is a p-by-p matrix, each column containing coefficients 
+        for one principal component.
+          score : 
+        the principal component scores; that is, the representation 
+        of A in the principal component space. Rows of SCORE 
+        correspond to observations, columns to components.
+          latent : 
+        a vector containing the eigenvalues 
+        of the covariance matrix of A.
+        source: http://glowingpython.blogspot.jp/2011/07/principal-component-analysis-with-numpy.html
+        """
+        # computing eigenvalues and eigenvectors of covariance matrix
+        M = (A-mean(A.T,axis=1)).T # subtract the mean (along columns)
+        [latent,coeff] = linalg.eig(cov(M)) # attention:not always sorted
+        score = dot(coeff.T,M) # projection of the data in the new space
+        return coeff,score,latent

@@ -680,7 +680,7 @@ class VoxelGrid :
             return None
         # Is there a case where dimension/resolution is zero but not both of them are zero?
         for i in range(0, 3):
-            if resolution[i]*dimensions[i] == 0 and resolution[i]+dimensions[i] != 0:
+            if resolution[i]*dimensions[i] == 0 and resolution[i]+dimensions[i] != 0 and resolution[i] != 1:
                 return None
         [x,y,z] = dimensions
         [x_new,y_new,z_new] = [x,y,z]

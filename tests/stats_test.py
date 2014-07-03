@@ -7,12 +7,14 @@ import Image
 import numpy as np
 import matplotlib.pyplot as plt
 from nose.tools import with_setup
+from pylab import plot,subplot,axis,stem,show,figure
 
 # import btstructs
 # import btstats
 import btmorph
 from btmorph import VoxelGrid
 from btmorph import BoxCounter
+from btmorph import plot_3D_SWC
 swc_tree = None
 stats = None
 
@@ -326,7 +328,10 @@ def generateVoxelGrid_fromImage(fn, twoD = True):
                     vg[(x, y, z)] = True
     return vg
 
-
+def fracDim_lac_file(filename, stats):
+    vg = generateVoxelGrid_fromImage(filename)
+    return stats.fracDim_Lac(vg)
+    
 @with_setup(setup_func_small_tree_lac, teardown_func_small_tree_lac)    
 def test_FractalDimension_lac_box_core_line():
     """
@@ -335,10 +340,8 @@ def test_FractalDimension_lac_box_core_line():
     """
     global test_trees
     global test_stats
-    fn = 'tests/testimage_fracla_256.bmp'
     fn = 'tests/line_test.bmp'
-    vg = generateVoxelGrid_fromImage(fn)
-    (lac, fd) = test_stats[0].fracDim_Lac(vg)
+    (lac, fd) = fracDim_lac_file(fn, test_stats[0])
     print("line FD", fd)
     print("line Lac", lac)
     assert(abs(fd - 1.0) < 0.01)
@@ -350,10 +353,45 @@ def test_FractalDimension_lac_box_core_fractal():
     Test fractalDimension_boxCounting_core and lacunarity_boxCounting_core
     Test image: fractal
     """
+    global test_stats
     fn = 'tests/testimage_fracla_256.bmp'
-    vg = generateVoxelGrid_fromImage(fn)
-    (lac, fd) = test_stats[0].fracDim_Lac(vg)
+    (lac, fd) = fracDim_lac_file(fn, test_stats[0])
     print("frac FD", fd)
     print("frac Lac", lac)
     assert(abs(fd) < 2.0 and abs(fd) > 1.0)
     assert(lac < 0.3 and lac > 0.2)
+
+def plotPCA(fn = "tests/moto_1_outputted.swc"):
+    tree = btmorph.STree2().read_SWC_tree_from_file(fn)
+    stats = btmorph.BTStats(tree)
+    nodes = tree.get_nodes()
+    N = len(nodes)
+    coords = map(lambda n: n.get_content()['p3d'].xyz, nodes)
+    points = np.transpose(coords)
+    coeff, score, latent = stats.pca(points.T)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(points[0,:], points[1,:], points[2,:], c = 'r',zdir="z")
+    ax.scatter(score[0,:], score[1,:], [0]*N, c = 'b', zdir='z')
+    #plot(score[0,:],score[1,:],'*g')
+    plot([0], [0], '*g')
+    score[2,:] = [0]*N
+    newp = np.transpose(score)
+    tree.write_SWC_tree_to_file('tmpTree_3d.swc')
+    translate = score[:,0]
+    for i in range(0, N):
+        nodes[i].get_content()['p3d'].xyz = newp[i] - translate
+    tree.write_SWC_tree_to_file('tmpTree_2d.swc')
+    plot_3D_SWC('tmpTree_3d.swc')   
+    plot_3D_SWC('tmpTree_2d.swc')     
+    return points,score
+
+def fracLac_2d(fn = 'tmpTree_2d.swc'):
+    tree = btmorph.STree2().read_SWC_tree_from_file(fn)
+    stats = btmorph.BTStats(tree)
+    voxvol = max(stats.total_dimension()) / 512.0
+    rng = map(lambda i: voxvol*i, range(1, 8))
+    print fn
+    for i in rng:
+        print ('VoxelSize:', i)
+        print stats.fractalDimension_Lacunarity(i)
