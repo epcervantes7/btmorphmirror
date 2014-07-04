@@ -563,7 +563,7 @@ def plot_dendrogram(file_name,transform='plain',shift=0,c='k',radius=True,rm=200
     plt.clf()
     print 'Going to build the dendrogram. This might take a while...'
     ttt = time.time()
-    _expand_dendrogram(swc_tree.get_root(),swc_tree,shift,0,radius=radius,transform=transform)
+    _expand_dendrogram(swc_tree.root,swc_tree,shift,0,radius=radius,transform=transform)
     if(transform == 'plain') :
         plt.ylabel('L (micron)')
     elif(transform == 'lambda') :
@@ -595,18 +595,15 @@ def _expand_dendrogram(cNode,swc_tree,off_x,off_y,radius,transform='plain') :
     start_x = off_x-(required_h_space/2.0)
     if(required_h_space > max_width) :
         max_width = required_h_space
-
     
-    children = cNode.get_child_nodes()
-
     if swc_tree.is_root(cNode) :
         print 'i am expanding the root'
         children.remove(swc_tree.get_node_with_index(2))
         children.remove(swc_tree.get_node_with_index(3))
     
-    for cChild in  children :
+    for cChild in cNode.children :
         l = _path_between(swc_tree,cChild,cNode,transform=transform)
-        r = cChild.get_content()['p3d'].radius
+        r = cChild.content['p3d'].radius
 
         cChild_degree = swc_tree.degree_of_node(cChild)
         new_off_x = start_x + ( (cChild_degree/2.0)*place_holder_h )
@@ -626,8 +623,8 @@ def _path_between(swc_tree,deep,high,transform='plain') :
     pl = 0
     pNode = deep
     for node in path[1:] :
-        pPos = pNode.get_content()['p3d'].xyz
-        cPos = node.get_content()['p3d'].xyz
+        pPos = pNode.content['p3d'].xyz
+        cPos = node.content['p3d'].xyz
         pl = pl + np.sqrt(np.sum((cPos-pPos)**2))
         #pl += np.sqrt( (pPos.x - cPos.x)**2 + (pPos.y - cPos.y)**2 + (pPos.z - cPos.z)**2 )
         pNode = node
@@ -636,7 +633,7 @@ def _path_between(swc_tree,deep,high,transform='plain') :
     if(transform == 'plain'):
         return pl
     elif(transform == 'lambda') :
-        DIAM = (deep.get_content()['p3d'].radius*2.0 + high.get_content()['p3d'].radius*2.0) /2.0 # naive...
+        DIAM = (deep.content['p3d'].radius*2.0 + high.content['p3d'].radius*2.0) /2.0 # naive...
         c_lambda = np.sqrt(1e+4*(DIAM/4.0)*(RM/RA))
         return pl / c_lambda
         

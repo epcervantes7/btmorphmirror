@@ -45,13 +45,13 @@ class BTStats(object) :
         
         # upated 2014-01-21 for compatibility with new btstructs2
         for node in self._all_nodes :
-            if len(node.get_child_nodes()) > 1  :
-                if node._parent_node != None :
+            if len(node.children) > 1  :
+                if not node.parent is None :
                     bif_points.append(node) # the root is not a bifurcation
-            if len(node.get_child_nodes()) == 0  :
-                if node.get_parent_node()._index != 1: # "3 point soma", avoid the two side branches
+            if len(node.children) == 0  :
+                if node.parent.index != 1: # "3 point soma", avoid the two side branches
                     end_points.append(node)
-            if  node._parent_node == None :
+            if  node.parent is None :
                 soma_points = node
             
         return soma_points, bif_points, end_points
@@ -74,9 +74,7 @@ class BTStats(object) :
         
         """
         
-        #r = abs(self._tree.get_node_with_index(2).get_content()['p3d'].xyz[1]) # abs(y_value)
         r = self._tree.get_node_with_index(1).get_content()['p3d'].radius
-        #print 'r=',r
         return 4.0*np.pi*r*r
 
     def no_bifurcations(self) :
@@ -119,7 +117,7 @@ class BTStats(object) :
             number of stems
         
         """
-        return len( self._tree.get_root().get_child_nodes() ) -2 
+        return len(self._tree.root.children)-2 
         
     def total_length(self) :
         """
@@ -137,9 +135,9 @@ class BTStats(object) :
         L = 0
         # upated 2014-01-21 for compatibility with new btstructs2
         for node in self._all_nodes :
-            n = node.get_content()['p3d']
-            if(node._index not in [1,2,3]) :           
-                p = node.get_parent_node().get_content()['p3d']
+            n = node.content['p3d']
+            if not node.index in (1,2,3) :
+                p = node.parent.content['p3d']
                 d = np.sqrt(np.sum((n.xyz-p.xyz)**2))
                 L += d
         
@@ -162,9 +160,9 @@ class BTStats(object) :
         all_surfs = []
         # upated 2014-01-21 for compatibility with new btstructs2
         for node in self._all_nodes :
-            n = node.get_content()['p3d']
-            if node._index not in [1,2,3] :
-                p = node.get_parent_node().get_content()['p3d']
+            n = node.content['p3d']
+            if not node.index in (1,2,3) :
+                p = node.parent.content['p3d']
                 H = np.sqrt(np.sum((n.xyz-p.xyz)**2))
                 surf = 2*np.pi*n.radius*H
                 all_surfs.append(surf)
@@ -188,9 +186,9 @@ class BTStats(object) :
         all_vols = []
         # upated 2014-01-21 for compatibility with new btstructs2
         for node in self._all_nodes :
-            n = node.get_content()['p3d']
-            if node._index not in [1,2,3] :
-                p = node.get_parent_node().get_content()['p3d']
+            n = node.content['p3d']
+            if not node.index in (1,2,3) :
+                p = node.parent.content['p3d']
                 H = np.sqrt(np.sum((n.xyz-p.xyz)**2))
                 vol = np.pi*n.radius*n.radius*H
                 all_vols.append(vol)
@@ -242,7 +240,7 @@ class BTStats(object) :
         minZ = sys.maxint
         maxZ = -1 * sys.maxint
         for node in self._all_nodes :
-            n = node.get_content()['p3d']
+            n = node.content['p3d']
             nx = n.xyz[0]
             ny = n.xyz[1]
             nz = n.xyz[2]            
@@ -271,7 +269,7 @@ class BTStats(object) :
         ---------
         Horton-Strahler number at the root
         """
-        return self.local_horton_strahler(self._tree.get_root())
+        return self.local_horton_strahler(self._tree.root)
 
     """
     Local measures
@@ -284,8 +282,8 @@ class BTStats(object) :
         """
         diams = []
         for node in self._all_nodes:
-            if not node._index in [1,2,3]:
-                diams.append(node._content['p3d'].radius*2.0)
+            if not node.index in (1,2,3):
+                diams.append(node.content['p3d'].radius*2.0)
         return diams
     
     def get_segment_pathlength(self,to_node) :
@@ -315,20 +313,18 @@ class BTStats(object) :
             L = 0
         else :
             path = self._tree.path_to_root(to_node)[1:]
-            p = to_node.get_parent_node().get_content()['p3d']
-            n = to_node.get_content()['p3d']
-            # d = np.sqrt( (nx-px)*(nx-px) + (ny-py)*(ny-py) + (nz-pz)*(nz-pz) )
+            p = to_node.parent.content['p3d']
+            n = to_node.content['p3d']
             d = np.sqrt(np.sum((n.xyz-p.xyz)**2))
             L = L + d
         
         for node in path :
             # print 'going along the path'
-            n = node.get_content()['p3d']
-            if len(node.get_child_nodes()) >= 2 : # I arrive at either the soma or a branchpoint close to the soma
+            n = node.content['p3d']
+            if len(node.children) >= 2 : # I arrive at either the soma or a branchpoint close to the soma
                 return L
             else :
-                p = node.get_parent_node().get_content()['p3d']
-                # d = np.sqrt( (nx-px)*(nx-px) + (ny-py)*(ny-py) + (nz-pz)*(nz-pz) )
+                p = node.parent.content['p3d']
                 d = np.sqrt(np.sum((n.xyz-p.xyz)**2))
                 L = L + d
 
@@ -353,16 +349,15 @@ class BTStats(object) :
             L = 0
         else :
             path = self._tree.path_to_root(from_node)[1:]
-            p = from_node.get_parent_node().get_content()['p3d']
-            n = from_node.get_content()['p3d']
+            p = from_node.parent.content['p3d']
+            n = from_node.content['p3d']
             d = np.sqrt(np.sum((n.xyz-p.xyz)**2))
             L = L + d
         
         for node in path[:-1]:
             # print 'going along the path'
-            n = node.get_content()['p3d']
-            p = node.get_parent_node().get_content()['p3d']
-            # d = np.sqrt( (nx-px)*(nx-px) + (ny-py)*(ny-py) + (nz-pz)*(nz-pz) )
+            n = node.content['p3d']
+            p = node.parent.content['p3d']
             d = np.sqrt(np.sum((n.xyz-p.xyz)**2))#np.sqrt(np.sum((n.xyz-p.xyz)**2))
             L = L + d
         return L
@@ -388,19 +383,12 @@ class BTStats(object) :
         else :
             path = self._tree.path_to_root(to_node)[1:]
 
-        n = to_node.get_content()['p3d']
-        # nx = n.xyz[0]
-        # ny = n.xyz[1]
-        # nz = n.xyz[2]
+        n = to_node.content['p3d']
         for node in path :
-            if len(node.get_child_nodes()) >= 2 :
+            if len(node.children) >= 2 :
                 return L
             else :
-                p = node.get_parent_node().get_content()['p3d']
-                # px = p.xyz[0]
-                # py = p.xyz[1]
-                # pz = p.xyz[2]            
-                # d = np.sqrt( (nx-px)*(nx-px) + (ny-py)*(ny-py) + (nz-pz)*(nz-pz) )
+                p = node.parent.content['p3d']
                 d = np.sqrt(np.sum((n.xyz-p.xyz)**2))
                 L = d                
 
@@ -418,8 +406,8 @@ class BTStats(object) :
             length of the path between the soma and the provided node
 
         """
-        n = from_node.get_content()['p3d']
-        p = self._tree.get_root().get_content()['p3d']
+        n = from_node.content['p3d']
+        p = self._tree.root.content['p3d']
         d = np.sqrt(np.sum((n.xyz-p.xyz)**2))
         return d
 
@@ -473,11 +461,10 @@ class BTStats(object) :
             partition asymmetry of the subtree rooted at node (according to vanpelt and schierwagen 199x)
             
         """
-        children =  node.get_child_nodes()
-        if children == None or len(children) == 1 :
+        if node.children is None or len(node.children) == 1 :
             return None 
-        d1 = self._tree.degree_of_node(children[0])
-        d2 = self._tree.degree_of_node(children[1])
+        d1 = self._tree.degree_of_node(node.children[0])
+        d2 = self._tree.degree_of_node(node.children[1])
         if(d1 == 1 and d2 == 1) :
             return 0 # by definition
         else :
@@ -507,10 +494,8 @@ class BTStats(object) :
             Angle in degrees
         """
         child_node1,child_node2 = self._get_child_nodes(node,where=where)
-        scaled_1 = child_node1._content['p3d'].xyz - node._content['p3d'].xyz
-        scaled_2 = child_node2._content['p3d'].xyz - node._content['p3d'].xyz
-
-
+        scaled_1 = child_node1.content['p3d'].xyz - node.content['p3d'].xyz
+        scaled_2 = child_node2.content['p3d'].xyz - node.content['p3d'].xyz
         amp = lambda a: np.sqrt(np.sum((a)**2))
         return np.arccos(np.dot(scaled_1,scaled_2)/(amp(scaled_1)*amp(scaled_2))) / (2*np.pi/360)
 
@@ -533,34 +518,31 @@ class BTStats(object) :
         
         """
         child1,child2 = self._get_child_nodes(node,where=where)
-        #print 'child1=',child1,', child2=',child2, ' @ ',where
-        radius1 = child1.get_content()['p3d'].radius
-        radius2 = child2.get_content()['p3d'].radius
+        radius1 = child1.content['p3d'].radius
+        radius2 = child2.content['p3d'].radius
         if radius1 > radius2 :
             return radius1 / radius2
         else :
             return radius2 / radius1
             
     def _get_child_nodes(self,node,where) :
-        children = node.get_child_nodes()
         if where == 'local' : 
-            return children[0],children[1]
+            return node.children[0],node.children[1]
         else :
             grandchildren = []
-            for child in children :
+            for child in node.children :
                 t_child = self._find_remote_child(child)
                 grandchildren.append(t_child)
         return grandchildren[0],grandchildren[1]
 
     def _find_remote_child(self,node) :
-        children = node.get_child_nodes()
         t_node = node
-        while len(children) < 2 :
-            if len(children) == 0 :
+        while len(node.children) < 2 :
+            if len(node.children) == 0 :
                 # print t_node, '-> found a leaf'
                 return t_node
-            t_node = children[0]
-            children = t_node.get_child_nodes()
+            t_node = node.children[0]
+            children = t_node.children
         # print t_node,' -> found a bif'
         return t_node
 
@@ -583,10 +565,10 @@ class BTStats(object) :
         rr : float
             Appriximation of Rall's ratio
         """
-        p_diam = node.get_content()['p3d'].radius*2
+        p_diam = node.content['p3d'].radius*2
         child1,child2 = self._get_child_nodes(node,where=where)
-        d1_diam = child1.get_content()['p3d'].radius*2
-        d2_diam = child2.get_content()['p3d'].radius*2
+        d1_diam = child1.content['p3d'].radius*2
+        d2_diam = child2.content['p3d'].radius*2
         #print 'pd=%f,d1=%f,d2=%f' % (p_diam,d1_diam,d2_diam)
 
         if d1_diam >= p_diam or d2_diam >= p_diam :
@@ -623,10 +605,10 @@ class BTStats(object) :
             Approximation of Rall's ratio
         
         """
-        p_diam = node.get_content()['p3d'].radius*2
+        p_diam = node.content['p3d'].radius*2
         child1,child2 = self._get_child_nodes(node,where=where)
-        d1_diam = child1.get_content()['p3d'].radius*2
-        d2_diam = child2.get_content()['p3d'].radius*2
+        d1_diam = child1.content['p3d'].radius*2
+        d2_diam = child2.content['p3d'].radius*2
 
         return ( np.power(d1_diam,1.5) + np.power(d2_diam,1.5)) / np.power(p_diam,1.5)
         
@@ -652,10 +634,10 @@ class BTStats(object) :
             Approximation of Rall's power, p
         
         """
-        p_diam = node.get_content()['p3d'].radius*2
+        p_diam = node.content['p3d'].radius*2
         child1,child2 = self._get_child_nodes(node,where=where)
-        d1_diam = child1.get_content()['p3d'].radius*2
-        d2_diam = child2.get_content()['p3d'].radius*2
+        d1_diam = child1.content['p3d'].radius*2
+        d2_diam = child2.content['p3d'].radius*2
         #print 'pd=%f,d1=%f,d2=%f' % (p_diam,d1_diam,d2_diam)
 
         if d1_diam >= p_diam or d2_diam >= p_diam :
@@ -672,13 +654,12 @@ class BTStats(object) :
                 min_mismatch = np.abs(mismatch)
         return best_n
         
-    
     def _get_ampl_angle(self,node) :
         """
         Compute the angle of this node on the XY plane and against the origin
         """
         pos_angle = lambda x: x if x > 0 else 180 + (180+x)
-        a = np.rad2deg(np.arctan2(node.get_content()['p3d'].y,node.get_content()['p3d'].x))
+        a = np.rad2deg(np.arctan2(node.content['p3d'].y,node.content['p3d'].x))
         return pos_angle(a)
         
     def local_horton_strahler(self, node) :
@@ -702,15 +683,14 @@ class BTStats(object) :
         hs : int
             The Horton-Strahler number (Strahler number) of the node
         """
-        # Empty tree
-        if None == node:
+        # Empy tree
+        if node is None:
             return -1
-        children = node.get_child_nodes()
         # Leaf => HS=1
-        if len(children) == 0:
+        if len(node.children) == 0:
             return 1
         # Not leaf
-        childrenHS = map(self.local_horton_strahler, children)
+        childrenHS = map(self.local_horton_strahler, node.children)
         return max(childrenHS + [(min(childrenHS)+1)])
         
     def fractal_dimension_box_counting_core(self, vg):
