@@ -12,6 +12,12 @@ class STree2 :
         self.root = property(self.get_root, self.set_root, None, None)
         self.root = None
         
+    def __iter__(self):
+        nodes = []
+        self._gather_nodes(self.root,nodes)
+        for n in nodes:
+            yield n
+
     def set_root(self,node) :
         """
         Set the root node of the tree
@@ -364,7 +370,6 @@ class STree2 :
                 
         for index,(node,parent_index) in all_nodes.items() :
             if index == 1:
-                print('Setting root node: %s.' % str(node))
                 self.root = node
             elif index in (2,3):
                 # the 3-point soma representation (http://neuromorpho.org/neuroMorpho/SomaFormat.html)
