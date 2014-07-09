@@ -3,11 +3,11 @@ Test routines for the btstructs.py file
 """
 
 import sys
-import Image
 import numpy as np
 import matplotlib.pyplot as plt
 from nose.tools import with_setup
 from pylab import plot,subplot,axis,stem,show,figure
+from scipy import misc
 
 
 # import btstructs
@@ -317,15 +317,15 @@ def standard_lacunarity():
         print("Voxel size:", vD, "tree Lac=", lac, "tree fd=", fd)
     
 def generateVoxelGrid_fromImage(fn, twoD = True):
-    im = Image.open(fn)
-    sz = im.size[0]
+    im = misc.imread(fn)#Image.open(fn)
+    sz = im.shape[0]
     res = (sz, sz, sz)
     if twoD:
         res = (sz, sz, 1)
     vg = VoxelGrid(res, res)
     for x in range(0, res[0]):
         for y in range(0, res[1]):
-            if sum(im.getpixel((x,y))) > 0:
+            if sum(im[(x,y)]) > 0:
                 for z in range(0, res[2]):
                     vg[(x, y, z)] = True
     return vg
