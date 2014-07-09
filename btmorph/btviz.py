@@ -242,6 +242,7 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,\
     """
 
     #print "scheme: ", config.c_scheme_nm
+    plot_radius = 0.5
     
     #my_color_list = ['r','g','b','c','m','y','k','g','DarkGray']
     if color_scheme == 'default':
@@ -313,7 +314,7 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,\
                 continue
             C = SWC[index]
             P = SWC[C[4]] # C[4] is parent index
-            line_width = C[3] if show_radius else 1.0
+            line_width = C[3] if show_radius else plot_radius
             if cs == None:
                 pl = plt.plot([P[0],C[0]],[P[1],C[1]],my_color_list[C[5]-1],linewidth=line_width)
             else:
@@ -338,7 +339,7 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,\
                 continue
             C = SWC[index]
             P = SWC[C[4]] # C[4] is parent index
-            line_width = C[3] if show_radius else 1.0
+            line_width = C[3] if show_radius else plot_radius
             pl = plt.plot([P[0],C[0]],[P[2],C[2]],my_color_list[C[5]-1],linewidth=line_width)
 
             # add the synapses
