@@ -1,9 +1,14 @@
 import sys
 import numpy as np
+import math
 import scipy
 import scipy.optimize
 import matplotlib.pyplot as plt
 import pylab as p, time
+from btstructs2 import VoxelGrid
+from box_counting import BoxCounter
+from numpy import mean,cov,double,cumsum,dot,linalg,array,rank
+from pylab import plot,subplot,axis,stem,show,figure
 
 class BTStats :
     '''
@@ -697,7 +702,7 @@ class BTStats :
         hs : int
             The Horton-Strahler number (Strahler number) of the node
         """
-        # Empy tree
+        # Empty tree
         if None == node:
             return -1
         children = node.get_child_nodes()
@@ -707,3 +712,105 @@ class BTStats :
         # Not leaf
         childrenHS = map(self.local_horton_strahler, children)
         return max(childrenHS + [(min(childrenHS)+1)])
+        
+    def fractal_dimension_box_counting_core(self, vg):
+        """
+        Calculates fractal dimension of the given voxel grid by this formula:
+        D = lim e -> 0 of (log(Ne)/log(e))
+        http://rsbweb.nih.gov/ij/plugins/fraclac/FLHelp/Glossary.htm#db
+        """
+        # Box counting
+        bc = BoxCounter(vg)        
+        if vg.res[2] == 0 or vg.res[2] == 1:
+            startDim = min(vg.res[:-1])/2
+        else:
+            startDim = min(vg.res)/2
+        bc.grid_coverage(startDim)
+        szs = map(lambda x: 2**x/float(max(vg.res)), range(1, int(math.log(startDim, 2))+1))
+        cover = bc.coverageVals[1:-1]
+        slope,intercept=np.polyfit(np.log(szs), np.log(cover),1)
+        return -slope
+    
+    def lacunarity_box_counting_core(self, vg):
+        """
+        Calculate lacunarity based on standard fixed grid box counting method with coef. of variation
+        See wikipedia for more information: http://en.wikipedia.org/wiki/Lacunarity#equation_1
+        Note: here we ignore orientations (all boxes start from (0,0,0)) and box sizes are always power of two
+        Parameters
+        ----------
+        vg : :class:'btmorph.btstructs2.VoxelGrid'
+            Ready to use voxel grid
+        """
+        bc = BoxCounter(vg)
+        if vg.res[2] == 0 or vg.res[2] == 1:
+            startDim = min(vg.res[:-1])/2
+        else:
+            startDim = min(vg.res)/2
+        bc.grid_count(startDim)
+        lambdas = []
+        for el in bc.countVals[1:-1]:
+            lambdas.append((np.std(el)/np.mean(el))**2)
+        lc = np.mean(lambdas)
+        return lc
+    
+    def fractal_dimension_lacunarity(self, voxelSize):
+        """
+        Calculate both lacunarity and fractal dimension of a tree.
+        Faster than calling fractal_dim_box_counting and lacunarity_standard separately
+        Parameters
+        ----------
+        voxelSize : number
+        Desired voxel size, affects resolution. Both measures use voxelization of the 3D tree for calculations
+        
+        Returns
+        ----------
+        (lacunarity, fractal_dimension)
+        """
+        # Best resolution
+        dx,dy,dz = self.total_dimension()
+        res = [int(2**round(math.log(dx/voxelSize, 2))), int(2**round(math.log(dy/voxelSize, 2))), 1]
+        if dz > 0.0:
+            res[2] = int(2**round(math.log(dz/voxelSize, 2)))
+        dim = [dx, dy, dz]
+        self.vg = VoxelGrid(dim, res, self._tree)
+        return self.frac_dim_lac(self.vg)
+        
+    def frac_dim_lac(self, vg=None):
+        """
+        Compute both lacunarity and fractal dimension
+        Calculates lacunarity based on standard fixed grid box counting method with coef. of variation
+        See wikipedia for more information: http://en.wikipedia.org/wiki/Lacunarity#equation_1
+        Note: here we ignore orientations (all boxes start from (0,0,0)) and box sizes are always power of two
+        Calculates fractal dimension of the given voxel grid by this formula:
+        D = lim e -> 0 of (log(Ne)/log(e))
+        http://rsbweb.nih.gov/ij/plugins/fraclac/FLHelp/Glossary.htm#db
+        
+        Parameters
+        ----------
+        vg : :class:'btmorph.btstructs2.VoxelGrid'
+            Ready to use voxel grid
+        Returns
+        ----------
+        (lacunarity, fractal_dimension)
+        """
+        bc = BoxCounter(vg)
+        if vg.res[2] == 0 or vg.res[2] == 1:
+            startDim = min(vg.res[:-1])/2
+        else:
+            startDim = min(vg.res)/2
+        bc.grid_count(startDim)
+        lambdas = []
+        for el in bc.countVals[1:-1]:
+            lambdas.append((np.std(el)/np.mean(el))**2)
+        lc = np.mean(lambdas)
+        for i in range(1,len(bc.countVals)):
+            s = sum(1 for e in bc.countVals[i] if e)
+            bc.coverageVals[i] = s
+        szs = map(lambda x: 2**(3*x), range(1, int(math.log(startDim, 2))+1))
+        szs2 = map(lambda x: 2**x/float(max(vg.res)), range(1, int(math.log(startDim, 2))+1))
+        cover = bc.coverageVals[1:-1]
+        slope,intercept=np.polyfit(np.log(szs2), np.log(cover),1)
+        #----
+        lc_slope,interc_lac = np.polyfit(np.log(szs), np.log(lambdas), 1)
+        return (lc, -slope)
+        

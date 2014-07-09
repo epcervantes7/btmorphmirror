@@ -3,15 +3,20 @@ Test routines for the btstructs.py file
 """
 
 import sys
-
 import numpy as np
 import matplotlib.pyplot as plt
 from nose.tools import with_setup
+from pylab import plot,subplot,axis,stem,show,figure
+from scipy import misc
+
 
 # import btstructs
 # import btstats
 import btmorph
-
+from btmorph import VoxelGrid
+from btmorph import BoxCounter
+from btmorph import plot_3D_SWC
+from btmorph import pca_project_tree
 swc_tree = None
 stats = None
 
@@ -276,3 +281,102 @@ def test_global_horton_strahler():
     global test_stats
     assert(4  == test_stats.global_horton_strahler())
     pass
+
+    
+def setup_func_small_tree_lac():
+    """
+    Setup function for tree initialization and loading
+    """
+    global test_trees
+    global test_stats
+    #0 - Only soma tree
+    #test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/soma_only.swc")) 
+    #1 - Wiki test tree moto_1_outputted
+    #test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/horton-strahler_test_wiki_3pointsoma.swc"))    
+    test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/moto_1_outputted.swc"))        
+    test_stats = [btmorph.BTStats(test_trees[0])]
+
+def teardown_func_small_tree_lac():
+    """
+    Teardown function for tree initialization and loading
+    """
+    global test_trees
+    global test_stats
+    test_trees = []
+    test_stats = []
+
+    
+def standard_lacunarity():
+    """
+    Test if lacunarity method is working properly
+    """
+    tree = btmorph.STree2().read_SWC_tree_from_file("tests/moto_1_outputted.swc")
+    stats = btmorph.BTStats(tree)
+    for vD in range(5, 40, 5):
+        lac, fd = stats.fractal_dimension_lacunarity(vD)
+        print("Voxel size:", vD, "tree Lac=", lac, "tree fd=", fd)
+    
+def generateVoxelGrid_fromImage(fn, twoD = True):
+    im = misc.imread(fn)#Image.open(fn)
+    sz = im.shape[0]
+    res = (sz, sz, sz)
+    if twoD:
+        res = (sz, sz, 1)
+    vg = VoxelGrid(res, res)
+    for x in range(0, res[0]):
+        for y in range(0, res[1]):
+            if sum(im[(x,y)]) > 0:
+                for z in range(0, res[2]):
+                    vg[(x, y, z)] = True
+    return vg
+
+def frac_dim_lac_file(filename, stats):
+    vg = generateVoxelGrid_fromImage(filename)
+    return stats.frac_dim_lac(vg)
+    
+@with_setup(setup_func_small_tree_lac, teardown_func_small_tree_lac)    
+def test_FractalDimension_lac_box_core_line():
+    """
+    Test fractal_dimension_box_counting_core and lacunarity_box_counting_core
+    Test image: line
+    """
+    global test_trees
+    global test_stats
+    fn = 'tests/line_test.bmp'
+    (lac, fd) = frac_dim_lac_file(fn, test_stats[0])
+    print("line FD", fd)
+    print("line Lac", lac)
+    assert(abs(fd - 1.0) < 0.01)
+    assert(lac < 0.5)
+
+@with_setup(setup_func_small_tree_lac, teardown_func_small_tree_lac)
+def test_FractalDimension_lac_box_core_fractal():
+    """
+    Test fractal_dimension_box_counting_core and lacunarity_box_counting_core
+    Test image: fractal
+    """
+    global test_stats
+    fn = 'tests/testimage_fracla_256.bmp'
+    (lac, fd) = frac_dim_lac_file(fn, test_stats[0])
+    print("frac FD", fd)
+    print("frac Lac", lac)
+    assert(abs(fd) < 2.0 and abs(fd) > 1.0)
+    assert(lac < 0.3 and lac > 0.2)
+
+def plotPCA(fn = "tests/moto_1_outputted.swc"):
+    tree = btmorph.STree2().read_SWC_tree_from_file(fn)    
+    tree.write_SWC_tree_to_file('tmpTree_3d.swc')
+    tree2d = pca_project_tree(tree)
+    tree2d.write_SWC_tree_to_file('tmpTree_2d.swc')
+    plot_3D_SWC('tmpTree_3d.swc')   
+    plot_3D_SWC('tmpTree_2d.swc')     
+
+def fracLac_2d(fn = 'tmpTree_2d.swc'):
+    tree = btmorph.STree2().read_SWC_tree_from_file(fn)
+    stats = btmorph.BTStats(tree)
+    voxvol = max(stats.total_dimension()) / 512.0
+    rng = map(lambda i: voxvol*i, range(1, 8))
+    print fn
+    for i in rng:
+        print ('VoxelSize:', i)
+        print stats.fractal_dimension_lacunarity(i)
