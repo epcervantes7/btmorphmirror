@@ -10,6 +10,7 @@ from tools.WeightedQuickUnionUF import WeightedQuickUnionUF
 from btviz import plot_2D_SWC
 from btviz import plot_3D_SWC
 from btviz import plot_dendrogram
+from btviz import pca_project_tree
 
 from btviz import true_2D_projections
 from population_density_plots import population_density_projection

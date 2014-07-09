@@ -9,7 +9,7 @@ import sys,time
 sys.setrecursionlimit(10000)
 
 import numpy as np
-
+import math
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cm
@@ -20,7 +20,8 @@ import matplotlib.gridspec as gridspec
 
 import btmorph
 from btmorph import config
-
+from numpy import mean,cov,double,cumsum,dot,linalg,array,rank
+from pylab import plot,subplot,axis,stem,show,figure
 """ internal constants required for the dendrogram generation """
 H_SPACE = 20
 V_SPACE = 0
@@ -637,3 +638,62 @@ def _path_between(swc_tree,deep,high,transform='plain') :
         DIAM = (deep.get_content()['p3d'].radius*2.0 + high.get_content()['p3d'].radius*2.0) /2.0 # naive...
         c_lambda = np.sqrt(1e+4*(DIAM/4.0)*(RM/RA))
         return pl / c_lambda
+        
+def _pca(A):
+    """ performs principal components analysis 
+     (PCA) on the n-by-p data matrix A
+     Rows of A correspond to observations, columns to variables. 
+    
+     Returns :  
+      coeff :
+    is a p-by-p matrix, each column containing coefficients 
+    for one principal component.
+      score : 
+    the principal component scores; that is, the representation 
+    of A in the principal component space. Rows of SCORE 
+    correspond to observations, columns to components.
+      latent : 
+    a vector containing the eigenvalues 
+    of the covariance matrix of A.
+    source: http://glowingpython.blogspot.jp/2011/07/principal-component-analysis-with-numpy.html
+    """
+    # computing eigenvalues and eigenvectors of covariance matrix
+    M = (A-mean(A.T,axis=1)).T # subtract the mean (along columns)
+    [latent,coeff] = linalg.eig(cov(M)) # attention:not always sorted
+    score = dot(coeff.T,M) # projection of the data in the new space
+    return coeff,score,latent
+
+def pca_project_tree(tree):
+    """
+    Returns a tree which is a projection of the original tree on the plane of most variance
+    
+    Parameters:
+    ------
+    tree : :class:`btmorph.btstructs2.STree2`
+    A tree
+    
+    Returns:
+    ------
+    New flattened tree
+    """
+    nodes = tree.get_nodes()
+    N = len(nodes)
+    coords = map(lambda n: n.get_content()['p3d'].xyz, nodes)
+    points = np.transpose(coords)
+    coeff, score, latent = _pca(points.T)
+    score[2,:] = [0]*N
+    newp = np.transpose(score)
+    # Move soma to origin
+    translate = score[:,0]
+    for i in range(0, N):
+        nodes[i].get_content()['p3d'].xyz = newp[i] - translate
+    import time
+    fmt = '%Y_%b_%d_%H_%M_%S'
+    now = time.strftime(fmt)
+    tree.write_SWC_tree_to_file('tmpTree_3d_'+now+ '.swc')
+    tree = btmorph.STree2().read_SWC_tree_from_file('tmpTree_3d_'+now+ '.swc')
+    import os
+    os.remove('tmpTree_3d_'+now+ '.swc')
+    return tree
+    
+    
