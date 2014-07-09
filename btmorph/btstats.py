@@ -713,7 +713,7 @@ class BTStats :
         childrenHS = map(self.local_horton_strahler, children)
         return max(childrenHS + [(min(childrenHS)+1)])
         
-    def fractalDimension_boxCounting_core(self, vg):
+    def fractal_dimension_box_counting_core(self, vg):
         """
         Calculates fractal dimension of the given voxel grid by this formula:
         D = lim e -> 0 of (log(Ne)/log(e))
@@ -725,13 +725,13 @@ class BTStats :
             startDim = min(vg.res[:-1])/2
         else:
             startDim = min(vg.res)/2
-        bc.gridCoverage(startDim)
+        bc.grid_coverage(startDim)
         szs = map(lambda x: 2**x/float(max(vg.res)), range(1, int(math.log(startDim, 2))+1))
         cover = bc.coverageVals[1:-1]
         slope,intercept=np.polyfit(np.log(szs), np.log(cover),1)
         return -slope
     
-    def lacunarity_boxCounting_core(self, vg):
+    def lacunarity_box_counting_core(self, vg):
         """
         Calculate lacunarity based on standard fixed grid box counting method with coef. of variation
         See wikipedia for more information: http://en.wikipedia.org/wiki/Lacunarity#equation_1
@@ -746,14 +746,14 @@ class BTStats :
             startDim = min(vg.res[:-1])/2
         else:
             startDim = min(vg.res)/2
-        bc.gridCount(startDim)
+        bc.grid_count(startDim)
         lambdas = []
         for el in bc.countVals[1:-1]:
             lambdas.append((np.std(el)/np.mean(el))**2)
         lc = np.mean(lambdas)
         return lc
     
-    def fractalDimension_Lacunarity(self, voxelSize):
+    def fractal_dimension_lacunarity(self, voxelSize):
         """
         Calculate both lacunarity and fractal dimension of a tree.
         Faster than calling fractal_dim_box_counting and lacunarity_standard separately
@@ -773,9 +773,9 @@ class BTStats :
             res[2] = int(2**round(math.log(dz/voxelSize, 2)))
         dim = [dx, dy, dz]
         self.vg = VoxelGrid(dim, res, self._tree)
-        return self.fracDim_Lac(self.vg)
+        return self.frac_dim_lac(self.vg)
         
-    def fracDim_Lac(self, vg=None):
+    def frac_dim_lac(self, vg=None):
         """
         Compute both lacunarity and fractal dimension
         Calculates lacunarity based on standard fixed grid box counting method with coef. of variation
@@ -798,7 +798,7 @@ class BTStats :
             startDim = min(vg.res[:-1])/2
         else:
             startDim = min(vg.res)/2
-        bc.gridCount(startDim)
+        bc.grid_count(startDim)
         lambdas = []
         for el in bc.countVals[1:-1]:
             lambdas.append((np.std(el)/np.mean(el))**2)

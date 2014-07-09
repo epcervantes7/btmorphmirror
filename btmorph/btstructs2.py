@@ -575,7 +575,7 @@ class VoxelGrid :
             + ", offset=" +str(self.offset)
             
     @staticmethod
-    def checkKey(dims, key):
+    def check_key(dims, key):
         """
         Check key type and range
         """
@@ -598,7 +598,7 @@ class VoxelGrid :
         """
         Right [] operator overload
         """
-        VoxelGrid.checkKey(self.res, key)
+        VoxelGrid.check_key(self.res, key)
         if not key in self.grid:
             return False
         else:
@@ -608,7 +608,7 @@ class VoxelGrid :
         """
         Left [] operator overload
         """
-        VoxelGrid.checkKey(self.res, key)
+        VoxelGrid.check_key(self.res, key)
         if not isinstance(value, bool):
             raise TypeError("The value must be boolean")
         if key in self.grid and value == False:
@@ -637,10 +637,10 @@ class VoxelGrid :
         if not (len(dimensions) == 3 and len(resolution) == 3):
             raise TypeError("Dimensions and resolution must be number iterables of length 3")
         for i in range(0,3):
-            if not VoxelGrid.isPowerOfTwo(resolution[i]):
+            if not VoxelGrid.is_power_of_two(resolution[i]):
                 raise IndexError("Resolution must be power of 2")
         dimensions = [dimensions[0],dimensions[1], dimensions[2]]
-        self.dim = VoxelGrid.adjustDimensions(dimensions, resolution)
+        self.dim = VoxelGrid.adjust_dimensions(dimensions, resolution)
         self.res = resolution
         self.grid = {}
         self.dV = self.dim[0]/float(self.res[0])
@@ -649,10 +649,10 @@ class VoxelGrid :
         self.encompassingBox[1] = [self.res[1], 0]
         self.encompassingBox[2] = [self.res[2], 0]
         self.offset = (0,0,0)
-        self.addTree(tree)
+        self.add_tree(tree)
         
     @staticmethod    
-    def adjustDimensions(dimensions, resolution):
+    def adjust_dimensions(dimensions, resolution):
         """
         Adjusts the grid dimensions(x,y,z) in such a way so their ratio is the same as resolution (rx,ry,rz) ratio.
         x:y:z = rx:ry:rz
@@ -702,7 +702,7 @@ class VoxelGrid :
         return [x_new,y_new,z_new]
     
     @staticmethod
-    def isPowerOfTwo(int_num) :
+    def is_power_of_two(int_num) :
         """
         Checks if the number is a power of two
         
@@ -729,7 +729,7 @@ class VoxelGrid :
         zs = map(lambda (x,y,z): z, keys)
         ax.scatter(xs, ys, zs, zdir="z")
     
-    def calcEncompassingBox_sphere(self, center, radius):
+    def calc_encompassing_box_sphere(self, center, radius):
         """
         Calculate encompassing box for a sphere of the given radius and center
         
@@ -748,7 +748,7 @@ class VoxelGrid :
         if radius < 0:
             return None
         if radius == 0:
-            c = self.dimensionToVoxel(center)
+            c = self.dimension_to_voxel(center)
             return [(c[0], c[0]), (c[1], c[1]), (c[2], c[2])]
         ranges = [0, 0, 0]
         for i in range(0,3):
@@ -758,7 +758,7 @@ class VoxelGrid :
             ranges[i]= (max(ranges[i][0], 0), min(ranges[i][1], self.res[i]))
         return ranges
     
-    def fallsIntoSphere(self, point, center, radius):
+    def falls_into_sphere(self, point, center, radius):
         """
         Check if the point falls into the sphere of given radius and center
         
@@ -776,14 +776,14 @@ class VoxelGrid :
         if radius < 0:
             return False
         if radius == 0:
-            center_vox = self.dimensionToVoxel(center)
+            center_vox = self.dimension_to_voxel(center)
             return bool(center_vox == point)
         s = 0
         for i in range(0, 3):
             s += (point[i]*self.dV - center[i])**2
         return bool(s <= radius**2)
         
-    def fallsIntoFrustum(self, point, center1, radius1, center2, radius2):
+    def falls_into_frustum(self, point, center1, radius1, center2, radius2):
         """
         Check if the point falls into the frustum with given radii and centers
         
@@ -804,8 +804,8 @@ class VoxelGrid :
         """
         if radius1 < 0 or radius2 < 0:
             return False
-        point = self.voxelToDimension(point)
-        voxel_c = point
+        point = self.voxel_to_dimension(point)
+        #voxel_c = point
         point = (point[0] - center1[0], point[1] - center1[1], point[2] - center1[2])
         abs_p = math.sqrt(point[0]**2 + point[1]**2 + point[2]**2)
         if center1 == center2:
@@ -831,7 +831,7 @@ class VoxelGrid :
         # Voxel falls in frustum or frustum falls intro voxel        
         return proj_plane <= r or fiv
     
-    def calcEncompassingBox_frustum(self, center1, radius1, center2, radius2):
+    def calc_encompassing_box_frustum(self, center1, radius1, center2, radius2):
         """
         Calculate encompassing box for a frustum (cut cone) with given base centers and radii
         
@@ -868,7 +868,7 @@ class VoxelGrid :
         return [rangeX, rangeY, rangeZ]
     
        
-    def addFrustum(self, center1, radius1, center2, radius2):
+    def add_frustum(self, center1, radius1, center2, radius2):
         """
         Adds a voxelized filled frustum of the given radii and base centers to the grid
         
@@ -894,17 +894,17 @@ class VoxelGrid :
            max(center1[2], center2[2]) < 0:
                return
         # Calculate encompassing box
-        ranges = self.calcEncompassingBox_frustum(center1, radius1, center2, radius2)
+        ranges = self.calc_encompassing_box_frustum(center1, radius1, center2, radius2)
         if ranges == None:
             return
         [(x1,x2), (y1,y2), (z1,z2)] = ranges
         for x in range(x1, x2+1):
             for y in range(y1, y2+1):
                 for z in range(z1, z2+1):                    
-                    if self.fallsIntoFrustum((x,y,z), center1, radius1, center2, radius2):
+                    if self.falls_into_frustum((x,y,z), center1, radius1, center2, radius2):
                         self[(x,y,z)] = True
     
-    def addSphere(self, center, radius):
+    def add_sphere(self, center, radius):
         """
         Adds a voxelized filled sphere of the given radius and center to the grid
         
@@ -915,16 +915,16 @@ class VoxelGrid :
         radius : number (real dimension)
         The sphere's radius
         """
-        ranges = self.calcEncompassingBox_sphere(center, radius)
+        ranges = self.calc_encompassing_box_sphere(center, radius)
         if ranges == None:
             return
         [(x1,x2), (y1,y2), (z1,z2)] = ranges
         for x in range(x1, x2+1):
             for y in range(y1, y2+1):
                 for z in range(z1, z2+1):
-                    self[(x,y,z)] = self.fallsIntoSphere((x,y,z), center, radius)
+                    self[(x,y,z)] = self.falls_into_sphere((x,y,z), center, radius)
     
-    def addTree(self, tree):
+    def add_tree(self, tree):
         """
         Voxelize the whole tree
         
@@ -958,7 +958,7 @@ class VoxelGrid :
         r = p.radius
         (x,y,z) = tuple(p.xyz)
         center = (x - minX, y - minY, z - minZ)
-        self.addSphere(center, r)
+        self.add_sphere(center, r)
         # Add all segments
         for node in nodes:
             p = node.get_content()['p3d']
@@ -972,9 +972,9 @@ class VoxelGrid :
             (x,y,z) = tuple(parentP.xyz)
             center2 = (x - minX, y - minY, z - minZ)
             r2 = parentP.radius
-            self.addFrustum(center1, r1, center2, r2)
+            self.add_frustum(center1, r1, center2, r2)
             
-    def voxelToDimension(self, point):
+    def voxel_to_dimension(self, point):
         """
         Converts voxel coordinates to dimension coordinates
         
@@ -992,7 +992,7 @@ class VoxelGrid :
         return (point[0]*self.dV, point[1]*self.dV, point[2]*self.dV)
         
 
-    def dimensionToVoxel(self, point):
+    def dimension_to_voxel(self, point):
         """
         Converts real dimension coordinates to voxel coordinates
         

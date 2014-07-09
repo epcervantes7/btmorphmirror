@@ -311,7 +311,7 @@ def standard_lacunarity():
     tree = btmorph.STree2().read_SWC_tree_from_file("tests/moto_1_outputted.swc")
     stats = btmorph.BTStats(tree)
     for vD in range(5, 40, 5):
-        lac, fd = stats.fractalDimension_Lacunarity(vD)
+        lac, fd = stats.fractal_dimension_lacunarity(vD)
         print("Voxel size:", vD, "tree Lac=", lac, "tree fd=", fd)
     
 def generateVoxelGrid_fromImage(fn, twoD = True):
@@ -328,20 +328,20 @@ def generateVoxelGrid_fromImage(fn, twoD = True):
                     vg[(x, y, z)] = True
     return vg
 
-def fracDim_lac_file(filename, stats):
+def frac_dim_lac_file(filename, stats):
     vg = generateVoxelGrid_fromImage(filename)
-    return stats.fracDim_Lac(vg)
+    return stats.frac_dim_lac(vg)
     
 @with_setup(setup_func_small_tree_lac, teardown_func_small_tree_lac)    
 def test_FractalDimension_lac_box_core_line():
     """
-    Test fractalDimension_boxCounting_core and lacunarity_boxCounting_core
+    Test fractal_dimension_box_counting_core and lacunarity_box_counting_core
     Test image: line
     """
     global test_trees
     global test_stats
     fn = 'tests/line_test.bmp'
-    (lac, fd) = fracDim_lac_file(fn, test_stats[0])
+    (lac, fd) = frac_dim_lac_file(fn, test_stats[0])
     print("line FD", fd)
     print("line Lac", lac)
     assert(abs(fd - 1.0) < 0.01)
@@ -350,12 +350,12 @@ def test_FractalDimension_lac_box_core_line():
 @with_setup(setup_func_small_tree_lac, teardown_func_small_tree_lac)
 def test_FractalDimension_lac_box_core_fractal():
     """
-    Test fractalDimension_boxCounting_core and lacunarity_boxCounting_core
+    Test fractal_dimension_box_counting_core and lacunarity_box_counting_core
     Test image: fractal
     """
     global test_stats
     fn = 'tests/testimage_fracla_256.bmp'
-    (lac, fd) = fracDim_lac_file(fn, test_stats[0])
+    (lac, fd) = frac_dim_lac_file(fn, test_stats[0])
     print("frac FD", fd)
     print("frac Lac", lac)
     assert(abs(fd) < 2.0 and abs(fd) > 1.0)
@@ -394,4 +394,4 @@ def fracLac_2d(fn = 'tmpTree_2d.swc'):
     print fn
     for i in rng:
         print ('VoxelSize:', i)
-        print stats.fractalDimension_Lacunarity(i)
+        print stats.fractal_dimension_lacunarity(i)

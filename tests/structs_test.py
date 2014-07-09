@@ -49,16 +49,16 @@ if __name__ == '__main__' :
 @raises(TypeError)
 def VoxelGrid_adjustDim_junk(d, r):
     """
-    Test if adjustDimensions raises TypeError if fed with junk
+    Test if adjust_dimensions raises TypeError if fed with junk
     """
-    VoxelGrid.adjustDimensions(d, r)
+    VoxelGrid.adjust_dimensions(d, r)
 
 @raises(IndexError, Exception)
 def VoxelGrid_adjustDim_negative(d, r):
     """
-    Test if adjustDimensions raises IndexError if fed with negative value
+    Test if adjust_dimensions raises IndexError if fed with negative value
     """
-    VoxelGrid.adjustDimensions(d, r)
+    VoxelGrid.adjust_dimensions(d, r)
 
 def test_voxelGrid_adjust_dimensions():
     """
@@ -87,32 +87,32 @@ def test_voxelGrid_adjust_dimensions():
     # More than one dimension is zero => return nothing
     dimensions = numpy.array([0, 0, 0])
     resolution = [0, 0, 0]
-    assert(VoxelGrid.adjustDimensions(dimensions, resolution) == None)
+    assert(VoxelGrid.adjust_dimensions(dimensions, resolution) == None)
     for i in range(0, 3):
         dimensions = numpy.array([0, 0, 0])
         resolution = [0, 0, 0]
         #One of the dimensions is not zero
         dimensions[i] = rndm.randint(1000, 2000)/10.0
         resolution[i] = rndm.randint(1000, 2000)
-        assert(VoxelGrid.adjustDimensions(dimensions, resolution) == None)
+        assert(VoxelGrid.adjust_dimensions(dimensions, resolution) == None)
     # One or more dimension/resolution is zero while corresponding resolution/dimension is not => return nothing
     # All
     dimensions = numpy.array([0, 0, 0])
     resolution = [rndm.randint(1000, 2000), rndm.randint(1000, 2000), rndm.randint(1000, 2000)]
-    assert(VoxelGrid.adjustDimensions(dimensions, resolution) == None)
+    assert(VoxelGrid.adjust_dimensions(dimensions, resolution) == None)
     dimensions = numpy.array([rndm.randint(1000, 2000)/10.0, rndm.randint(1000, 2000)/10.0, rndm.randint(1000, 2000)/10.0]) #[x, y, z]
     resolution = [0, 0, 0]
-    assert(VoxelGrid.adjustDimensions(dimensions, resolution) == None)
+    assert(VoxelGrid.adjust_dimensions(dimensions, resolution) == None)
     # 1 (2 are taken care of in earlier)
     for i in range(0,3):
         dimensions = numpy.array([rndm.randint(1000, 2000)/10.0, rndm.randint(1000, 2000)/10.0, rndm.randint(1000, 2000)/10.0]) #[x, y, z]
         resolution = [rndm.randint(1000, 2000), rndm.randint(1000, 2000), rndm.randint(1000, 2000)] #[rx, ry, rz]        
         dimensions[i] = 0
-        assert(VoxelGrid.adjustDimensions(dimensions, resolution) == None)
+        assert(VoxelGrid.adjust_dimensions(dimensions, resolution) == None)
         dimensions = numpy.array([rndm.randint(1000, 2000)/10.0, rndm.randint(1000, 2000)/10.0, rndm.randint(1000, 2000)/10.0]) #[x, y, z]
         resolution = [rndm.randint(1000, 2000), rndm.randint(1000, 2000), rndm.randint(1000, 2000)] #[rx, ry, rz]        
         resolution[i] = 0
-        assert(VoxelGrid.adjustDimensions(dimensions, resolution) == None)
+        assert(VoxelGrid.adjust_dimensions(dimensions, resolution) == None)
     # Everything is not zero
     for i in range(0,10):
         # Random floating point from 100 to 200 with 1 digit after comma
@@ -120,7 +120,7 @@ def test_voxelGrid_adjust_dimensions():
         resolution = [rndm.randint(1000, 2000), rndm.randint(1000, 2000), rndm.randint(1000, 2000)] #[rx, ry, rz]
         [x,y,z] = dimensions
         [rx,ry,rz]=resolution
-        [nx,ny,nz] = VoxelGrid.adjustDimensions(dimensions, resolution)
+        [nx,ny,nz] = VoxelGrid.adjust_dimensions(dimensions, resolution)
         # None of the original dimensions can be bigger than the output (expansion only)
         assert(x <= nx) #x
         assert(y <= ny) #y
@@ -129,16 +129,16 @@ def test_voxelGrid_adjust_dimensions():
         assert(abs(nx/ny - float(rx)/float(ry)) < epsilon)
         assert(abs(ny/nz - float(ry)/float(rz)) < epsilon)    
     
-def test_isPowerOfTwo() :
+def test_is_power_of_two() :
     """
-    Tests VoxelGrid.isPowerOfTwo function
+    Tests VoxelGrid.is_power_of_two function
     Must return True for 2^m and False otherwise
     """
-    assert(VoxelGrid.isPowerOfTwo(-100) == False)
-    assert(VoxelGrid.isPowerOfTwo(120.56) == False)
+    assert(VoxelGrid.is_power_of_two(-100) == False)
+    assert(VoxelGrid.is_power_of_two(120.56) == False)
     for i in range(0,32):
-        res_true = VoxelGrid.isPowerOfTwo(pow(2, i))
-        res_false = VoxelGrid.isPowerOfTwo(pow(2, i)*3)
+        res_true = VoxelGrid.is_power_of_two(pow(2, i))
+        res_false = VoxelGrid.is_power_of_two(pow(2, i)*3)
         assert(res_true == True)
         assert(res_false == False)
         
@@ -149,7 +149,7 @@ def voxelGrid_check_key_bad_type(key):
     less than the cossesponding resolution
     Here testing: bad type
     """
-    VoxelGrid.checkKey([100,100, 100], key)
+    VoxelGrid.check_key([100,100, 100], key)
     
 @raises(IndexError)
 def voxelGrid_check_key_out_of_boundary(key):
@@ -158,9 +158,9 @@ def voxelGrid_check_key_out_of_boundary(key):
     less than the cossesponding resolution
     Here testing: out of boundary
     """
-    VoxelGrid.checkKey([200,200,200], key)
+    VoxelGrid.check_key([200,200,200], key)
 
-def test_gen_voxelgrid_checkKey():
+def test_gen_voxelgrid_check_key():
     """
     The key must be a tuple of tree integers greater or equal than zero and 
     less than the cossesponding resolution
@@ -180,7 +180,7 @@ def test_gen_voxelgrid_checkKey():
         yield voxelGrid_check_key_out_of_boundary, el
     #good
     for el in good:
-        assert(VoxelGrid.checkKey([200,200,200], el) == True)
+        assert(VoxelGrid.check_key([200,200,200], el) == True)
 
 @raises(IndexError)
 def VoxelGrid_init_not_pow2(dims, res):
@@ -214,7 +214,7 @@ def test_VoxelGrid_init():
         yield VoxelGrid_init_not_pow2, dimensions, resolution        
     resolution = [64, 128, 64] #[rx, ry, rz]
     vg = VoxelGrid(dimensions, resolution)
-    good_dim = VoxelGrid.adjustDimensions(dimensions, resolution)
+    good_dim = VoxelGrid.adjust_dimensions(dimensions, resolution)
     #check dimensions
     for i in range(0, 3):
         assert(abs(good_dim[i] - vg.dim[i]) < epsilon)
@@ -360,10 +360,10 @@ def test_VoxelGrid_calcEncBox_sphere():
     # If radius is less than zero => return None
     center = (dimensions[0]/2, dimensions[1]/2, dimensions[2]/2)
     radius = -10
-    assert(vg.calcEncompassingBox_sphere(center, radius) == None)
+    assert(vg.calc_encompassing_box_sphere(center, radius) == None)
     # If radius is zero => one point
     radius = 0
-    res = vg.calcEncompassingBox_sphere(center, radius)
+    res = vg.calc_encompassing_box_sphere(center, radius)
     assert(res != None)
     [(x1,x2), (y1,y2), (z1,z2)] = res
     assert(x1 == x2 == resolution[0]/2)
@@ -372,12 +372,12 @@ def test_VoxelGrid_calcEncBox_sphere():
     # If the sphere is completely out of the grid, should return None
     center = (1000, 1000, 1000)
     radius = 100
-    assert(vg.calcEncompassingBox_sphere(center, radius) == None)
+    assert(vg.calc_encompassing_box_sphere(center, radius) == None)
     # If the sphere is completely inside the grid, should return:
     # x: [(x0-r)*rx/dx, (x0+r)*rx/dx], analog. for y and z
     center = (dimensions[0]/2, dimensions[1]/2, dimensions[2]/2) # <- the very center
     radius = dimensions[0]/4 # <- well inside the grid
-    res = vg.calcEncompassingBox_sphere(center, radius)
+    res = vg.calc_encompassing_box_sphere(center, radius)
     assert(res != None)
     [(x1,x2), (y1,y2), (z1,z2)] = res
     assert(abs(x1 - 2*(center[0] - radius)) < epsilon) # Resolution is twice the corr. dimension
@@ -389,7 +389,7 @@ def test_VoxelGrid_calcEncBox_sphere():
     # Partial intersection cases
     center1 = (0, 0, 0)
     center2 = (dimensions[0], dimensions[1], dimensions[2])
-    res = vg.calcEncompassingBox_sphere(center1, radius)
+    res = vg.calc_encompassing_box_sphere(center1, radius)
     assert(res != None)    
     [(x1,x2), (y1,y2), (z1,z2)] = res
     assert(abs(x1 - 0) < epsilon)
@@ -398,7 +398,7 @@ def test_VoxelGrid_calcEncBox_sphere():
     assert(abs(y2 - 2*(center1[1] + radius)) < epsilon)
     assert(abs(z1 - 0) < epsilon)
     assert(abs(z2 - 2*(center1[2] + radius)) < epsilon)
-    res = vg.calcEncompassingBox_sphere(center2, radius)
+    res = vg.calc_encompassing_box_sphere(center2, radius)
     assert(res != None)    
     [(x1,x2), (y1,y2), (z1,z2)] = res
     assert(abs(x1 - 2*(center2[0] - radius)) < epsilon)
@@ -408,9 +408,9 @@ def test_VoxelGrid_calcEncBox_sphere():
     assert(abs(z1 - 2*(center2[2] - radius)) < epsilon)
     assert(abs(z2 - resolution[2]) < epsilon)
 
-def test_VoxelGrid_fallsIntoSphere():
+def test_VoxelGrid_falls_into_sphere():
     """
-    Test VoxelGrid.fallsIntoSphere
+    Test VoxelGrid.falls_into_sphere
     """
     dimensions = numpy.array([64, 128, 64])
     resolution = [2*64, 2*128, 2*64]
@@ -421,20 +421,20 @@ def test_VoxelGrid_fallsIntoSphere():
     voxel_center = (resolution[0]/2, resolution[1]/2, resolution[2]/2)
     inside = [voxel_center, (resolution[0]/2 + resolution[0]/4 -3, voxel_center[1], voxel_center[2])]
     # If radius is < 0 => False
-    assert(vg.fallsIntoSphere((1,1,1), center, -100) == False)
+    assert(vg.falls_into_sphere((1,1,1), center, -100) == False)
     # If radius is == 0 => only the center
-    assert(vg.fallsIntoSphere(voxel_center, center, 0) == True)
-    assert(vg.fallsIntoSphere((voxel_center[0], voxel_center[1]+1, voxel_center[2]), center, 0) == False)
+    assert(vg.falls_into_sphere(voxel_center, center, 0) == True)
+    assert(vg.falls_into_sphere((voxel_center[0], voxel_center[1]+1, voxel_center[2]), center, 0) == False)
     # Radius > 0
     for el in inside:
-        assert(vg.fallsIntoSphere(el, center, radius) == True)
+        assert(vg.falls_into_sphere(el, center, radius) == True)
     for el in not_inside:
-        assert(vg.fallsIntoSphere(el, center, radius) == False)
+        assert(vg.falls_into_sphere(el, center, radius) == False)
 
 
-def test_VoxelGrid_fallsIntoFrustum():
+def test_VoxelGrid_falls_into_frustum():
     """
-    Test VoxelGrid.fallsIntoFrustum
+    Test VoxelGrid.falls_into_frustum
     """
     dimensions = numpy.array([64, 128, 64])
     resolution = [2*64, 2*128, 2*64]
@@ -442,26 +442,26 @@ def test_VoxelGrid_fallsIntoFrustum():
     # A frustum completely inside the grid
     c1 = (dimensions[0]/4, dimensions[1]/4, dimensions[2]/4)
     c2 = (dimensions[0]/3, dimensions[1]/3, dimensions[2]/3)
-    c1_v = vg.dimensionToVoxel(((c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0))
+    c1_v = vg.dimension_to_voxel(((c1[0]+c2[0])/2.0, (c1[1]+c2[1])/2.0, (c1[2]+c2[2])/2.0))
     #c2_v = (resolution[0]/2, resolution[1]/2, resolution[2]/2)
     r1 = 5
     r2 = 10
     not_inside = [(0,0,0), (-100,0,0), (2*resolution[0], 0, 0)]
-    inside = [c1_v, vg.dimensionToVoxel(c1), vg.dimensionToVoxel(c2)]
+    inside = [c1_v, vg.dimension_to_voxel(c1), vg.dimension_to_voxel(c2)]
     # Normal case
     for el in inside:
-        assert(vg.fallsIntoFrustum(el, c1, r1, c2, r2) == True)
+        assert(vg.falls_into_frustum(el, c1, r1, c2, r2) == True)
     for el in not_inside:
-        assert(vg.fallsIntoFrustum(el, c1, r1, c2, r2) == False)
+        assert(vg.falls_into_frustum(el, c1, r1, c2, r2) == False)
     #c1 == c2
-    not_inside = [(0,0,0), (-100,0,0), (2*resolution[0], 0, 0), vg.dimensionToVoxel(c2), c1_v]
-    inside = [vg.dimensionToVoxel(c1)]
+    not_inside = [(0,0,0), (-100,0,0), (2*resolution[0], 0, 0), vg.dimension_to_voxel(c2), c1_v]
+    inside = [vg.dimension_to_voxel(c1)]
     for el in inside:
-        assert(vg.fallsIntoFrustum(el, c1, r1, c1, r2) == True)
+        assert(vg.falls_into_frustum(el, c1, r1, c1, r2) == True)
     for el in not_inside:
-        assert(vg.fallsIntoFrustum(el, c1, r1, c1, r2) == False)
+        assert(vg.falls_into_frustum(el, c1, r1, c1, r2) == False)
 
-def test_VoxelGrid_addFrustum():
+def test_VoxelGrid_add_frustum():
     """
     Test if a frustum is added properly
     """
@@ -475,25 +475,25 @@ def test_VoxelGrid_addFrustum():
     r1 = 10.0
     r2 = 5.0
     # If one of the radii < zero => nothing is added
-    vg.addFrustum(c1, -r1, c2, r2)
+    vg.add_frustum(c1, -r1, c2, r2)
     assert(len(vg.grid) == 0)
-    vg.addFrustum(c1, r1, c2, -r2)
+    vg.add_frustum(c1, r1, c2, -r2)
     assert(len(vg.grid) == 0)
     # if c2 = c1 and both of the radii == 0 => only one point is added
     # Reset
     vg = VoxelGrid(dimensions, resolution)
-    vg.addFrustum(c1, 0, c1, 0)
+    vg.add_frustum(c1, 0, c1, 0)
     assert(len(vg.grid) == 1)
-    assert(vg[vg.dimensionToVoxel(c1)] == True)
+    assert(vg[vg.dimension_to_voxel(c1)] == True)
     # If frustum is too far => nothing is added
     vg = VoxelGrid(dimensions, resolution)
-    vg.addFrustum((-1000, -1000, -1000), r1, (-500, -900, -100), r2)
+    vg.add_frustum((-1000, -1000, -1000), r1, (-500, -900, -100), r2)
     assert(len(vg.grid) == 0)
     # if both of the radii == 0 => only central axis of height h is added
-    vg.addFrustum(c1, 0 , c2, 0)
-    assert(vg[vg.dimensionToVoxel(c1)] == True)
-    assert(vg[vg.dimensionToVoxel(c2)] == True)
-    assert(len(vg.grid) >= abs(vg.dimensionToVoxel(c2)[2]-vg.dimensionToVoxel(c1)[2]) and len(vg.grid) < 3*abs(vg.dimensionToVoxel(c2)[2]-vg.dimensionToVoxel(c1)[2]))
+    vg.add_frustum(c1, 0 , c2, 0)
+    assert(vg[vg.dimension_to_voxel(c1)] == True)
+    assert(vg[vg.dimension_to_voxel(c2)] == True)
+    assert(len(vg.grid) >= abs(vg.dimension_to_voxel(c2)[2]-vg.dimension_to_voxel(c1)[2]) and len(vg.grid) < 3*abs(vg.dimension_to_voxel(c2)[2]-vg.dimension_to_voxel(c1)[2]))
     # A frustum completely inside the grid
     epsilon = 0.02
     vg = VoxelGrid(dimensions, resolution)
@@ -502,14 +502,14 @@ def test_VoxelGrid_addFrustum():
         resolution = [(2**i)*64, (2**i)*128, (2**i)*64]
         voxel_vol = (dimensions[0]/float(resolution[0])) * (dimensions[1]/float(resolution[1])) * (dimensions[2]/float(resolution[2]))
         vg = VoxelGrid(dimensions, resolution)
-        vg.addFrustum(c1, r1, c2, r2)
+        vg.add_frustum(c1, r1, c2, r2)
        # print ("diff",len(vg.grid), voxel_vol , V_f, len(vg.grid)*voxel_vol, epsilon*V_f)
         if abs(len(vg.grid)*voxel_vol - V_f) < epsilon*V_f:
             assert(True)
             return
     assert(False)
     
-def test_VoxelGrid_addSphere():
+def test_VoxelGrid_add_sphere():
     """
     Test if a sphere is added properly
     """
@@ -519,18 +519,18 @@ def test_VoxelGrid_addSphere():
     vg = VoxelGrid(dimensions, resolution)
     voxel_center = (resolution[0]/2, resolution[1]/2, resolution[2]/2)
     # If radius < zero => nothing is added
-    vg.addSphere(center, -100)
+    vg.add_sphere(center, -100)
     assert(len(vg.grid) == 0)
     # If radius == 0 => only one point is added
     vg = VoxelGrid(dimensions, resolution)
-    vg.addSphere(center, 0)
+    vg.add_sphere(center, 0)
     assert(len(vg.grid) == 1)
     assert(vg[voxel_center] == True)
     # If sphere is too far => nothing is added
     vg = VoxelGrid(dimensions, resolution)
     center = (1000, 1000, 1000)
     radius = 100
-    vg.addSphere(center, radius)
+    vg.add_sphere(center, radius)
     assert(len(vg.grid) == 0)
     # Sphere is completely inside the grid
     epsilon = 0.01
@@ -541,7 +541,7 @@ def test_VoxelGrid_addSphere():
         resolution = [(2**i)*64, (2**i)*128, (2**i)*64]
         voxel_vol = (dimensions[0]/float(resolution[0])) * (dimensions[1]/float(resolution[1])) * (dimensions[2]/float(resolution[2]))
         vg = VoxelGrid(dimensions, resolution)
-        vg.addSphere(center, radius)
+        vg.add_sphere(center, radius)
         #print ("diff",len(vg.grid), voxel_vol , V_r, len(vg.grid)*voxel_vol)
         if abs(len(vg.grid)*voxel_vol - V_r) < epsilon*V_r:
             assert(True)
@@ -561,21 +561,21 @@ def test_VoxelGrid_calcEncBox_frustum():
     c2 = (1, 1,1)
     r1 = 1
     r2 = 2
-    assert(vg.calcEncompassingBox_frustum(None, r1, c2, r2) == None)
-    assert(vg.calcEncompassingBox_frustum(c1, None, c2, r2) == None)
-    assert(vg.calcEncompassingBox_frustum(c1, r1, None, r2) == None)
-    assert(vg.calcEncompassingBox_frustum(c1, r1, c2, None) == None)
+    assert(vg.calc_encompassing_box_frustum(None, r1, c2, r2) == None)
+    assert(vg.calc_encompassing_box_frustum(c1, None, c2, r2) == None)
+    assert(vg.calc_encompassing_box_frustum(c1, r1, None, r2) == None)
+    assert(vg.calc_encompassing_box_frustum(c1, r1, c2, None) == None)
     # if r1 or r2 is less than zero => None
     r1 = -1
     r2 = 2
-    assert(vg.calcEncompassingBox_frustum(c1, r1, c2, r2) == None)
-    assert(vg.calcEncompassingBox_frustum(c1, r2, c2, r1) == None) 
+    assert(vg.calc_encompassing_box_frustum(c1, r1, c2, r2) == None)
+    assert(vg.calc_encompassing_box_frustum(c1, r2, c2, r1) == None) 
     # A frustum completely inside the grid
     c1 = (dimensions[0]/4, dimensions[1]/4, dimensions[2]/4)
     c2 = (dimensions[0]/3, dimensions[1]/3, dimensions[2]/3)
     r1 = 5
     r2 = 10
-    res = vg.calcEncompassingBox_frustum(c1, r1, c2, r2)
+    res = vg.calc_encompassing_box_frustum(c1, r1, c2, r2)
     assert(res != None)
     [(x1,x2), (y1,y2), (z1,z2)] = res
     left = [x1, y1, z1]
@@ -596,7 +596,7 @@ def test_VoxelGrid_calcEncBox_frustum():
     c2 = (dimensions[0]/2, dimensions[1]/2, dimensions[2]/2)
     r1 = 5
     r2 = 10
-    res = vg.calcEncompassingBox_frustum(c1, r1, c2, r2)
+    res = vg.calc_encompassing_box_frustum(c1, r1, c2, r2)
     assert(res != None)
     [(x1,x2), (y1,y2), (z1,z2)] = res  
     left = [x1, y1, z1]
@@ -651,7 +651,7 @@ def test_VoxelizeTree():
         dims = [dx,dy,dz]
         print(dims, res)
         vg = VoxelGrid(dims, res)
-        vg.addTree(test_trees[i])
+        vg.add_tree(test_trees[i])
         print vg
         print "stats volume:" + str(test_stats[i].total_volume()[0])
         vg.plot()
@@ -672,7 +672,7 @@ def test_BoxCounter_init():
     assert(len(bc.countVals) == 8)
 
 @with_setup(setup_func_small_tree, teardown_func_small_tree) 
-def test_gridCount():
+def test_grid_count():
     """
     Test if standard box counting works properly
     """
@@ -685,15 +685,15 @@ def test_gridCount():
     dims = [dx,dy,dz]
     vg = VoxelGrid(dims, res, test_trees[0])
     bc = BoxCounter(vg)
-    assert(bc.gridCount(startDim) == -1)
+    assert(bc.grid_count(startDim) == -1)
     # if not power of two => -1
     startDim = 14
-    assert(bc.gridCount(startDim) == -1)
+    assert(bc.grid_count(startDim) == -1)
     # if > smallest dim => -1
-    assert(bc.gridCount(res[0]) == -1)
+    assert(bc.grid_count(res[0]) == -1)
     # Normal case
     # All sums must be the same
-    bc.gridCount(res[1])
+    bc.grid_count(res[1])
     s_t = len(bc.vg.grid)
     print(bc.vg)
     for i in range(1,len(bc.countVals)):
@@ -716,15 +716,15 @@ def test_coverage_and_count():
             for k in range(8, 8 + a):
                 bc.vg[(i,j,k)] = True
     startDim = res[0]/2
-    bc.gridCoverage(startDim)
-    bc.gridCount(startDim)
+    bc.grid_coverage(startDim)
+    bc.grid_count(startDim)
     for i in range(1,len(bc.countVals)):
         s = sum(1 for e in bc.countVals[i] if e)
         assert(s == bc.coverageVals[i])
        
 def test_coverageCount():
     """
-    Test if gridCoverage method in BoxCounter works properly
+    Test if grid_coverage method in BoxCounter works properly
     """     
     res = [32, 32, 32]
     dim = [32.0, 32.0, 32.0]
@@ -732,12 +732,12 @@ def test_coverageCount():
     bc = BoxCounter(vg)
     # if startDim < 0 => return -1
     startDim = -20
-    assert(bc.gridCount(startDim) == -1)
+    assert(bc.grid_count(startDim) == -1)
     # if not power of two => -1
     startDim = 14
-    assert(bc.gridCount(startDim) == -1)
+    assert(bc.grid_count(startDim) == -1)
     # if > smallest dim => -1
-    assert(bc.gridCount(res[0]*2) == -1)
+    assert(bc.grid_count(res[0]*2) == -1)
     # Generate solid box inside the grid
     a = 16
     for i in range(8,8+a):
@@ -745,7 +745,7 @@ def test_coverageCount():
             for k in range(8, 8 + a):
                 bc.vg[(i,j,k)] = True
     startDim = res[0]/2
-    bc.gridCoverage(startDim)
+    bc.grid_coverage(startDim)
     print(bc.coverageVals)
     assert(bc.coverageVals[1] == 8**3)
     assert(bc.coverageVals[2] == 4**3)
