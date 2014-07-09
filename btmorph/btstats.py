@@ -736,10 +736,17 @@ class BTStats :
         Calculate lacunarity based on standard fixed grid box counting method with coef. of variation
         See wikipedia for more information: http://en.wikipedia.org/wiki/Lacunarity#equation_1
         Note: here we ignore orientations (all boxes start from (0,0,0)) and box sizes are always power of two
+        
         Parameters
         ----------
-        vg : :class:'btmorph.btstructs2.VoxelGrid'
+        vg : :class:`btmorph.btstructs2.VoxelGrid`
             Ready to use voxel grid
+
+        Returns
+        -------
+        lacunarity : float
+           
+        
         """
         bc = BoxCounter(vg)
         if vg.res[2] == 0 or vg.res[2] == 1:
@@ -757,10 +764,11 @@ class BTStats :
         """
         Calculate both lacunarity and fractal dimension of a tree.
         Faster than calling fractal_dim_box_counting and lacunarity_standard separately
+        
         Parameters
         ----------
         voxelSize : number
-        Desired voxel size, affects resolution. Both measures use voxelization of the 3D tree for calculations
+            Desired voxel size, affects resolution. Both measures use voxelization of the 3D tree for calculations
         
         Returns
         ----------
@@ -787,11 +795,12 @@ class BTStats :
         
         Parameters
         ----------
-        vg : :class:'btmorph.btstructs2.VoxelGrid'
+        vg : :class:`btmorph.btstructs2.VoxelGrid`
             Ready to use voxel grid
+            
         Returns
-        ----------
-        (lacunarity, fractal_dimension)
+        --------
+        lacunarity, fractal_dimension : tuple
         """
         bc = BoxCounter(vg)
         if vg.res[2] == 0 or vg.res[2] == 1:
@@ -814,3 +823,26 @@ class BTStats :
         lc_slope,interc_lac = np.polyfit(np.log(szs), np.log(lambdas), 1)
         return (lc, -slope)
         
+    def pca(self, A):
+        """ performs principal components analysis 
+         (PCA) on the n-by-p data matrix A
+         Rows of A correspond to observations, columns to variables. 
+        
+         Returns :  
+          coeff :
+        is a p-by-p matrix, each column containing coefficients 
+        for one principal component.
+          score : 
+        the principal component scores; that is, the representation 
+        of A in the principal component space. Rows of SCORE 
+        correspond to observations, columns to components.
+          latent : 
+        a vector containing the eigenvalues 
+        of the covariance matrix of A.
+        source: http://glowingpython.blogspot.jp/2011/07/principal-component-analysis-with-numpy.html
+        """
+        # computing eigenvalues and eigenvectors of covariance matrix
+        M = (A-mean(A.T,axis=1)).T # subtract the mean (along columns)
+        [latent,coeff] = linalg.eig(cov(M)) # attention:not always sorted
+        score = dot(coeff.T,M) # projection of the data in the new space
+        return coeff,score,latent

@@ -668,14 +668,15 @@ def pca_project_tree(tree):
     """
     Returns a tree which is a projection of the original tree on the plane of most variance
     
-    Parameters:
-    ------
+    Parameters
+    ----------
     tree : :class:`btmorph.btstructs2.STree2`
     A tree
     
-    Returns:
-    ------
-    New flattened tree
+    Returns
+    --------
+    tree : :class:`btmorph.btstructs2.STree2`
+        New flattened tree
     """
     nodes = tree.get_nodes()
     N = len(nodes)
