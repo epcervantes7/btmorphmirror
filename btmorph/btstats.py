@@ -697,6 +697,7 @@ class BTStats :
         ---------
         node : :class:`btmorph.btstructs2.SNode2`
             Node of interest
+            
         Returns
         ---------
         hs : int
@@ -736,9 +737,10 @@ class BTStats :
         Calculate lacunarity based on standard fixed grid box counting method with coef. of variation
         See wikipedia for more information: http://en.wikipedia.org/wiki/Lacunarity#equation_1
         Note: here we ignore orientations (all boxes start from (0,0,0)) and box sizes are always power of two
+        
         Parameters
         ----------
-        vg : :class:'btmorph.btstructs2.VoxelGrid'
+        vg : :class:`btmorph.btstructs2.VoxelGrid`
             Ready to use voxel grid
         """
         bc = BoxCounter(vg)
@@ -757,6 +759,7 @@ class BTStats :
         """
         Calculate both lacunarity and fractal dimension of a tree.
         Faster than calling fractal_dim_box_counting and lacunarity_standard separately
+        
         Parameters
         ----------
         voxelSize : number
@@ -787,8 +790,9 @@ class BTStats :
         
         Parameters
         ----------
-        vg : :class:'btmorph.btstructs2.VoxelGrid'
+        vg : :class:`btmorph.btstructs2.VoxelGrid`
             Ready to use voxel grid
+            
         Returns
         ----------
         (lacunarity, fractal_dimension)

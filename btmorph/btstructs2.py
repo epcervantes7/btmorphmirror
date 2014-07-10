@@ -930,7 +930,7 @@ class VoxelGrid :
         
         Parameters
         ------------
-        tree : STree2
+        tree : :class:`btmorph.btstructs2.STree2`
         A tree to be voxelized
         """
         # If tree == None => do nothing
