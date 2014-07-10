@@ -4,7 +4,8 @@ from btstructs2 import STree2
 from btstructs2 import VoxelGrid
 from btstats import BTStats
 from box_counting import BoxCounter
-#from tools.WeightedQuickUnionUF import WeightedQuickUnionUF
+from tools.WeightedQuickUnionUF import WeightedQuickUnionUF
+from percolation import Percolation
 
 #from btviz import plot_2D_SWC
 from btviz import plot_2D_SWC
