@@ -641,6 +641,8 @@ class VoxelGrid :
                 raise IndexError("Resolution must be power of 2")
         dimensions = [dimensions[0],dimensions[1], dimensions[2]]
         self.dim = VoxelGrid.adjust_dimensions(dimensions, resolution)
+        if dimensions[2] == 0:
+            self.dim[2] = 0.0
         self.res = resolution
         self.grid = {}
         self.dV = self.dim[0]/float(self.res[0])
@@ -751,9 +753,9 @@ class VoxelGrid :
             c = self.dimension_to_voxel(center)
             return [(c[0], c[0]), (c[1], c[1]), (c[2], c[2])]
         ranges = [0, 0, 0]
-        for i in range(0,3):
+        for i in range(0,len(ranges)):
             ranges[i] = (int(round((center[i] - radius)/self.dV)), int(round((center[i] + radius)/self.dV)))
-            if ranges[i][0] > self.res[i] and ranges[i][1] > self.res[i] or ranges[i][0] < 0 and ranges[i][1] < 0:
+            if ranges[i][0] >= self.res[i] and ranges[i][1] >= self.res[i] or ranges[i][0] < 0 and ranges[i][1] < 0:
                 return None
             ranges[i]= (max(ranges[i][0], 0), min(ranges[i][1], self.res[i]))
         return ranges
@@ -862,9 +864,9 @@ class VoxelGrid :
         rangeX = (max(min(x1-r1, x2-r2), 0), min(max(x1+r1,x2+r2),self.dim[0]))
         rangeY = (max(min(y1-r1, y2-r2), 0), min(max(y1+r1,y2+r2),self.dim[1]))
         rangeZ = (max(min(z1-r1, z2-r2), 0), min(max(z1+r1,z2+r2),self.dim[2]))
-        rangeX = (int(round(rangeX[0]/self.dV)), int(round(rangeX[1]/self.dV)))
-        rangeY = (int(round(rangeY[0]/self.dV)), int(round(rangeY[1]/self.dV)))  
-        rangeZ = (int(round(rangeZ[0]/self.dV)), int(round(rangeZ[1]/self.dV)))
+        rangeX = (int(round(rangeX[0]/self.dV)), min(int(round(rangeX[1]/self.dV)), self.res[0]))
+        rangeY = (int(round(rangeY[0]/self.dV)), min(int(round(rangeY[1]/self.dV)), self.res[1]))  
+        rangeZ = (int(round(rangeZ[0]/self.dV)), min(int(round(rangeZ[1]/self.dV)), self.res[2]))
         return [rangeX, rangeY, rangeZ]
     
        
@@ -898,9 +900,9 @@ class VoxelGrid :
         if ranges == None:
             return
         [(x1,x2), (y1,y2), (z1,z2)] = ranges
-        for x in range(x1, x2+1):
-            for y in range(y1, y2+1):
-                for z in range(z1, z2+1):                    
+        for x in range(x1, min(x2+1, self.res[0])):
+            for y in range(y1, min(y2+1, self.res[1])):
+                for z in range(z1, min(z2+1, self.res[2])):                    
                     if self.falls_into_frustum((x,y,z), center1, radius1, center2, radius2):
                         self[(x,y,z)] = True
     
@@ -919,12 +921,12 @@ class VoxelGrid :
         if ranges == None:
             return
         [(x1,x2), (y1,y2), (z1,z2)] = ranges
-        for x in range(x1, x2+1):
-            for y in range(y1, y2+1):
-                for z in range(z1, z2+1):
+        for x in range(x1, min(x2+1, self.res[0])):
+            for y in range(y1, min(y2+1, self.res[1])):
+                for z in range(z1, min(z2+1, self.res[2])):
                     self[(x,y,z)] = self.falls_into_sphere((x,y,z), center, radius)
     
-    def add_tree(self, tree):
+    def add_tree(self, tree, offsetVal = None):
         """
         Voxelize the whole tree
         
@@ -932,6 +934,9 @@ class VoxelGrid :
         ------------
         tree : :class:`btmorph.btstructs2.STree2`
         A tree to be voxelized
+        offsetVal : iterable
+        The tree bottom-leftmost point will be moved to the origin if set to None.
+        |  If not None, then bottom-leftmost point will be moved to *offsetVal* point
         """
         # If tree == None => do nothing
         if None == tree:
@@ -952,7 +957,10 @@ class VoxelGrid :
                 minY = y
             if z < minZ:
                 minZ = z
-        self.offset = (minX, minY, minZ)
+        if offsetVal == None:
+            self.offset = (minX, minY, minZ)
+        else:
+            self.offset = offsetVal
         # Add soma as sphere
         p = tree.get_node_with_index(1).get_content()['p3d']
         r = p.radius

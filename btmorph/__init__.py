@@ -6,6 +6,7 @@ from btstats import BTStats
 from box_counting import BoxCounter
 from tools.WeightedQuickUnionUF import WeightedQuickUnionUF
 from percolation import Percolation
+from voxel_tree_network import VoxelizedTreeNetwork
 
 #from btviz import plot_2D_SWC
 from btviz import plot_2D_SWC

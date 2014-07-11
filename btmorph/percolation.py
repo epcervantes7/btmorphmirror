@@ -111,7 +111,7 @@ class Percolation:
             raise TypeError(str(coord) + " : should be 2d or 3d")
         for i in range(0, len(coord)):
             if coord[i] < 1 or coord[i] > self.size[i]:
-                raise IndexError(str(coord) + ": Index is out of range (1..N)")
+                raise IndexError(str(coord) + ": Index is out of range (1..N) where N is" + str(self.size))
         c = list(coord)
         for i in range(0, len(c)):
             c[i] -= 1 # [1..N] => [0..N-1]
