@@ -217,17 +217,22 @@ class Percolation:
         """
         Print out the percolation grid
         """
-        if len(self.size) == 3:
-            print("Cannot plot 3d")
-            return
         for i in range(1, self.size[0]+1):
             for j in range(1, self.size[1]+1):
-                if self.is_full((i, j)):
-                    print '*',
-                elif self.is_open((i,j)):
-                    print '0',
+                if len(self.size) == 3:
+                    if self.is_full((i, j, 1)):
+                        print '*',
+                    elif self.is_open((i,j, 1)):
+                        print '0',
+                    else:
+                        print '-',
                 else:
-                    print '-',
+                    if self.is_full((i, j)):
+                        print '*',
+                    elif self.is_open((i,j)):
+                        print '0',
+                    else:
+                        print '-',
             print('\n')
             
         

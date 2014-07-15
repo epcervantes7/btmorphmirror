@@ -7,7 +7,8 @@ Defines data structure to store a network of voxelized trees
 import math
 from btmorph import VoxelGrid
 from btmorph import Percolation
-import sets
+from numpy import random as rnd
+from numpy import mean
 
 class VoxelizedTreeNetwork:
     """
@@ -39,11 +40,11 @@ class VoxelizedTreeNetwork:
             if el < 0:
                 raise TypeError('Dimensions must be greater than or equal to zero. Got ' + str(dim))
         self.dim = dim
+        self.__voxelSz__ = voxelSz
         dx,dy,dz = self.dim
         res = [int(2**round(math.log(dx/voxelSz, 2))), int(2**round(math.log(dy/voxelSz, 2))), 1]
         if dz > 0.0:
             res[2] = int(2**round(math.log(dz/voxelSz, 2)))
-        self.trees = []
         self.vg = VoxelGrid(self.dim, res)
         self.__percDirection__ = percDirection
         # Put percolation index in first place
@@ -66,21 +67,62 @@ class VoxelizedTreeNetwork:
         tree : :class:`btmorph.btstructs2.STree2`
         A tree to be voxelized and added to the network
         offset : iterable
+        Real coordinates (micrometers in 3 directions)
         Tree position in the grid
         """
         if tree == None:
             return
-        self.trees.append(tree)
-        prevKeys = set(self.vg.grid.keys())
-        self.vg.add_tree(tree, offset)
-        newKeys = set(self.vg.grid.keys())
-        diff = newKeys - prevKeys
-        print self.vg
-        for key in diff:
+        newKeys = self.vg.add_tree(tree, offset)
+        for key in newKeys:
             # Put percolation index in first place
             key = map(lambda x: x+1, list(key))
             t = key[self.__percDirection__]
             key[self.__percDirection__] = key[0]
             key[0] = t
             self.perc.open(key)
+    
+    def calc_percolation_value(self, tree, averagingN, maxIterNum = 10**5):
+        """
+        Calculate percolation value of specified set of trees.
+        |  The algorithm is as follows:
+        |   we add each tree in the percolation space with random position 
+        |   we check if the space percolates
+        |   If it does, we stop and record the number of iterations used
+        |   If it does not, we continue adding
+        
+        Parameters:
+        -----
+        tree : :class:`btmorph.btstructs2.STree2`
+        A tree to  be added
+        averagingN : int
+        Number of obtained percolation numbers to average
+        maxIterNum : int
+        Maximum number of iterations in one experiment
+        
+        Returns:
+        -----
+        percNumber : number
+        Average of percolation numbers of *averagingN* experiments
+        """
+        if tree == None:
+            return None
+        percNums = []
+        for ex in range(0, averagingN):
+            self.__init__(self.dim, self.__voxelSz__, None, self.__percDirection__)
+            print "Experiment number " + str(ex)
+            for i in range(0, maxIterNum):
+                r = [0, 0, 0]
+                # Random offset
+                for j in range(0, len(self.dim)):
+                    r[j] = rnd.rand()*self.dim[j]
+                self.add_tree(tree, r)
+                if self.perc.percolates():
+                    percNums.append(i)
+                    break
+            print percNums
+        print percNums
+        percNumber = mean(percNums)
+        return percNumber
+                    
+        
     

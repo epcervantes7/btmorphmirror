@@ -79,6 +79,21 @@ def test_add_tree():
     network.add_tree(None)
     assert(len(network.vg.grid) == sz2)
     
+def test_perc_num():
+    """
+    Test if a tree percolation number calculation works properly
+    """
+    tree1 = btmorph.STree2().read_SWC_tree_from_file("tests/horton-strahler_test_wiki_3pointsoma.swc")
+    tree1 = pca_project_tree(tree1)
+    dim = (600, 600, 0)
+    voxelSz = 4.0
+    network = VoxelizedTreeNetwork(dim, voxelSz, None, 0)
+    pni = network.calc_percolation_value(tree1, 1000)
+    network = VoxelizedTreeNetwork(dim, voxelSz, None, 1)
+    pnj = network.calc_percolation_value(tree1, 1000)
+    print pni, pnj
+
+    
     
 
     

@@ -884,9 +884,14 @@ class VoxelGrid :
         The center of the second base
         radius2 : number (real dimension)
         The second base's radius
+        
+        Returns:
+        ------------
+        points : list of tuples
+        Points that have been added
         """
         if radius1 < 0 or radius2 < 0:
-            return
+            return []
         # Filter out frustums completely out of grid
         if min(center1[0] - radius1, center2[0] - radius2) > self.dim[0] or\
            min(center1[1] - radius1, center2[1] - radius2) > self.dim[1] or\
@@ -894,17 +899,20 @@ class VoxelGrid :
            max(center1[0] + radius1, center2[0] + radius2) < 0 or\
            max(center1[1] + radius1, center2[1] + radius2) < 0 or\
            max(center1[2], center2[2]) < 0:
-               return
+               return []
         # Calculate encompassing box
         ranges = self.calc_encompassing_box_frustum(center1, radius1, center2, radius2)
         if ranges == None:
-            return
+            return []
+        points = []
         [(x1,x2), (y1,y2), (z1,z2)] = ranges
         for x in range(x1, min(x2+1, self.res[0])):
             for y in range(y1, min(y2+1, self.res[1])):
-                for z in range(z1, min(z2+1, self.res[2])):                    
+                for z in range(z1, min(z2+1, self.res[2])):
                     if self.falls_into_frustum((x,y,z), center1, radius1, center2, radius2):
+                        points.append((x,y,z))
                         self[(x,y,z)] = True
+        return points
     
     def add_sphere(self, center, radius):
         """
@@ -916,15 +924,25 @@ class VoxelGrid :
         The center of the sphere
         radius : number (real dimension)
         The sphere's radius
+        
+        Returns:
+        ------------
+        points : list of tuples
+        Points that have been added
         """
         ranges = self.calc_encompassing_box_sphere(center, radius)
         if ranges == None:
-            return
+            return []
+        points = []
         [(x1,x2), (y1,y2), (z1,z2)] = ranges
         for x in range(x1, min(x2+1, self.res[0])):
             for y in range(y1, min(y2+1, self.res[1])):
                 for z in range(z1, min(z2+1, self.res[2])):
-                    self[(x,y,z)] = self.falls_into_sphere((x,y,z), center, radius)
+                    if self.falls_into_sphere((x,y,z), center, radius):
+                        points.append((x,y,z))
+                        self[(x,y,z)] = True
+        return points
+                    
     
     def add_tree(self, tree, offsetVal = None):
         """
@@ -935,15 +953,21 @@ class VoxelGrid :
         tree : :class:`btmorph.btstructs2.STree2`
         A tree to be voxelized
         offsetVal : iterable
+        Real coordinates (micrometers in 3 directions)
         The tree bottom-leftmost point will be moved to the origin if set to None.
         |  If not None, then bottom-leftmost point will be moved to *offsetVal* point
+        
+        Returns:
+        ------------
+        points : list of tuples
+        Points that have been added
         """
         # If tree == None => do nothing
         if None == tree:
-            return
+            return []
         nodes = tree.get_nodes()
         if None == nodes or len(nodes) == 0:
-            return
+            return []
         # point with min x y and z
         minX = self.dim[0]
         minY = self.dim[1]
@@ -960,27 +984,29 @@ class VoxelGrid :
         if offsetVal == None:
             self.offset = (minX, minY, minZ)
         else:
-            self.offset = offsetVal
+            self.offset = (minX - offsetVal[0], minY - offsetVal[1], minZ - offsetVal[2])
+        points = []
         # Add soma as sphere
         p = tree.get_node_with_index(1).get_content()['p3d']
         r = p.radius
         (x,y,z) = tuple(p.xyz)
-        center = (x - minX, y - minY, z - minZ)
-        self.add_sphere(center, r)
+        center = (x - self.offset[0], y - self.offset[1], z - self.offset[2])
+        points.extend(self.add_sphere(center, r))
         # Add all segments
         for node in nodes:
             p = node.get_content()['p3d']
             (x,y,z) = tuple(p.xyz)
-            center1 = (x - minX, y - minY, z - minZ)
+            center1 = (x - self.offset[0], y - self.offset[1], z - self.offset[2])
             r1 = p.radius
             pNode = node.get_parent_node()
             if pNode == None:
                 continue
             parentP = pNode.get_content()['p3d']
             (x,y,z) = tuple(parentP.xyz)
-            center2 = (x - minX, y - minY, z - minZ)
+            center2 = (x - self.offset[0], y - self.offset[1], z - self.offset[2])
             r2 = parentP.radius
-            self.add_frustum(center1, r1, center2, r2)
+            points.extend(self.add_frustum(center1, r1, center2, r2))
+        return points
             
     def voxel_to_dimension(self, point):
         """
