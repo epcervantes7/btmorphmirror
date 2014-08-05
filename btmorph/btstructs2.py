@@ -10,7 +10,7 @@ import numpy
 import matplotlib.pyplot as plt
 import math
 
-class P3D2 :
+class P3D2(object) :
     """
     Basic container to represent and store 3D information
     """
@@ -36,7 +36,7 @@ class P3D2 :
         return "P3D2 [%.2f %.2f %.2f], R=%.2f" % (self.xyz[0],self.xyz[1],self.xyz[2],self.radius)
         #Return "P3D2 ".format, self.xyz)
 
-class SNode2 :
+class SNode2(object) :
     """
     Simple Node for use with a simple Tree (STree)
     
@@ -187,7 +187,7 @@ class SNode2 :
         ret.set_parent_node(self._parent_node)
         return ret
         
-class STree2 :
+class STree2(object) :
     '''
     Simple tree for use with a simple Node (:class:`SNode2`).
 
@@ -562,7 +562,7 @@ class STree2 :
     def __str__(self) :
         return "STree2 ("+str(len(self.get_nodes()))+" nodes)"
         
-class VoxelGrid :
+class VoxelGrid(object) :
     """
     Represents voxelized 3D model of an object with given dimensions and resolution
     Dimensions: real dimensions of an object in micrometers

@@ -10,7 +10,7 @@ from box_counting import BoxCounter
 from numpy import mean,cov,double,cumsum,dot,linalg,array,rank
 from pylab import plot,subplot,axis,stem,show,figure
 
-class BTStats :
+class BTStats(object) :
     '''
     Compute morphometric features and statistics of a single morphology
 
