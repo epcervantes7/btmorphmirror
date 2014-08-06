@@ -565,8 +565,12 @@ class STree2 :
 class VoxelGrid :
     """
     Represents voxelized 3D model of an object with given dimensions and resolution
+    
     Dimensions: real dimensions of an object in micrometers
+    
     Resolution: resolution in voxels
+    
+    :Authors: - Irina Reshodko
     """
     def __str__(self):
         return "VoxelGrid, dimensions=" + str(self.dim) + ",resoultion=" + str(self.res) + ",size=" + \
@@ -624,15 +628,17 @@ class VoxelGrid :
     def __init__(self, dimensions, resolution, tree = None):
         """
         Generate a voxel grid for given dimensions and resolution
+        
         Note: the dimensions ratio (x:y:z) must be the same as resolution ratio (rx:ry:rz)
+        
         If this is not the case, the dimensions will be expanded to meet this criteria
         
         Parameters
         ----------
         dimensions : numpy.array
-        The grid's real dimensions
+            The grid's real dimensions
         resolution : array(int)
-        The grid's resolution (number of voxels in each dimension). Must be a power of two
+            The grid's resolution (number of voxels in each dimension). Must be a power of two
         """
         if not (len(dimensions) == 3 and len(resolution) == 3):
             raise TypeError("Dimensions and resolution must be number iterables of length 3")
@@ -662,14 +668,14 @@ class VoxelGrid :
         Parameters
         ----------
         dimensions : numpy.array
-        The grid's real dimensions
+            The grid's real dimensions
         resolution : array(int)
-        The grid's resolution (number of voxels in each dimension). Must be a power of two
+            The grid's resolution (number of voxels in each dimension). Must be a power of two
         
         Returns
         ----------
         New dimensions :  numpy.array
-        An expanded (if neccessary) dimensions
+            An expanded (if neccessary) dimensions
         """
         if not (len(dimensions) == 3 and len(resolution) == 3):
             raise TypeError("Dimension and resolution must be number iterables of length 3")
@@ -711,11 +717,11 @@ class VoxelGrid :
         Parameters
         ----------
         int_num : int
-        Input number
+            Input number
         
         Returns
         ----------
-        True if N=2^m and False otherwise
+        res : True if N=2^m and False otherwise
         """
         return isinstance(int_num, int) and int_num > 0 and (int_num & (int_num - 1) == 0)
         
@@ -741,14 +747,14 @@ class VoxelGrid :
         Parameters
         ------------
         center : array or tuple of numbers (real dimensions)
-        The center of the sphere
+            The center of the sphere
         radius : number (real dimension)
-        The sphere's radius
+            The sphere's radius
         
         Returns
         ------------
-        Array of ranges (mapped to resolution) for x, y and z: [(x1,x2), (y1,y2), (z1,z2)]
-        or None if there is no intersection between the sphere and the grid
+        res : Array of ranges (mapped to resolution) for x, y and z: [(x1,x2), (y1,y2), (z1,z2)] 
+            or None if there is no intersection between the sphere and the grid
         """
         if radius < 0:
             return None
@@ -771,12 +777,13 @@ class VoxelGrid :
         ------------
         point : coordinates of the point of interest (voxel coordinates)
         center : array or tuple of numbers (real dimensions)
-        The center of the sphere
+            The center of the sphere
         radius : number (real dimension)
-        The sphere's radius
+            The sphere's radius
         
         Returns:
-        True if the point falls within the sphere and False otherwise
+        ------------
+        res : True if the point falls within the sphere and False otherwise
         """
         if radius < 0:
             return False
@@ -796,16 +803,17 @@ class VoxelGrid :
         ------------
         point : coordinates of the point of interest (voxel coordinates)
         center1 : array or tuple of numbers (real dimensions)
-        The center of the first base
+            The center of the first base
         center2 : array or tuple of numbers (real dimensions)
-        The center of the second base
+            The center of the second base
         radius1 : number (real dimension)
-        Radius of the first base
+            Radius of the first base
         radius2 : number (real dimension)
-        Radius of the second base
+            Radius of the second base
         
         Returns:
-        True if the point falls within the frustum and False otherwise
+        ------------
+        res : True if the point falls within the frustum and False otherwise
         """
         if radius1 < 0 or radius2 < 0:
             return False
@@ -843,18 +851,18 @@ class VoxelGrid :
         Parameters
         -----------
         center1 : tuple of 3 numbers 
-        Center of the first base
+            Center of the first base
         radius1 : number
-        Radius of the first base
+            Radius of the first base
         center2 : tuple of 3 numbers 
-        Center of the second base
+            Center of the second base
         radius12 : number
-        Radius of the second base 
+            Radius of the second base 
         
         Returns
         -----------
-        List of ranges for each axis (in voxels)
-        [(x1,x2), (y1,y2), (z1,z2)]
+        res : List of ranges for each axis (in voxels)
+            [(x1,x2), (y1,y2), (z1,z2)]
         """
         if radius1 == None or radius2 == None or center1 == None or center2 == None:
             return None
@@ -880,18 +888,18 @@ class VoxelGrid :
         Parameters
         ------------
         center1 : array or tuple of numbers (real dimensions)
-        The center of the first base
+            The center of the first base
         radius1 : number (real dimension)
-        The first base's radius
+            The first base's radius
         center2 : array or tuple of numbers (real dimensions)
-        The center of the second base
+            The center of the second base
         radius2 : number (real dimension)
-        The second base's radius
+            The second base's radius
         
         Returns:
         ------------
         points : list of tuples
-        Points that have been added
+            Points that have been added
         """
         if radius1 < 0 or radius2 < 0:
             return []
@@ -924,9 +932,9 @@ class VoxelGrid :
         Parameters
         ------------
         center : array or tuple of numbers (real dimensions)
-        The center of the sphere
+            The center of the sphere
         radius : number (real dimension)
-        The sphere's radius
+            The sphere's radius
         
         Returns:
         ------------
@@ -954,11 +962,13 @@ class VoxelGrid :
         Parameters
         ------------
         tree : :class:`btmorph.btstructs2.STree2`
-        A tree to be voxelized
+            A tree to be voxelized
         offsetVal : iterable
-        Real coordinates (micrometers in 3 directions)
-        The tree bottom-leftmost point will be moved to the origin if set to None.
-        |  If not None, then bottom-leftmost point will be moved to *offsetVal* point
+            Real coordinates (micrometers in 3 directions)
+            
+            The tree bottom-leftmost point will be moved to the origin if set to None.
+       
+            If not None, then bottom-leftmost point will be moved to *offsetVal* point
         
         Returns:
         ------------
@@ -1018,11 +1028,11 @@ class VoxelGrid :
         Parameters
         ------------
         point : tuple of 3 numbers
-        A point to convert
+            A point to convert
         
         Returns
         ------------
-        Coordinates in real dimension values (micrometers)
+        res : Coordinates in real dimension values (micrometers)
         """
         if point == None:
             return None
@@ -1036,11 +1046,11 @@ class VoxelGrid :
         Parameters
         ------------
         point : tuple of 3 numbers
-        A point to convert
+            A point to convert
         
         Returns
         ------------
-        Voxel coordinates
+        res : Voxel coordinates
         """
         if point == None:
             return None

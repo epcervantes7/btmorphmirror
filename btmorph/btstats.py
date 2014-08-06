@@ -262,6 +262,7 @@ class BTStats :
     def global_horton_strahler(self):
         """
         Calculate Horton-Strahler number at the root
+        
         See :func:`local_horton_strahler`
     
         Parameters
@@ -269,7 +270,7 @@ class BTStats :
         
         Returns
         ---------
-        Horton-Strahler number at the root
+        hs : Horton-Strahler number at the root
         """
         return self.local_horton_strahler(self._tree.get_root())
 
@@ -717,8 +718,19 @@ class BTStats :
     def fractal_dimension_box_counting_core(self, vg):
         """
         Calculates fractal dimension of the given voxel grid by this formula:
+        
         D = lim e -> 0 of (log(Ne)/log(e))
+        
         http://rsbweb.nih.gov/ij/plugins/fraclac/FLHelp/Glossary.htm#db
+        
+        Parameters
+        ----------
+        vg : :class:`btmorph.btstructs2.VoxelGrid`
+            Ready to use voxel grid
+            
+        Returns
+        -------
+        lacunarity : float
         """
         # Box counting
         bc = BoxCounter(vg)        
@@ -735,7 +747,9 @@ class BTStats :
     def lacunarity_box_counting_core(self, vg):
         """
         Calculate lacunarity based on standard fixed grid box counting method with coef. of variation
+        
         See wikipedia for more information: http://en.wikipedia.org/wiki/Lacunarity#equation_1
+        
         Note: here we ignore orientations (all boxes start from (0,0,0)) and box sizes are always power of two
         
         Parameters
@@ -784,14 +798,20 @@ class BTStats :
         self.vg = VoxelGrid(dim, res, self._tree)
         return self.frac_dim_lac(self.vg)
         
-    def frac_dim_lac(self, vg=None):
+    def frac_dim_lac(self, vg):
         """
         Compute both lacunarity and fractal dimension
+        
         Calculates lacunarity based on standard fixed grid box counting method with coef. of variation
+        
         See wikipedia for more information: http://en.wikipedia.org/wiki/Lacunarity#equation_1
+        
         Note: here we ignore orientations (all boxes start from (0,0,0)) and box sizes are always power of two
+        
         Calculates fractal dimension of the given voxel grid by this formula:
+        
         D = lim e -> 0 of (log(Ne)/log(e))
+        
         http://rsbweb.nih.gov/ij/plugins/fraclac/FLHelp/Glossary.htm#db
         
         Parameters
@@ -823,27 +843,4 @@ class BTStats :
         #----
         lc_slope,interc_lac = np.polyfit(np.log(szs), np.log(lambdas), 1)
         return (lc, -slope)
-        
-    def pca(self, A):
-        """ performs principal components analysis 
-         (PCA) on the n-by-p data matrix A
-         Rows of A correspond to observations, columns to variables. 
-        
-         Returns :  
-          coeff :
-        is a p-by-p matrix, each column containing coefficients 
-        for one principal component.
-          score : 
-        the principal component scores; that is, the representation 
-        of A in the principal component space. Rows of SCORE 
-        correspond to observations, columns to components.
-          latent : 
-        a vector containing the eigenvalues 
-        of the covariance matrix of A.
-        source: http://glowingpython.blogspot.jp/2011/07/principal-component-analysis-with-numpy.html
-        """
-        # computing eigenvalues and eigenvectors of covariance matrix
-        M = (A-mean(A.T,axis=1)).T # subtract the mean (along columns)
-        [latent,coeff] = linalg.eig(cov(M)) # attention:not always sorted
-        score = dot(coeff.T,M) # projection of the data in the new space
-        return coeff,score,latent
+

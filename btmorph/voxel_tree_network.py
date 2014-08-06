@@ -23,16 +23,16 @@ class VoxelizedTreeNetwork:
         Parameters:
         -------
         dim : iterable
-        Global dimensions of the network in x, y and z direction in micrometers.
-        |  If dim[z] == 0 then a 2d voxel grid will be generated
+            Global dimensions of the network in x, y and z direction in micrometers.
+            If dim[z] == 0 then a 2d voxel grid will be generated
         voxelSz : number
-        Dimensions of one voxel in x, y and z direction in micrometers. Must be greater than 0 
-        |  This parameter determines resolution of the voxel grid.
-        |  Will be adjusted according to the requirements of the grid size (power of two)
+            Dimensions of one voxel in x, y and z direction in micrometers. Must be greater than 0 
+            This parameter determines resolution of the voxel grid.
+            Will be adjusted according to the requirements of the grid size (power of two)
         trees : iterable of :class:`btmorph.btstructs2.STree2`
-        Trees to be added to the network. Can be added later one be one
+            Trees to be added to the network. Can be added later one be one
         percDirection : int
-        Integer >= 0 and <=2. Specifies direction of percolation. Can only be set once.
+            Integer >= 0 and <=2. Specifies direction of percolation. Can only be set once.
         """
         if not len(dim) == 3:
             raise TypeError('Dimensions: Iterable of length 3 expected, got ' + type(dim) + "of length " + len(dim))
@@ -68,10 +68,10 @@ class VoxelizedTreeNetwork:
         Parameters:
         -------
         tree : :class:`btmorph.btstructs2.STree2`
-        A tree to be voxelized and added to the network
+            A tree to be voxelized and added to the network
         offset : iterable
-        Real coordinates (micrometers in 3 directions)
-        Tree position in the grid
+            Real coordinates (micrometers in 3 directions)
+            Tree position in the grid
         """
         if tree == None:
             return
@@ -87,27 +87,27 @@ class VoxelizedTreeNetwork:
     def calc_percolation_value(self, tree, averagingN, maxIterNum = 10**5):
         """
         Calculate percolation value of specified set of trees.
-        |  The algorithm is as follows:
-        |   we add each tree in the percolation space with random position 
-        |   we check if the space percolates
-        |   If it does, we stop and record the number of iterations used
-        |   If it does not, we continue adding
+          The algorithm is as follows:
+           we add each tree in the percolation space with random position 
+           we check if the space percolates
+           If it does, we stop and record the number of iterations used
+           If it does not, we continue adding
         
         Parameters:
         -----
         tree : :class:`btmorph.btstructs2.STree2`
-        A tree to  be added
+            A tree to  be added
         averagingN : int
-        Number of obtained percolation numbers to average
+            Number of obtained percolation numbers to average
         maxIterNum : int
-        Maximum number of iterations in one experiment
+            Maximum number of iterations in one experiment
         details : list
-        Peroclation values for every experiment will be stored in this list if not None
+            Peroclation values for every experiment will be stored in this list if not None
         
         Returns:
         -----
         percNumber : number
-        Average of percolation numbers of *averagingN* experiments
+            Average of percolation numbers of *averagingN* experiments
         """
         if tree == None:
             return None
