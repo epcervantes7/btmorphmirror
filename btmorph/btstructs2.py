@@ -719,17 +719,20 @@ class VoxelGrid :
         """
         return isinstance(int_num, int) and int_num > 0 and (int_num & (int_num - 1) == 0)
         
-    def plot(this):
+    def plot(self):
         """ 
         Plot the grid as a scattered 3d plot
         """
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-        keys = this.grid.keys();
+        keys = self.grid.keys();
         xs = map(lambda (x,y,z): x, keys)
         ys = map(lambda (x,y,z): y, keys)
         zs = map(lambda (x,y,z): z, keys)
         ax.scatter(xs, ys, zs, zdir="z")
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
     
     def calc_encompassing_box_sphere(self, center, radius):
         """

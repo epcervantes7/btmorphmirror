@@ -85,12 +85,12 @@ def test_perc_num():
     """
     tree1 = btmorph.STree2().read_SWC_tree_from_file("tests/horton-strahler_test_wiki_3pointsoma.swc")
     tree1 = pca_project_tree(tree1)
-    dim = (600, 600, 0)
+    dim = (10*60, 10*60, 0)
     voxelSz = 4.0
     network = VoxelizedTreeNetwork(dim, voxelSz, None, 0)
-    pni = network.calc_percolation_value(tree1, 1000)
+    pni = network.calc_percolation_value(tree1, 10)
     network = VoxelizedTreeNetwork(dim, voxelSz, None, 1)
-    pnj = network.calc_percolation_value(tree1, 1000)
+    pnj = network.calc_percolation_value(tree1, 10)
     print pni, pnj
 
     
