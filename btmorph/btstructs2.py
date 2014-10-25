@@ -40,7 +40,7 @@ class SNode2(object) :
     """
     Simple Node for use with a simple Tree (STree)
     
-    By design, the "_content" should be a dictionary. (2013-03-08)
+    By design, the "content" should be a dictionary. (2013-03-08)
     """
     
     def __init__(self,index) :
@@ -52,13 +52,9 @@ class SNode2(object) :
         # index : int
         #    Index, unique name of the SNode2
         # """
-        self.parent = property(self.get_parent, self.set_parent, None, None)
         self.parent = None
-        self.index = property(self.get_index, self.set_index, None, None)
         self.index = index
-        self.children = property(self.get_children, self.set_children, None, None)
         self.children = []
-        self.content = property(self.get_content, self.set_content, None, None)
         self.content = {}
 
     def get_parent(self) :
@@ -70,8 +66,8 @@ class SNode2(object) :
         parent : :class:`SNode2`
            In case of the root, None is returned.Otherwise a :class:`SNode2` is returned
         """          
-        return self._parent
-        
+        return self.__parent
+
     def set_parent(self,parent) :
         """
         Set the parent node of a given other node
@@ -80,8 +76,10 @@ class SNode2(object) :
         ----------
         node : :class:`SNode2`
         """
-        self._parent = parent
-        
+        self.__parent = parent
+
+    parent = property(get_parent, set_parent)
+    
     def get_index(self) :
         """
         Return the index of this node
@@ -90,7 +88,7 @@ class SNode2(object) :
         -------
         index : int
         """
-        return self._index
+        return self.__index
         
     def set_index(index) :
         """
@@ -101,8 +99,10 @@ class SNode2(object) :
 
         index : int
         """
-        self._index = index
+        self.__index = index
     
+    index = property(get_index, set_index)
+
     def get_children(self) :
         """
         Return the children nodes of this one (if any)
@@ -112,7 +112,7 @@ class SNode2(object) :
         children : list :class:`SNode2`
            In case of a leaf an empty list is returned
         """                  
-        return self._children
+        return self.__children
         
     def set_children(self, children) :
         """
@@ -123,7 +123,9 @@ class SNode2(object) :
 
         children: list :class:`SNode2`
         """
-        self._children = children
+        self.__children = children
+
+    children = property(get_children, set_children)
 
     def get_content(self) :
         """
@@ -134,7 +136,7 @@ class SNode2(object) :
         parent : :class:`SNode2`
            In case of the root, None is returned.Otherwise a :class:`SNode2` is returned
         """                  
-        return self._content
+        return self.__content
     
     def set_content(self,content) :
         """
@@ -146,10 +148,12 @@ class SNode2(object) :
             dict with content. For use in btmorph at least a 'p3d' entry should be present
         """        
         if isinstance(content,dict) :
-            self._content = content 
+            self.__content = content 
         else :
             raise Exception("SNode2.set_content must receive a dict")    
-        
+
+    content = property(get_content, set_content)
+
     def add_child(self,child_node) :
         """
         add a child to the children list of a given node
@@ -164,9 +168,9 @@ class SNode2(object) :
         """
         Clear the node. Unclear why I ever implemented this. Probably to cover up some failed garbage collection
         """
-        self._parent = None
-        self._content = {}
-        self._children = []
+        self.parent = None
+        self.content = {}
+        self.children = []
             
     def remove_child(self, child) :
         """
@@ -177,22 +181,22 @@ class SNode2(object) :
         node :  :class:`SNode2`
             If the child doesn't exist, you get into problems.
         """
-        self._children.remove(child)
+        self.children.remove(child)
         
     def __str__(self) :
         return 'SNode2 (ID: '+str(self.index)+')'
 
     def __lt__(self,other):
-        if self._index < other._index :
+        if self.index < other.index :
             return True
     def __le__(self,other):
-        if self._index <= other._index :
+        if self.index <= other.index :
             return True
     def __gt__(self,other):
-        if self._index > other._index :
+        if self.index > other.index :
             return True
     def __ge__(self,other):
-        if self._index >= other._index :
+        if self.index >= other.index :
             return True
     
     def __copy__(self) : # customization of copy.copy

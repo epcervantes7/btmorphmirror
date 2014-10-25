@@ -598,8 +598,8 @@ def _expand_dendrogram(cNode,swc_tree,off_x,off_y,radius,transform='plain') :
     
     if swc_tree.is_root(cNode) :
         print 'i am expanding the root'
-        children.remove(swc_tree.get_node_with_index(2))
-        children.remove(swc_tree.get_node_with_index(3))
+        cNode.children.remove(swc_tree.get_node_with_index(2))
+        cNode.children.remove(swc_tree.get_node_with_index(3))
     
     for cChild in cNode.children :
         l = _path_between(swc_tree,cChild,cNode,transform=transform)

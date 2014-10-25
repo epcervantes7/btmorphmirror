@@ -8,15 +8,17 @@ class STree2 :
     As such, this is a generic implementation of a tree structure as a linked list.
     '''
     
-    def __init__(self) :
-        self.root = property(self.get_root, self.set_root, None, None)
+    def __init__(self):
         self.root = None
-        
+
     def __iter__(self):
         nodes = []
         self._gather_nodes(self.root,nodes)
         for n in nodes:
             yield n
+    
+    def __getitem__(self,index):
+        return self._find_node(self.root,index)
 
     def set_root(self,node) :
         """
@@ -27,10 +29,9 @@ class STree2 :
         node : :class:`SNode2`
             to-be-root node
         """
-        self._root = node
-        if not self.root is None:
-            self.root.parent = None
-        
+        if not node is None:
+            node.parent = None
+        self.__root = node
     def get_root(self) :
         """
         Obtain the root node
@@ -39,8 +40,9 @@ class STree2 :
         -------
         root : :class:`SNode2`
         """
-        return self._root
-        
+        return self.__root
+    root = property(get_root, set_root)
+    
     def is_root(self,node) :
         """
         Check whether a node is the root node
@@ -367,7 +369,9 @@ class STree2 :
                     t_node = SNode2(index)
                     t_node.content = {'p3d': tP3D}
                     all_nodes[index] = (t_node,parent_index)
-                
+                else:
+                    print type,index
+
         for index,(node,parent_index) in all_nodes.items() :
             if index == 1:
                 self.root = node
