@@ -90,7 +90,7 @@ class SNode2(object) :
         """
         return self.__index
         
-    def set_index(index) :
+    def set_index(self,index) :
         """
         Set the unqiue name of a node
 
@@ -977,7 +977,7 @@ class VoxelGrid(object) :
         minY = self.dim[1]
         minZ = self.dim[2]
         for node in nodes:
-            p = node.get_content()['p3d']
+            p = node.content['p3d']
             (x,y,z) = tuple(p.xyz)
             if x < minX:
                 minX = x
@@ -987,21 +987,21 @@ class VoxelGrid(object) :
                 minZ = z
         self.offset = (minX, minY, minZ)
         # Add soma as sphere
-        p = tree.get_node_with_index(1).get_content()['p3d']
+        p = tree.get_node_with_index(1).content['p3d']
         r = p.radius
         (x,y,z) = tuple(p.xyz)
         center = (x - minX, y - minY, z - minZ)
         self.add_sphere(center, r)
         # Add all segments
         for node in nodes:
-            p = node.get_content()['p3d']
+            p = node.content['p3d']
             (x,y,z) = tuple(p.xyz)
             center1 = (x - minX, y - minY, z - minZ)
             r1 = p.radius
-            pNode = node.get_parent_node()
+            pNode = node.parent
             if pNode == None:
                 continue
-            parentP = pNode.get_content()['p3d']
+            parentP = pNode.content['p3d']
             (x,y,z) = tuple(parentP.xyz)
             center2 = (x - minX, y - minY, z - minZ)
             r2 = parentP.radius

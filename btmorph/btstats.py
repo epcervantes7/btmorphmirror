@@ -537,12 +537,11 @@ class BTStats(object) :
 
     def _find_remote_child(self,node) :
         t_node = node
-        while len(node.children) < 2 :
-            if len(node.children) == 0 :
+        while len(t_node.children) < 2 :
+            if len(t_node.children) == 0 :
                 # print t_node, '-> found a leaf'
                 return t_node
-            t_node = node.children[0]
-            children = t_node.children
+            t_node = t_node.children[0]
         # print t_node,' -> found a bif'
         return t_node
 

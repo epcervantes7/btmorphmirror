@@ -677,7 +677,7 @@ def pca_project_tree(tree):
     """
     nodes = tree.get_nodes()
     N = len(nodes)
-    coords = map(lambda n: n.get_content()['p3d'].xyz, nodes)
+    coords = map(lambda n: n.content['p3d'].xyz, nodes)
     points = np.transpose(coords)
     coeff, score, latent = _pca(points.T)
     score[2,:] = [0]*N
@@ -685,7 +685,7 @@ def pca_project_tree(tree):
     # Move soma to origin
     translate = score[:,0]
     for i in range(0, N):
-        nodes[i].get_content()['p3d'].xyz = newp[i] - translate
+        nodes[i].content['p3d'].xyz = newp[i] - translate
     import time
     fmt = '%Y_%b_%d_%H_%M_%S'
     now = time.strftime(fmt)
