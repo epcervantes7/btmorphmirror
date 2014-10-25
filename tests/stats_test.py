@@ -110,7 +110,7 @@ def test_degree() :
     """
     Topological degree
     """
-    max_degree = stats.degree_of_node(swc_tree.get_root())
+    max_degree = stats.degree_of_node(swc_tree.root)
     print 'max_degree = ', max_degree
     assert(max_degree == 134)
     
@@ -267,7 +267,7 @@ def test_local_horton_strahler():
     # Real test     
     all_nodes = test_trees[1].get_nodes()
     for node in all_nodes:
-        r = int(node.get_content()['p3d'].radius)
+        r = int(node.content['p3d'].radius)
         assert(r == stats.local_horton_strahler(node))
     pass
 
@@ -276,3 +276,4 @@ def test_global_horton_strahler():
     global test_stats
     assert(4  == test_stats.global_horton_strahler())
     pass
+
