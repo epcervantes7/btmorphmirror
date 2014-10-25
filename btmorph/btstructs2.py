@@ -495,8 +495,8 @@ class STree2(object) :
         n.append(from_node)
         if from_node == to_node :
             return
-        if not node.parent is None :
-            self._go_up_from_until(node.parent,to_node,n)
+        if not from_node.parent is None :
+            self._go_up_from_until(from_node.parent,to_node,n)
 
     def write_SWC_tree_to_file(self,file_n) :
         """
