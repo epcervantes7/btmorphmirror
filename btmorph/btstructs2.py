@@ -1,10 +1,11 @@
 """
 File contains:
-    P3D2
-    SNode2   
-    STree2
-    VoxelGrid (Irina Reshodko)
-B. Torben-Nielsen (legacy code)
+
+    - :class:`P3D2`
+    - :class:`SNode2`
+    - :class:`STree2`
+    - :class:`VoxelGrid` (by Irina Reshodko)
+B. Torben-Nielsen (legacy code). Daniele Linaro wrote the iterators.
 """
 import numpy
 import matplotlib.pyplot as plt
