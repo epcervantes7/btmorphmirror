@@ -37,6 +37,14 @@ def perform_1D_population_analysis(destination,filter="*.swc",depth="Y",bar=[200
     filter :  string
         filter to select SWC files. Default is "*.swc". See `glob
         <https://docs.python.org/2/library/glob.html>`_ documentation for more advanced filters
+    depth : string
+        Dimension that indicates "depth"/distance from top. Default is "Y"; NeuroMac generated files use "Z".
+    bar : array of float
+        Include a scale-bar with the specified dimensions
+    max_n : int
+        To perform the analysis on a subset of morphologies specify a \
+        number. Default is None and all morphologies will be taken \
+        into account.
     post_name : string
         string appended to the file name when saving. Default None
     """
