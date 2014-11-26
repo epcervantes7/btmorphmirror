@@ -6,7 +6,7 @@ Contains
 by Irina Reshodko
 """
 
-from btstructs2 import VoxelGrid
+from grids import VoxelGrid
 import math
 
 class BoxCounter:

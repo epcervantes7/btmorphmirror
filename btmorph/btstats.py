@@ -5,7 +5,7 @@ import scipy
 import scipy.optimize
 import matplotlib.pyplot as plt
 import pylab as p, time
-from btstructs2 import VoxelGrid
+from grids import VoxelGrid
 from box_counting import BoxCounter
 from numpy import mean,cov,double,cumsum,dot,linalg,array,rank
 from pylab import plot,subplot,axis,stem,show,figure
