@@ -573,7 +573,7 @@ class STree2(object) :
         """
         # check soma-representation: 3-point soma or a non-standard representation
         soma_type = self._determine_soma_type(file_n)
-        print "STree2::read_SWC_tree_from_file found soma_type=%i" % soma_type
+        #print "STree2::read_SWC_tree_from_file found soma_type=%i" % soma_type
         
         file = open(file_n,'r')
         all_nodes = dict()
@@ -592,22 +592,86 @@ class STree2(object) :
                     tP3D = P3D2(np.array([x,y,z]),radius,swc_type)
                     t_node = SNode2(index)
                     t_node.content = {'p3d': tP3D}
-                    all_nodes[index] = (t_node,parent_index)
+                    all_nodes[index] = (swc_type,t_node,parent_index)
                 else:
                     print type,index
 
-        for index,(node,parent_index) in all_nodes.items() :
-            if index == 1:
-                self.root = node
-            elif index in (2,3):
-                # the 3-point soma representation (http://neuromorpho.org/neuroMorpho/SomaFormat.html)
-                self.add_node_with_parent(node,self.root)
-            else:
-                parent_node = all_nodes[parent_index][0]
-                self.add_node_with_parent(node,parent_node)
+        #print "len(all_nodes): ", len(all_nodes)
 
+        # IF 3-point soma representation
+        if soma_type == 1:
+            for index,(swc_type,node,parent_index) in all_nodes.items() :
+                if index == 1:
+                    self.root = node
+                elif index in (2,3):
+                    # the 3-point soma representation (http://neuromorpho.org/neuroMorpho/SomaFormat.html)
+                    self.add_node_with_parent(node,self.root)
+                else:
+                    parent_node = all_nodes[parent_index][1]
+                    self.add_node_with_parent(node,parent_node)
+        # IF multiple cylinder soma representation
+        elif soma_type ==2:
+            self.root = all_nodes[1][1]
+            
+            # get all some info
+            soma_cylinders = []
+            connected_to_root = []
+            for index,(swc_type,node,parent_index) in all_nodes.items() :
+                if swc_type == 1 and not index == 1:
+                    soma_cylinders.append((node,parent_index))
+                    if index > 1 :
+                        connected_to_root.append(index)
+
+            # make soma
+            s_node_1, s_node_2 = self._make_soma_from_cylinders(soma_cylinders,all_nodes)
+            
+            # add soma
+            self.root = all_nodes[1][1]
+            self.add_node_with_parent(s_node_1,self.root)
+            self.add_node_with_parent(s_node_2,self.root)
+
+            # add the other points            
+            for index,(swc_type,node,parent_index) in all_nodes.items() :
+                if swc_type == 1:
+                    pass
+                else:
+                    parent_node = all_nodes[parent_index][1]
+                    if parent_node.index in connected_to_root:
+                        self.add_node_with_parent(node,self.root)
+                    else:
+                        self.add_node_with_parent(node,parent_node)
+                    
         return self
 
+    def _make_soma_from_cylinders(self,soma_cylinders,all_nodes):
+        """Now construct 3-point soma
+        step 1: calculate surface of all cylinders
+        step 2: make 3-point representation with the same surface"""
+        
+        total_surf = 0
+        for (node,parent_index) in soma_cylinders:
+            n = node.content["p3d"]
+            p = all_nodes[parent_index][1].content["p3d"]
+            H = np.sqrt(np.sum((n.xyz-p.xyz)**2))
+            surf = 2*np.pi*n.radius*H
+            total_surf = total_surf+surf
+        print "total_surf=", total_surf
+
+        # define apropriate radius
+        radius=np.sqrt(total_surf/(4*np.pi))
+        #print "found radius: ", radius
+
+        s_node_1 = SNode2(2)
+        r = self.root.content["p3d"]
+        rp = r.xyz
+        s_p_1 = P3D2(np.array([rp[0],rp[1]-radius,rp[2]]),radius,1)
+        s_node_1.content = {'p3d': s_p_1}
+        s_node_2 = SNode2(3)
+        s_p_2 = P3D2(np.array([rp[0],rp[1]+radius,rp[2]]),radius,1)
+        s_node_2.content = {'p3d': s_p_2}
+        
+        return s_node_1,s_node_2
+    
     def _determine_soma_type(self,file_n):
         """
         Costly method to determine the soma type used in the SWC file.
