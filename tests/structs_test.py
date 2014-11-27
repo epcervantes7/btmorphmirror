@@ -37,3 +37,21 @@ def test_load_and_write_swc():
     print 'len(swc_tree2)', len(swc_tree2.get_nodes()) 
     
     assert(len(swc_tree2.get_nodes()) == 562)
+
+def test_soma_type_3ps():
+    """
+    Test if SWC 3-point soma  description is correctly recognized
+    """
+    swc_tree1 = STree2()
+    soma_type = swc_tree1._determine_soma_type("tests/v_e_moto1.CNG.swc")
+    assert(soma_type == 1)
+
+def test_soma_type_mc():
+    """
+    Test if SWC multiple cylinder soma  description is correctly recognized
+    """
+    swc_tree1 = STree2()
+    soma_type = swc_tree1._determine_soma_type("tests/soma_types/l22.CNG.swc")
+    assert(soma_type == 2)
+
+        

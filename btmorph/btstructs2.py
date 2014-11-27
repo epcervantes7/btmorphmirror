@@ -502,7 +502,10 @@ class STree2(object) :
 
     def write_SWC_tree_to_file(self,file_n) :
         """
-        Non-specific for a tree. Used to write an SWC file from a morphology stored in this tree.
+        Non-specific for a tree.
+
+        Used to write an SWC file from a morphology stored in this
+        :class:`STree2`. Output uses the 3-point soma standard.
 
         Parameters
         ----------
@@ -566,25 +569,27 @@ class STree2(object) :
         Parameters
         -----------
         file_n : str
-        name of the file to open
-        soma_type : int
-            [1-5], see specs
+            name of the file to open
         """
+        # check soma-representation: 3-point soma or a non-standard representation
+        soma_type = self._determine_soma_type(file_n)
+        print "STree2::read_SWC_tree_from_file found soma_type=%i" % soma_type
+        
         file = open(file_n,'r')
         all_nodes = dict()
         for line in file :
             if not line.startswith('#') :
                 split = line.split()
                 index = int(split[0].rstrip())
-                type = int(split[1].rstrip())
+                swc_type = int(split[1].rstrip())
                 x = float(split[2].rstrip())
                 y = float(split[3].rstrip())
                 z = float(split[4].rstrip())
                 radius = float(split[5].rstrip())
                 parent_index = int(split[6].rstrip())
 
-                if type in types:
-                    tP3D = P3D2(np.array([x,y,z]),radius,type)
+                if swc_type in types:
+                    tP3D = P3D2(np.array([x,y,z]),radius,swc_type)
                     t_node = SNode2(index)
                     t_node.content = {'p3d': tP3D}
                     all_nodes[index] = (t_node,parent_index)
@@ -602,6 +607,41 @@ class STree2(object) :
                 self.add_node_with_parent(node,parent_node)
 
         return self
+
+    def _determine_soma_type(self,file_n):
+        """
+        Costly method to determine the soma type used in the SWC file.
+        This method searches the whole file for soma entries.  
+
+        Parameters
+        ----------
+        file_n : string
+            Name of the file containing the SWC description
+
+        Returns
+        -------
+        soma_type : int
+            Integer indicating one of the su[pported SWC soma formats.
+            1: Default three-point soma, 2: multiple cylinder description,
+            3: otherwise [not suported in btmorph]
+        """
+        file = open(file_n,"r")
+        somas = 0
+        for line in file:
+            if not line.startswith('#') :
+                split = line.split()
+                index = int(split[0].rstrip())
+                s_type = int(split[1].rstrip())
+                if s_type == 1 :
+                    somas = somas +1
+        file.close()
+        if somas == 3:
+            return 1
+        elif somas < 3:
+            return 3
+        else:
+            return 2
+        
 
     def __str__(self) :
         return "STree2 ("+str(len(self.get_nodes()))+" nodes)"
