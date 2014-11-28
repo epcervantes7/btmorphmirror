@@ -32,6 +32,11 @@ Visualization
    :undoc-members:
    :show-inheritance:
 
+.. automodule:: btmorph.btviz_dynamic
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 Wrappers / Tools
 -----------------

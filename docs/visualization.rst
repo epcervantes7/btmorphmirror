@@ -104,3 +104,16 @@ Invoke the following code to generate a plot as illustrated below (left). A rota
 | |p3d|   | |r3d|     |
 +---------+-----------+
 
+Animation
+----------
+
+A simple animation is provided to visually inspect a morphology in 3D.
+The animation rotates a morphology around the longest axis (generally
+the Y-axis in NeuroMorpho.org)
+::
+   btmorph.animate_SWC_rotation(full_fn,color_scheme='default',out_n=full_fn+"_anim")
+
+.. image:: figures/CTh5080306F.CNG.swc_anim.gif
+  :scale: 100
+
+tjak
