@@ -20,6 +20,14 @@ class BTStats(object) :
     '''
     
     def __init__(self,tree) :
+        """
+        Constructor.
+
+        Parameters
+        -----------
+        tree : :class:`STree2`
+            Neuronal tree for which to compute morphometrics
+        """
         self._tree = tree
         self._all_nodes = self._tree.get_nodes()
         
