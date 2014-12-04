@@ -62,6 +62,7 @@ def test_load_swc_mcs1():
     all_nodes1 = swc_tree.get_nodes()
     print '\nlen(swc_tree1)', len(all_nodes1) 
     assert(len(all_nodes1) == 1595)
+    assert(1416 < btmorph.BTStats(swc_tree).approx_soma() < 1417)
 
 def test_load_swc_mcs2():
     '''
@@ -73,4 +74,5 @@ def test_load_swc_mcs2():
     all_nodes1 = swc_tree.get_nodes()
     print '\nlen(swc_tree1)', len(all_nodes1) 
     assert(len(all_nodes1) == 8970)
+    assert(503 < btmorph.BTStats(swc_tree).approx_soma() < 504)
     

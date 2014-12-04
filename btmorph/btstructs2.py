@@ -550,7 +550,7 @@ class STree2(object) :
         
     def read_SWC_tree_from_file(self,file_n,types=range(1,10)) :
         """
-        Non-specific for a tree.
+        Non-specific for a "tree data structure"
         Read and load a morphology from an SWC file and parse it into
         an STree2 object. 
 
@@ -627,6 +627,7 @@ class STree2(object) :
             
             # add soma
             self.root = all_nodes[1][1]
+            self.root.content["p3d"].radius = s_node_1.content["p3d"].radius
             self.add_node_with_parent(s_node_1,self.root)
             self.add_node_with_parent(s_node_2,self.root)
 
@@ -653,9 +654,10 @@ class STree2(object) :
             n = node.content["p3d"]
             p = all_nodes[parent_index][1].content["p3d"]
             H = np.sqrt(np.sum((n.xyz-p.xyz)**2))
-            surf = 2*np.pi*n.radius*H
+            surf = 2*np.pi*p.radius*H
+            #print "(node %i) surf as cylinder:  %f (R=%f, H=%f), P=%s" % (node.index,surf,n.radius,H,p)
             total_surf = total_surf+surf
-        print "total_surf=", total_surf
+        print "found 'multiple cylinder soma' w/ total soma surface=", total_surf
 
         # define apropriate radius
         radius=np.sqrt(total_surf/(4*np.pi))
