@@ -14,7 +14,8 @@ from btmorph import config
 
 def animate_SWC_rotation(file_name,offset=None,align=True,\
                          color_scheme="neuromorpho",filter=range(10),
-                         depth="Y",out_n="rotate_animation"):
+                         depth="Y",out_n="rotate_animation",
+                         aspect="equal",steps=60,title=None):
     """
     Rotate illustration of a neuronal morphology over 360 degrees.
 
@@ -41,10 +42,18 @@ def animate_SWC_rotation(file_name,offset=None,align=True,\
     out_n : string
         File name of the generated gif file. The ".gif" extension is
         added automatically.
+    aspect : string
+        Set the aspect ratio. "equal" set the correct aspect-ratio for all
+        dimensions. "side" sets equal aspect for the side-viewed dimensions
+        (so only the depth uses another aspect ratio)
+    steps : int
+        Number of steps taken to rotate over 360 degree. Default = 60.
+    title :  string
+        String to display in the top left corner. Default is None.
+        With the default, a name is generated based on the provided file_name.
     """
-    fig = plt.figure()
+    fig = plt.figure(tight_layout=True)
     ax = fig.gca(projection="3d")
-    #ax._axis3don = False
     ax.set_axis_off()
 
     if color_scheme == 'default':
@@ -82,9 +91,18 @@ def animate_SWC_rotation(file_name,offset=None,align=True,\
                 y = float(splits[3])
                 z = float(splits[4])
             else:
-                x = float(splits[2])-soma_x
-                y = float(splits[3])-soma_y
-                z = float(splits[4])-soma_z 
+                if depth=="Z":
+                    x = float(splits[2])-soma_x
+                    y = float(splits[3])-soma_y
+                    z = float(splits[4])-soma_z
+                else:
+                    # TODO: think this through
+                    x = float(splits[2])-soma_x
+                    y = float(splits[3])-soma_y
+                    z = float(splits[4])-soma_z                    
+                    # x = float(splits[2])-soma_x
+                    # y = float(splits[3])-soma_z
+                    # z = float(splits[4])-soma_y                    
             r = float(splits[5])
             parent = int(splits[-1])
             if n_type in filter:
@@ -121,21 +139,48 @@ def animate_SWC_rotation(file_name,offset=None,align=True,\
                 
     if color_scheme=="neuromorpho":
         ax.set_axis_bgcolor(config.c_scheme_nm['bg'])
+        rect = plt.gcf().patch
+        rect.set_facecolor('black')
         frame1 = plt.gca()
         frame1.axes.get_xaxis().set_ticks([])
         frame1.axes.get_yaxis().set_ticks([])
         frame1.axes.get_xaxis().set_visible(False)
         frame1.axes.get_yaxis().set_visible(False)
+
+    # http://stackoverflow.com/questions/8130823/set-matplotlib-3d-plot-aspect-ratio
+    scaling = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
+    xmax = np.max(scaling[0])
+    x_range=np.diff(scaling[0])
+    ymax = np.max(scaling[1])
+    y_range=np.diff(scaling[1])
+    zmax = np.max(scaling[2])
+    z_range=np.diff(scaling[2])
     
-    anim = animation.FuncAnimation(fig, _animate_rotation,fargs=(ax,), frames=60)
-    anim.save(out_n+".gif", writer='imagemagick', fps=4);
+    if aspect == "side":
+        xymax = np.max([xmax,ymax])
+        ax.auto_scale_xyz([-1*xymax,xymax],[-1*xymax,xymax],scaling[2])
+    else:
+        xyzmax = np.max([xmax,ymax,zmax])
+        ax.auto_scale_xyz([-1*xyzmax,xyzmax],[-1*xyzmax,xyzmax],[-1*xyzmax,xyzmax])
+
+    if title == None:
+        title = ".".join(file_name.split(".")[:-1])
+    title_text = ax.text2D(0.1, 0.9, title,color="red", transform=ax.transAxes)    
+    a_text  = ax.text2D(0.9, 0.9, "angle=0",color="red", transform=ax.transAxes)    
+
+    anim = animation.FuncAnimation(fig, _animate_rotation,fargs=(ax,a_text,steps), frames=steps)
+    #anim.save(out_n+".gif", writer='imagemagick', fps=4,savefig_kwargs={'facecolor':'%s'% str(plt.gcf().get_facecolor())  });
+    if color_scheme=="neuromorpho":
+        anim.save(out_n+".gif", writer='imagemagick', fps=4,savefig_kwargs={'facecolor':config.c_scheme_nm['bg']  })
+    else:
+        anim.save(out_n+".gif", writer='imagemagick', fps=4)        
     #anim.save('demoanimation.mp4', writer='ffmpeg', fps=4);    
 
 """
 Private functions below
 """
 
-def _animate_rotation(nframe,fargs):
-    fargs.view_init(elev=0, azim=nframe*6)
-
-    
+def _animate_rotation(nframe,fargs,a_text,steps):
+    scalar = 360 / steps
+    a_text.set_text("angle=%i" %(nframe*scalar))
+    fargs.view_init(elev=0, azim=nframe*scalar)

@@ -390,7 +390,9 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,\
     if not outN == None:
         plt.savefig(outN)
 
-def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None,offset=None,align=True,filter=range(10)) :
+def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
+                syn_cs=None,outN=None,offset=None,align=True,\
+                depth="Y",filter=range(10)) :
     """
     3D matplotlib plot of a neuronal morphology. The SWC has to be formatted with a "three point soma".
     Colors can be provided and synapse location marked
@@ -434,17 +436,6 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
     # read the SWC into a dictionary: key=index, value=(x,y,z,d,parent)
     x = open(file_name,'r')
     SWC = {}
-    # for line in x :
-    #     if(not line.startswith('#')) :
-    #         splits = line.split()
-    #         index = int(splits[0])
-    #         n_type = int(splits[1])
-    #         x = float(splits[2])
-    #         y = float(splits[3])
-    #         z = float(splits[4])
-    #         r = float(splits[5])
-    #         parent = int(splits[-1])
-    #         SWC[index] = (x,y,z,r,parent,n_type)
 
     for line in x :
         if(not line.startswith('#')) :
@@ -494,17 +485,17 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
             p_y = parent_SWC[1]
             p_z = parent_SWC[2]
             p_r = parent_SWC[3]
-            # print 'index:', index, ', len(cs)=', len(cs)
-            if cs == None :
+            if depth=="Y": # default in neuromorpho.org files
+                pl = plt.plot([p_x,c_x],[p_z,c_z],[p_y,c_y],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
+                ax.set_xlabel('X')
+                ax.set_ylabel('Z')
+                ax.set_zlabel('Y')                
+            elif depth=="Z": # used in NeuroMaC files
                 pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
-            else :
-                try :
-                    pl = plt.plot([p_x,c_x],[p_y,c_y], \
-                                  c=cm.jet(norm(cs[index])),linewidth=c_r)
-                except Exception :
-                    print 'something going wrong here'
-                    # pass# it's ok: it's the list size...
-
+                ax.set_xlabel('X')
+                ax.set_ylabel('Y')
+                ax.set_zlabel('Z')
+    
         # add the synapses
         if(synapses != None) :
             if(index in synapses) :
@@ -525,6 +516,11 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
 
     if(outN != None) :
         plt.savefig(outN)
+
+    # http://stackoverflow.com/questions/8130823/set-matplotlib-3d-plot-aspect-ratio
+    scaling = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
+    ax.auto_scale_xyz(*[[np.min(scaling), np.max(scaling)]]*3)
+    print "scaling: ", scaling
 
     return ax
 
