@@ -141,6 +141,19 @@ def perform_1D_population_analysis(destination,filter="*.swc",depth="Y",bar=[200
                 one_d_stats["term_eucl_L"] = []
                 one_d_stats["term_eucl_L"].append(eucl_L)
 
+    """extra the diameters of 1. all point, 2. parents of bifurcations"""
+    one_d_stats["bif_diam"] = []
+    one_d_stats["all_diam"] = []
+    for cell_name in individual_stats:
+        bif_nodes = individual_stats[cell_name]._bif_points
+        for node in bif_nodes:
+            if not node.index in (1,2,3):
+                bif_d = node.content['p3d'].radius*2.0
+                one_d_stats["bif_diam"].append(bif_d)
+        for node in individual_stats[cell_name]._all_nodes:
+            if not node.index in (1,2,3):
+                d = node.content['p3d'].radius*2.0
+                one_d_stats["all_diam"].append(d)                
 
     for func in one_d_stats:
         plt.figure(0)
