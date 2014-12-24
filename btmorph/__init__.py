@@ -9,6 +9,7 @@ from btviz import plot_2D_SWC
 from btviz import plot_3D_SWC
 from btviz import plot_dendrogram
 from btviz import pca_project_tree
+from btviz import pca_translate_tree
 from btviz import true_2D_projections
 
 from btviz_dynamic import animate_SWC_rotation

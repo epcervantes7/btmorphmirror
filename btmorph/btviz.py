@@ -22,6 +22,9 @@ import btmorph
 from btmorph import config
 from numpy import mean,cov,double,cumsum,dot,linalg,array,rank
 from pylab import plot,subplot,axis,stem,show,figure
+
+from sklearn.decomposition import PCA as sklearnPCA
+
 """ internal constants required for the dendrogram generation """
 H_SPACE = 20
 V_SPACE = 0
@@ -689,6 +692,47 @@ def pca_project_tree(tree):
     tree = btmorph.STree2().read_SWC_tree_from_file('tmpTree_3d_'+now+ '.swc')
     import os
     os.remove('tmpTree_3d_'+now+ '.swc')
+    return tree
+
+def pca_translate_tree(tree,projection=None):
+    """
+    Returns a tree aligned according to the three first PCA axes.
+    
+    Parameters
+    ----------
+    tree : :class:`btmorph.btstructs2.STree2`
+        Tree to transform
+    projection : list or array-like
+        Define the projection. To project the first PCA axis on x, 2nd \
+        on Y, 3rd on Z, use: `projection=[0,1,2]`. In case you want the \
+        forst PCA axis on Z, 2nd on X and 3rd on Y, use `projection=[1,2,0]`.
+        Default: projection=[1,2,0] so that the largest PCA axis is projected \
+        onto Z.
+    
+    Returns
+    --------
+    tree : :class:`btmorph.btstructs2.STree2`
+        Translated tree
+    """
+    nodes = tree.get_nodes()
+    N = len(nodes)
+    coords = map(lambda n: n.content['p3d'].xyz, nodes)
+    points = np.transpose(coords)
+
+    skpca = sklearnPCA(n_components=3)
+    sktrans = skpca.fit_transform(points.T)
+
+    for i in range(0,N):
+        # align in such a way that Z corresponds to the first PCA axis
+        if projection==None:
+            nodes[i].content["p3d"].xyz = np.array([sktrans[i,1],\
+                                                   sktrans[i,2],\
+                                                   sktrans[i,0]])
+        else:
+            p = projection
+            nodes[i].content["p3d"].xyz = np.array([sktrans[i,projection[0]],\
+                                                   sktrans[i,projection[1]],\
+                                                   sktrans[i,projection[2]]])            
     return tree
     
     
