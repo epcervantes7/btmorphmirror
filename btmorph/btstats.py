@@ -453,6 +453,22 @@ class BTStats(object) :
         """        
         return self._tree.order_of_node(node)
 
+    def diameter_of_node(self,node):
+        """
+        Diameter of a node. 
+
+        Parameters
+        ----------
+        node : :class:`btmorph.btstructs2.SNode2`
+
+        Returns
+        -------
+        diameter : float
+            diameter of this nodde
+        
+        """        
+        return node.content['p3d'].radius*2.0
+
     def partition_asymmetry(self,node) :
         """
         *Vector, local morphometric*
