@@ -8,7 +8,7 @@ import btmorph
 
 def _get_node_features(stats,node,term=False):
     O = stats.order_of_node(node)
-    D = stats.order_of_node(node)
+    D = stats.diameter_of_node(node)
     ED = stats.get_Euclidean_length_to_root(node)
     PL = stats.get_pathlength_to_root(node)
     SPL = stats.get_segment_pathlength(node)
