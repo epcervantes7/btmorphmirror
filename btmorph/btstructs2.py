@@ -573,7 +573,7 @@ class STree2(object) :
         """
         # check soma-representation: 3-point soma or a non-standard representation
         soma_type = self._determine_soma_type(file_n)
-        print "found soma type: ", soma_type
+        # print "found soma type: ", soma_type
         #print "STree2::read_SWC_tree_from_file found soma_type=%i" % soma_type
         
         file = open(file_n,'r')
@@ -603,7 +603,7 @@ class STree2(object) :
         if soma_type == 0:
             for index,(swc_type,node,parent_index) in all_nodes.items() :
                 if index == 1:
-                    print "Set soma -- 1-point soma"
+                    # print "Set soma -- 1-point soma"
                     self.root = node
                     """add 2 extra point because the internal representation
                     relies on the 3-point soma position.
@@ -635,7 +635,7 @@ class STree2(object) :
         if soma_type == 1:
             for index,(swc_type,node,parent_index) in all_nodes.items() :
                 if index == 1:
-                    print "Set soma -- 3 point soma"
+                    # print "Set soma -- 3 point soma"
                     self.root = node
                 elif index in (2,3):
                     # the 3-point soma representation (http://neuromorpho.org/neuroMorpho/SomaFormat.html)
@@ -691,7 +691,7 @@ class STree2(object) :
             surf = 2*np.pi*p.radius*H
             #print "(node %i) surf as cylinder:  %f (R=%f, H=%f), P=%s" % (node.index,surf,n.radius,H,p)
             total_surf = total_surf+surf
-        print "found 'multiple cylinder soma' w/ total soma surface=", total_surf
+        # print "found 'multiple cylinder soma' w/ total soma surface=", total_surf
 
         # define apropriate radius
         radius=np.sqrt(total_surf/(4*np.pi))
