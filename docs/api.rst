@@ -54,7 +54,12 @@ Wrappers / Tools
 .. automodule:: btmorph.tools.filter_and_save_swc
    :members:
    :undoc-members:
-   :show-inheritance:  
+   :show-inheritance:
+
+.. automodule:: btmorph.hull
+   :members:
+   :undoc-members:
+   :show-inheritance:      
 
 
 

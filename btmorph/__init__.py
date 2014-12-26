@@ -12,6 +12,9 @@ from btviz import pca_project_tree
 from btviz import pca_translate_tree
 from btviz import true_2D_projections
 
+from hull import get_convex_hull_from_tree
+from hull import polygon_area
+
 from btviz_dynamic import animate_SWC_rotation
 
 from population_density_plots import population_density_projection
