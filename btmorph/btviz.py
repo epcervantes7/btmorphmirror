@@ -395,7 +395,7 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,\
 
 def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
                 syn_cs=None,outN=None,offset=None,align=True,\
-                depth="Y",filter=range(10)) :
+                depth="Y",filter=range(10),new_fig=False) :
     """
     3D matplotlib plot of a neuronal morphology. The SWC has to be formatted with a "three point soma".
     Colors can be provided and synapse location marked
@@ -418,7 +418,8 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
         whether or not to draw the axis
     filter : list
         List of integers indicating the SWC types to be included (1:soma, 2:axon, 3:basal,4:apical,...). By default, all SWC types are included        
-
+    new_fig : boolean
+        True if matplotlib has to plot in a new figure. False, if otherwise.
     """
     my_color_list = ['r','g','b','c','m','y','r--','b--','g--']
 
@@ -467,7 +468,10 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
             if n_type in filter:
                 SWC[index] = (x,y,z,r,parent,n_type)                        
 
-    fig = plt.figure()
+    if new_fig:
+        fig = plt.figure()
+    else:
+        fig = plt.gcf()
     ax = fig.gca(projection='3d')
 
     for index in SWC.keys() : # not ordered but that has little importance here
