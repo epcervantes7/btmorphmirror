@@ -75,4 +75,17 @@ def test_load_swc_mcs2():
     print '\nlen(swc_tree1)', len(all_nodes1) 
     assert(len(all_nodes1) == 8970)
     assert(503 < btmorph.BTStats(swc_tree).approx_soma() < 504)
+
+def test_load_swc_1ps():
+    '''
+    Test whether SWC files with 1-point soma format are read correctly (v_e_purk2)
+    '''
+    print "\n"
+    swc_tree = btmorph.STree2()
+    swc_tree.read_SWC_tree_from_file('tests/soma_types/v_e_purk2.CNG.swc')
+    all_nodes1 = swc_tree.get_nodes()
+    print '\nlen(swc_tree1)', len(all_nodes1) 
+    assert(len(all_nodes1) == 1523)
+    stats = btmorph.BTStats(swc_tree)
+    assert(stats.no_bifurcations() == 419)
     
