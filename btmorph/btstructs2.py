@@ -11,6 +11,7 @@ iterators in  :class:`STree2`.
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+import copy
 
 class P3D2(object) :
     """
@@ -26,7 +27,7 @@ class P3D2(object) :
             3D location
         radius : float
         type : int
-            Type asscoiated with the segment according to SWC standards
+            Type associated with the segment according to SWC standards
         """
         self.xyz = xyz
         self.radius = radius
@@ -341,7 +342,8 @@ class STree2(object) :
             New tree with the node from the first argument as root node
         """
         ret = STree2()
-        cp = fake_root.__copy__()
+        # 2015-03-04: deepcopy instead of __copy__
+        cp = copy.deepcopy(fake_root)
         cp.parent = None
         ret.root = cp
         return ret
