@@ -242,6 +242,7 @@ class STree2(object) :
         if not node is None:
             node.parent = None
         self.__root = node
+        
     def get_root(self) :
         """
         Obtain the root node
@@ -414,7 +415,7 @@ class STree2(object) :
                         stack.append(cchild)
         return None # Not found!
         
-    def degree_of_node(self,node) :
+    def degree_of_node(self,node):
         """
         Get the degree of a given node. The degree is defined as the number of leaf nodes in the subtree rooted at this node.
 
@@ -426,15 +427,27 @@ class STree2(object) :
         Returns
         -------
         degree : int
-        """
-        sub_tree = self.get_sub_tree(node)
-        st_nodes = sub_tree.get_nodes()
-        leafs = 0
-        for n in st_nodes :
-            if sub_tree.is_leaf(n) :
-                leafs = leafs +1
-        return leafs
-        
+        """        
+        children = node.get_children()
+        if len(children)==0:
+            return 1
+        else:
+            if node==self.root:
+                degree = 0
+                for child in children:
+                    degree = degree+self.degree_of_node(child)
+                return degree
+            else:
+                if len(children)==1:
+                    node.degree = self.degree_of_node(children[0])
+                    return node.degree
+                else:
+                    degree_down0 = self.degree_of_node(children[0])
+                    degree_down1 = self.degree_of_node(children[1])
+                    node.degree = degree_down0+degree_down1
+                    return node.degree
+                
+
     def order_of_node(self,node) :
         """
         Get the order of a given node. The order or centrifugal order is defined as 0 for the root and increased with any bifurcation.

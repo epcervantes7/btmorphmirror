@@ -395,7 +395,7 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,\
 
 def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
                 syn_cs=None,outN=None,offset=None,align=True,\
-                depth="Y",filter=range(10),new_fig=False) :
+                depth="Y",filter=range(10),new_fig=False,color_scheme='default') :
     """
     3D matplotlib plot of a neuronal morphology. The SWC has to be formatted with a "three point soma".
     Colors can be provided and synapse location marked
@@ -419,9 +419,18 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
     filter : list
         List of integers indicating the SWC types to be included (1:soma, 2:axon, 3:basal,4:apical,...). By default, all SWC types are included        
     new_fig : boolean
-        True if matplotlib has to plot in a new figure. False, if otherwise.
+        Plot as a new figure or add to an existing figure. In the latter case, each plot will use a randomly picked color
+        (instead of the colors according to SWC type)
+    color_scheme : string
+        Specify which color scheme to use. Color schemes are defined in btmorph.config. Currently 'default' and 'neuromorpho'
+        are valid options.
     """
-    my_color_list = ['r','g','b','c','m','y','r--','b--','g--']
+    #my_color_list = ['r','g','b','c','m','y','r--','b--','g--']
+    if color_scheme == 'default':
+        my_color_list = config.c_scheme_default['neurite']
+    elif color_scheme == 'neuromorpho':
+        my_color_list = config.c_scheme_nm['neurite']
+    # print 'my_color_list: ', my_color_list    
 
     # resolve some potentially conflicting arguments
     if not offset == None:
@@ -468,11 +477,13 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
             if n_type in filter:
                 SWC[index] = (x,y,z,r,parent,n_type)                        
 
-    if new_fig:
+    if new_fig == True:
         fig = plt.figure()
+        ax = fig.gca(projection='3d')
     else:
-        fig = plt.gcf()
-    ax = fig.gca(projection='3d')
+        #fig = plt.gcf()
+        #ax = fig.gca(projection='3d')
+        selected_color = np.random.choice(my_color_list)
 
     for index in SWC.keys() : # not ordered but that has little importance here
         # draw a line segment from parent to current point
@@ -485,7 +496,8 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
         parent_index = current_SWC[4]
                 
         if(index <= 3) :
-            print 'do not draw the soma and its CNG, !!! 2 !!! point descriptions'
+            #print 'do not draw the soma and its CNG, !!! 2 !!! point descriptions'
+            pass
         else :
             parent_SWC = SWC[parent_index]
             p_x = parent_SWC[0]
@@ -493,16 +505,54 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
             p_z = parent_SWC[2]
             p_r = parent_SWC[3]
             if depth=="Y": # default in neuromorpho.org files
-                pl = plt.plot([p_x,c_x],[p_z,c_z],[p_y,c_y],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
+                if cs == None :
+                    if new_fig:
+                        pl = plt.plot([p_x,c_x],[p_z,c_z],[p_y,c_y],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
+                    else:
+                        pl = plt.plot([p_x,c_x],[p_z,c_z],[p_y,c_y],selected_color,linewidth=c_r/2.0)
+                else :
+                    try :
+                        pl = plt.plot([p_x,c_x],[p_y,c_y], \
+                                      c=cm.jet(norm(cs[index])),linewidth=c_r)
+                    except Exception :
+                        print 'something going wrong here'
+                        # pass# it's ok: it's the list size... 
+                
                 ax.set_xlabel('X')
                 ax.set_ylabel('Z')
                 ax.set_zlabel('Y')                
             elif depth=="Z": # used in NeuroMaC files
-                pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
+                # pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
+                if cs == None :
+                    if new_fig:
+                        pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
+                    else:
+                        pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],selected_color,linewidth=c_r/2.0)
+                else :
+                    try :
+                        pl = plt.plot([p_x,c_x],[p_y,c_y], \
+                                      c=cm.jet(norm(cs[index])),linewidth=c_r)
+                    except Exception :
+                        print 'something going wrong here'
+                        # pass# it's ok: it's the list size...                
                 ax.set_xlabel('X')
                 ax.set_ylabel('Y')
                 ax.set_zlabel('Z')
     
+            # print 'index:', index, ', len(cs)=', len(cs)
+            if cs == None :
+                if new_fig:
+                    pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
+                else:
+                    pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],selected_color,linewidth=c_r/2.0)
+            else :
+                try :
+                    pl = plt.plot([p_x,c_x],[p_y,c_y], \
+                                  c=cm.jet(norm(cs[index])),linewidth=c_r)
+                except Exception :
+                    print 'something going wrong here'
+                    # pass# it's ok: it's the list size...
+
         # add the synapses
         if(synapses != None) :
             if(index in synapses) :
@@ -511,9 +561,9 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
                 else :
                     plt.plot(c_x,c_y,'ro')
 
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
+        # ax.set_xlabel('X')
+        # ax.set_ylabel('Y')
+        # ax.set_zlabel('Z')
 
     if(cs != None) :
         cb = plt.colorbar(CS3) # bit of a workaround, but it seems to work
@@ -524,12 +574,7 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
     if(outN != None) :
         plt.savefig(outN)
 
-    # http://stackoverflow.com/questions/8130823/set-matplotlib-3d-plot-aspect-ratio
-    scaling = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz'])
-    ax.auto_scale_xyz(*[[np.min(scaling), np.max(scaling)]]*3)
-    print "scaling: ", scaling
-
-    return ax
+    # return ax
 
 def plot_dendrogram(file_name,transform='plain',shift=0,c='k',radius=True,rm=20000.0,ra=200,outN=None) :
     """

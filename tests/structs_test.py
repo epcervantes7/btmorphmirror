@@ -87,7 +87,4 @@ def test_load_swc_1ps():
     print '\nlen(swc_tree1)', len(all_nodes1) 
     assert(len(all_nodes1) == 1523)
     stats = btmorph.BTStats(swc_tree)
-    assert(stats.no_bifurcations() == 419)
-    
-
-    
+    assert(stats.no_bifurcations() == 419)    
