@@ -242,6 +242,7 @@ class STree2(object) :
         if not node is None:
             node.parent = None
         self.__root = node
+        
     def get_root(self) :
         """
         Obtain the root node
