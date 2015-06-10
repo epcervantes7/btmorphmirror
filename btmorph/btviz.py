@@ -390,7 +390,9 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,\
     if not outN == None:
         plt.savefig(outN)
 
-def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None,outN=None,offset=None,align=True,filter=range(10)) :
+def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,
+                syn_cs=None,outN=None,offset=None,align=True,filter=range(10),
+                new_fig=True,color_scheme='default') :
     """
     3D matplotlib plot of a neuronal morphology. The SWC has to be formatted with a "three point soma".
     Colors can be provided and synapse location marked
@@ -413,9 +415,19 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
         whether or not to draw the axis
     filter : list
         List of integers indicating the SWC types to be included (1:soma, 2:axon, 3:basal,4:apical,...). By default, all SWC types are included        
-
+    new_fig : boolean
+        Plot as a new figure or add to an existing figure. In the latter case, each plot will use a randomly picked color
+        (instead of the colors according to SWC type)
+    color_scheme : string
+        Specify which color scheme to use. Color schemes are defined in btmorph.config. Currently 'default' and 'neuromorpho'
+        are valid options.
     """
-    my_color_list = ['r','g','b','c','m','y','r--','b--','g--']
+    #my_color_list = ['r','g','b','c','m','y','r--','b--','g--']
+    if color_scheme == 'default':
+        my_color_list = config.c_scheme_default['neurite']
+    elif color_scheme == 'neuromorpho':
+        my_color_list = config.c_scheme_nm['neurite']
+    # print 'my_color_list: ', my_color_list    
 
     # resolve some potentially conflicting arguments
     if not offset == None:
@@ -434,18 +446,6 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
     # read the SWC into a dictionary: key=index, value=(x,y,z,d,parent)
     x = open(file_name,'r')
     SWC = {}
-    # for line in x :
-    #     if(not line.startswith('#')) :
-    #         splits = line.split()
-    #         index = int(splits[0])
-    #         n_type = int(splits[1])
-    #         x = float(splits[2])
-    #         y = float(splits[3])
-    #         z = float(splits[4])
-    #         r = float(splits[5])
-    #         parent = int(splits[-1])
-    #         SWC[index] = (x,y,z,r,parent,n_type)
-
     for line in x :
         if(not line.startswith('#')) :
             splits = line.split()
@@ -473,8 +473,13 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
             if n_type in filter:
                 SWC[index] = (x,y,z,r,parent,n_type)                        
 
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
+    if new_fig == True:
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+    else:
+        #fig = plt.gcf()
+        #ax = fig.gca(projection='3d')
+        selected_color = np.random.choice(my_color_list)
 
     for index in SWC.keys() : # not ordered but that has little importance here
         # draw a line segment from parent to current point
@@ -487,7 +492,8 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
         parent_index = current_SWC[4]
                 
         if(index <= 3) :
-            print 'do not draw the soma and its CNG, !!! 2 !!! point descriptions'
+            #print 'do not draw the soma and its CNG, !!! 2 !!! point descriptions'
+            pass
         else :
             parent_SWC = SWC[parent_index]
             p_x = parent_SWC[0]
@@ -496,7 +502,10 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
             p_r = parent_SWC[3]
             # print 'index:', index, ', len(cs)=', len(cs)
             if cs == None :
-                pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
+                if new_fig:
+                    pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
+                else:
+                    pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],selected_color,linewidth=c_r/2.0)
             else :
                 try :
                     pl = plt.plot([p_x,c_x],[p_y,c_y], \
@@ -513,9 +522,9 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
                 else :
                     plt.plot(c_x,c_y,'ro')
 
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
+        # ax.set_xlabel('X')
+        # ax.set_ylabel('Y')
+        # ax.set_zlabel('Z')
 
     if(cs != None) :
         cb = plt.colorbar(CS3) # bit of a workaround, but it seems to work
@@ -526,7 +535,7 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,syn_cs=None
     if(outN != None) :
         plt.savefig(outN)
 
-    return ax
+    # return ax
 
 def plot_dendrogram(file_name,transform='plain',shift=0,c='k',radius=True,rm=20000.0,ra=200,outN=None) :
     """
