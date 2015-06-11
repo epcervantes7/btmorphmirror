@@ -518,9 +518,9 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
                         print 'something going wrong here'
                         # pass# it's ok: it's the list size... 
                 
-                ax.set_xlabel('X')
-                ax.set_ylabel('Z')
-                ax.set_zlabel('Y')                
+                # ax.set_xlabel('X')
+                # ax.set_ylabel('Z')
+                # ax.set_zlabel('Y')                
             elif depth=="Z": # used in NeuroMaC files
                 # pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
                 if cs == None :
@@ -535,9 +535,9 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
                     except Exception :
                         print 'something going wrong here'
                         # pass# it's ok: it's the list size...                
-                ax.set_xlabel('X')
-                ax.set_ylabel('Y')
-                ax.set_zlabel('Z')
+                # ax.set_xlabel('X')
+                # ax.set_ylabel('Y')
+                # ax.set_zlabel('Z')
     
             # print 'index:', index, ', len(cs)=', len(cs)
             if cs == None :
