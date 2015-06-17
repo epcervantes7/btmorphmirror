@@ -161,7 +161,22 @@ def test_volume() :
     """
     total_vol, all_vols = stats.total_volume()
     print 'total_volume=%f' % (total_vol)
-    assert(390412 < total_vol < 390414)    
+    assert(390412 < total_vol < 390414)
+
+def test_hull_surface():
+    """
+    Surface of a polygon. Testing with simple rectangles
+    """
+    xxx = np.array([[-100,0],[100,0],[100,150],[-100,150],[-100,0]])
+    surf = btmorph.polygon_area(xxx)
+    assert(surf==30000)
+
+    yyy = np.array([[0,0],[200,0],[200,150],[0,150],[0,0]])
+    surf_yyy = btmorph.polygon_area(yyy)
+    assert(surf_yyy==30000)
+
+    assert(surf==surf_yyy)
+    
 
 def ttest_bifurcation_sibling_ratio_local() :
     ratios = []

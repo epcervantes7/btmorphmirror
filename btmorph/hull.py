@@ -64,12 +64,6 @@ def polygon_area(corners):
     -------
     area : total area in the same units as the polygon's vertices
     """
-    n = len(corners) # of corners
-    area = 0.0
-    for i in range(n):
-        j = (i + 1) % n
-        area += corners[i][0] * corners[j][1]
-        area -= corners[j][0] * corners[i][1]
-        area = abs(area) / 2.0
-    return area
-
+    x = corners[:,0]
+    y=corners[:,1]
+    return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))

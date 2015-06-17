@@ -569,7 +569,7 @@ class STree2(object) :
         Read and load a morphology from an SWC file and parse it into
         an STree2 object. 
 
-        On the NeuroMorpho.org website, 5 types of somadescriptions are 
+        On the NeuroMorpho.org website, 5 types of soma descriptions are 
         considered (http://neuromorpho.org/neuroMorpho/SomaFormat.html).
         The "3-point soma" is the standard and most files are converted
         to this format during a curation step. btmorph follows this default
@@ -604,6 +604,12 @@ class STree2(object) :
                 radius = float(split[5].rstrip())
                 parent_index = int(split[6].rstrip())
 
+                ### 2015-06-17
+                if soma_type==0 and index > 1:
+                    index = index + 2
+                if soma_type==0 and parent_index > 1:
+                    parent_index = parent_index+2
+
                 if swc_type in types:
                     tP3D = P3D2(np.array([x,y,z]),radius,swc_type)
                     t_node = SNode2(index)
@@ -630,8 +636,8 @@ class STree2(object) :
                      2 1 xs (ys-rs) zs rs 1
                      3 1 xs (ys+rs) zs rs 1
                     """
-                    pos1 = P3D2([sp.xyz[0],sp.xyz[1]-sp.radius,sp.xyz[2]],sp.radius,type=1)
-                    pos2 = P3D2([sp.xyz[0],sp.xyz[1]+sp.radius,sp.xyz[2]],sp.radius,type=1)
+                    pos1 = P3D2([sp.xyz[0],sp.xyz[1]-sp.radius,sp.xyz[2]],sp.radius,1)
+                    pos2 = P3D2([sp.xyz[0],sp.xyz[1]+sp.radius,sp.xyz[2]],sp.radius,1)
                     sub1 = SNode2(2)
                     sub1.content={'p3d':pos1}
                     sub2 = SNode2(3)
@@ -640,10 +646,11 @@ class STree2(object) :
                     self.add_node_with_parent(sub2,self.root)
                 else:
                     parent_node = all_nodes[parent_index][1]
+                    if parent_node == None: print("paren appears to be NONE")
                     if parent_node.index > 1:
-                        parent_node.index = parent_node.index +2
+                        parent_node.index = parent_node.index #+2
                     if node.index > 1:
-                        node.index = node.index +2
+                        node.index = node.index #+2
                     self.add_node_with_parent(node,parent_node)            
 
         # IF 3-point soma representation
