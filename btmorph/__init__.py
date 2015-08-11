@@ -6,6 +6,7 @@ from btstats import BTStats
 from box_counting import BoxCounter
 
 from btviz import plot_2D_SWC
+from btviz import neuromorpho_2D
 from btviz import plot_3D_SWC
 from btviz import plot_dendrogram
 from btviz import pca_project_tree

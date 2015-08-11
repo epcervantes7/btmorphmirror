@@ -5,7 +5,7 @@ Usage is restricted to morphologies in the sWC format with the three-point soma 
 
 B. Torben-Nielsen
 """
-import sys,time
+import sys,os,time
 sys.setrecursionlimit(10000)
 
 import numpy as np
@@ -13,6 +13,7 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cm
+import matplotlib.patches as patches
 
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D
@@ -191,12 +192,151 @@ def true_2D_projections(file_name='P20-DEV139.CNG.swc',align=True,outN=None,bar=
     if not outN == None:
         plt.savefig(outN)
 
+
+def _plot_2D_SWC_on_axis(file_name='P20-DEV139.CNG.swc',cs=None,\
+                synapses=None,syn_cs='ro',\
+                outN=None,align=True,offset=None,\
+                show_axis=False,depth="Y",filter=range(10),\
+                show_radius=True,bar_L=None,bar=[50,50,50],\
+                new_fig=True,color_scheme="default",ncolor=None,\
+                ax=None,side_view=False):
+    """
+    private method to draw xy projections of NeuroMac generated neurons
+
+    parameters
+    ----------
+
+    See plot_2D_SWC
+
+    ncolor : string
+        Color the neurite in a specified color.
+    """
+
+    #print "scheme: ", config.c_scheme_nm
+    plot_radius = 1.0
+    
+    #my_color_list = ['r','g','b','c','m','y','k','g','DarkGray']
+    if color_scheme == 'default':
+        my_color_list = config.c_scheme_default['neurite']
+    elif color_scheme == 'neuromorpho':
+        my_color_list = config.c_scheme_nm['neurite']
+    print 'my_color_list: ', my_color_list
+        
+    # resolve some potentially conflicting arguments
+    if not offset == None:
+        align = False
+        
+    # read the SWC into a dictionary: key=index, value=(x,y,z,d,parent)
+    x = open(file_name,'r')
+    soma = None
+    SWC = {}
+    for line in x :
+        if(not line.startswith('#')) :
+            splits = line.split()
+            index = int(splits[0])
+            if index == 1:
+                if offset == None:
+                    soma_x = float(splits[2])
+                    soma_y = float(splits[3])
+                    soma_z = float(splits[4])
+                else:
+                    soma_x = float(splits[2]) + offset[0]
+                    soma_y = float(splits[3]) + offset[1]
+                    soma_z = float(splits[4]) + offset[2]
+
+            n_type = int(splits[1])
+            if not align:
+                if offset == None:
+                    x = float(splits[2])
+                    y = float(splits[3])
+                    z = float(splits[4])
+                else:
+                    x = float(splits[2]) + offset[0]
+                    y = float(splits[3]) + offset[1]
+                    z = float(splits[4]) + offset[2]           
+            else:
+                x = float(splits[2])-soma_x
+                y = float(splits[3])-soma_y
+                z = float(splits[4])-soma_z         
+            r = float(splits[5])
+            parent = int(splits[-1])
+            if n_type in filter:
+                SWC[index] = (x,y,z,r,parent,n_type)
+
+    min_depth=100    
+    if depth == "Y":
+        #ax = plt.subplot2grid((2,2), (0, 0))
+        for index in SWC.keys():
+            if index < 3:
+                continue
+            C = SWC[index]
+            P = SWC[C[4]] # C[4] is parent index
+            line_width = C[3] if show_radius else plot_radius
+            if cs == None:
+                if ncolor is not None:
+                    pl = ax.plot([P[0],C[0]],[P[1],C[1]],color=ncolor,linewidth=line_width)
+                else:
+                    pl = ax.plot([P[0],C[0]],[P[1],C[1]],my_color_list[C[5]-1],linewidth=line_width)
+            else:
+                #c=cm.jet(norm(cs[index]))
+                pl = ax.plot([P[0],C[0]],[P[1],C[1]],c=cm.jet(norm(cs[index])),linewidth=line_width)
+
+            # add the synapses
+            if not synapses == None :
+                if index in synapses :
+                    ax.plot([C[0]],C[1],syn_cs)
+            
+            min_depth = C[1] if C[1] < min_depth else min_depth
+            # TODO: insert synapses here
+    else: # default for my code: Z is depth
+        #ax = plt.subplot2grid((2,2), (0, 0))
+        for index in SWC.keys():
+            if index < 3:
+                continue
+            C = SWC[index]
+            P = SWC[C[4]] # C[4] is parent index
+            line_width = C[3] if show_radius else plot_radius
+            if side_view:
+                if ncolor is not None:
+                    pl = ax.plot([P[1],C[1]],[P[2],C[2]],color=ncolor,linewidth=line_width)
+                else:
+                    pl = ax.plot([P[1],C[1]],[P[2],C[2]],my_color_list[C[5]-1],linewidth=line_width)
+            else:
+                if ncolor is not None:
+                    pl = ax.plot([P[0],C[0]],[P[2],C[2]],color=ncolor,linewidth=line_width)
+                else:
+                    pl = ax.plot([P[0],C[0]],[P[2],C[2]],my_color_list[C[5]-1],linewidth=line_width)
+
+            # add the synapses
+            if(synapses != None) :
+                if index in synapses :
+                    ax.plot([C[0]],C[2],syn_cs)
+                                
+            min_depth = C[2] if C[2] < min_depth else min_depth
+            # TODO: insert synapses here
+
+def neuromorpho_2D(file_name,soma_overlay=True,color_scheme="neuromorpho",\
+                   new_fig=True):
+    # convert to 3-point soma; the standard assumed by btmorph
+    tree = btmorph.STree2()
+    tree.read_SWC_tree_from_file(file_name)
+    tmp_name = "/tmp/btmorph_tmp.swc"
+    tree.write_SWC_tree_to_file(tmp_name)
+
+    # plot converted 3-point soma morphology
+    plot_2D_SWC(file_name=tmp_name,soma_overlay=soma_overlay,\
+                color_scheme=color_scheme,new_fig=new_fig)
+
+    # delete converted temporary file
+    os.remove(tmp_name)        
+        
 def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,\
                 synapses=None,syn_cs='ro',\
                 outN=None,align=True,offset=None,\
                 show_axis=False,depth="Y",filter=range(10),\
                 show_radius=True,bar_L=None,bar=[50,50,50],\
-                new_fig=True,color_scheme="default"):
+                new_fig=True,color_scheme="default",
+                soma_overlay=True):
     """
     2D matplotlib plot of a neuronal moprhology. Projection can be in XY and XZ.
     The SWC has to be formatted with a "three point soma".
@@ -237,6 +377,9 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,\
         True if matplotlib has to plot in a new figure. False, if otherwise.
     color_scheme : string
         Set the color scheme used for background and neurite types. Default `default`. Other option `neuromorpho`
+    soma_overlay : boolean
+        Default True means the soma is plotted over the dendritic stems (in case of overlap in the SWC file). If
+        set to False, the soma will be drawn "under" the stem segments.
 
     Notes
     -----
@@ -314,16 +457,56 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,\
     if depth == "Y":
         #ax = plt.subplot2grid((2,2), (0, 0))
         for index in SWC.keys():
+            C = SWC[index]
+            if index == 1:
+                # draw the soma as a square
+                print "C: {}".format(C)
+                t_ax = plt.gca()
+                soma_x = C[0]
+                soma_y = C[1]
+                soma_r = C[3]
+                if soma_overlay:
+                    soma_patch = patches.Rectangle((soma_x-soma_r,soma_y-soma_r),
+                                                 soma_r*2.,soma_r*2.,fill=True,
+                                                 facecolor=my_color_list[C[5]-1],
+                                                 zorder=10)
+                else:
+                    soma_patch = patches.Rectangle((soma_x-soma_r,soma_y-soma_r),
+                                                 soma_r*2.,soma_r*2.,fill=True,
+                                                 facecolor=my_color_list[C[5]-1])                    
+                t_ax = plt.gca()
+                t_ax.add_patch(soma_patch)
+                
             if index < 3:
                 continue
-            C = SWC[index]
             P = SWC[C[4]] # C[4] is parent index
+
             line_width = C[3] if show_radius else plot_radius
-            if cs == None:
-                pl = plt.plot([P[0],C[0]],[P[1],C[1]],my_color_list[C[5]-1],linewidth=line_width)
+            if color_scheme=="neuromorpho":
+                if C[3] <= 0.6:
+                    line_width=0.6
+                elif ( 0.6 < C[3] and C[3] <= 1.6 ):
+                    line_width=C[3]
+                elif C[3] > 1.6:
+                    line_width=1.6                        
+            # if cs == None:
+            #     pl = plt.plot([P[0],C[0]],[P[1],C[1]],my_color_list[C[5]-1],linewidth=line_width)
+            # else:
+            #     #c=cm.jet(norm(cs[index]))
+            #     pl = plt.plot([P[0],C[0]],[P[1],C[1]],c=cm.jet(norm(cs[index])),linewidth=line_width)
+
+            if C[5] == 1:                			
+                if cs == None:
+                    pl = plt.plot([P[0],C[0]/line_width],[P[1],C[1]/line_width],my_color_list[C[5]-1],linewidth=line_width)
+                else:
+                    #c=cm.jet(norm(cs[index]))
+                    pl = plt.plot([P[0],C[0]],[P[1],C[1]],c=cm.jet(norm(cs[index])),linewidth=line_width)
             else:
-                #c=cm.jet(norm(cs[index]))
-                pl = plt.plot([P[0],C[0]],[P[1],C[1]],c=cm.jet(norm(cs[index])),linewidth=line_width)
+                if cs == None:
+                    pl = plt.plot([P[0],C[0]],[P[1],C[1]],my_color_list[C[5]-1],linewidth=line_width)
+                else:
+                    #c=cm.jet(norm(cs[index]))
+                    pl = plt.plot([P[0],C[0]],[P[1],C[1]],c=cm.jet(norm(cs[index])),linewidth=line_width)            
 
             # add the synapses
             if not synapses == None :
@@ -395,7 +578,8 @@ def plot_2D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,\
 
 def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
                 syn_cs=None,outN=None,offset=None,align=True,\
-                depth="Y",filter=range(10),new_fig=False,color_scheme='default') :
+                depth="Y",filter=range(10),new_fig=False,\
+                ncolor=None,color_scheme='default') :
     """
     3D matplotlib plot of a neuronal morphology. The SWC has to be formatted with a "three point soma".
     Colors can be provided and synapse location marked
@@ -424,6 +608,8 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
     color_scheme : string
         Specify which color scheme to use. Color schemes are defined in btmorph.config. Currently 'default' and 'neuromorpho'
         are valid options.
+    ncolor : string
+        Color the neurite in a specified color.        
     """
     #my_color_list = ['r','g','b','c','m','y','r--','b--','g--']
     if color_scheme == 'default':
@@ -507,9 +693,15 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
             if depth=="Y": # default in neuromorpho.org files
                 if cs == None :
                     if new_fig:
-                        pl = plt.plot([p_x,c_x],[p_z,c_z],[p_y,c_y],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
+                        if ncolor is not None:
+                            pl = plt.plot([p_x,c_x],[p_z,c_z],[p_y,c_y],color=ncolor,linewidth=c_r/2.0)
+                        else:
+                            pl = plt.plot([p_x,c_x],[p_z,c_z],[p_y,c_y],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
                     else:
-                        pl = plt.plot([p_x,c_x],[p_z,c_z],[p_y,c_y],selected_color,linewidth=c_r/2.0)
+                        if ncolor is not None:
+                            pl = plt.plot([p_x,c_x],[p_z,c_z],[p_y,c_y],color=ncolor,linewidth=c_r/2.0)
+                        else:                        
+                            pl = plt.plot([p_x,c_x],[p_z,c_z],[p_y,c_y],selected_color,linewidth=c_r/2.0)
                 else :
                     try :
                         pl = plt.plot([p_x,c_x],[p_y,c_y], \
@@ -525,9 +717,15 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
                 # pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
                 if cs == None :
                     if new_fig:
-                        pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
+                        if ncolor is not None:
+                            pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],color=ncolor,linewidth=c_r/2.0)
+                        else:
+                            pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
                     else:
-                        pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],selected_color,linewidth=c_r/2.0)
+                        if ncolor is not None:
+                            pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],color=ncolor,linewidth=c_r/2.0)
+                        else:                        
+                            pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],selected_color,linewidth=c_r/2.0)
                 else :
                     try :
                         pl = plt.plot([p_x,c_x],[p_y,c_y], \
@@ -539,19 +737,19 @@ def plot_3D_SWC(file_name='P20-DEV139.CNG.swc',cs=None,synapses=None,\
                 # ax.set_ylabel('Y')
                 # ax.set_zlabel('Z')
     
-            # print 'index:', index, ', len(cs)=', len(cs)
-            if cs == None :
-                if new_fig:
-                    pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
-                else:
-                    pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],selected_color,linewidth=c_r/2.0)
-            else :
-                try :
-                    pl = plt.plot([p_x,c_x],[p_y,c_y], \
-                                  c=cm.jet(norm(cs[index])),linewidth=c_r)
-                except Exception :
-                    print 'something going wrong here'
-                    # pass# it's ok: it's the list size...
+            # # print 'index:', index, ', len(cs)=', len(cs)
+            # if cs == None :
+            #     if new_fig:
+            #         pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],my_color_list[current_SWC[5]-1],linewidth=c_r/2.0)
+            #     else:
+            #         pl = plt.plot([p_x,c_x],[p_y,c_y],[p_z,c_z],selected_color,linewidth=c_r/2.0)
+            # else :
+            #     try :
+            #         pl = plt.plot([p_x,c_x],[p_y,c_y], \
+            #                       c=cm.jet(norm(cs[index])),linewidth=c_r)
+            #     except Exception :
+            #         print 'something going wrong here'
+            #         # pass# it's ok: it's the list size...
 
         # add the synapses
         if(synapses != None) :
