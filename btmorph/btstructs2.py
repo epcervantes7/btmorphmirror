@@ -589,7 +589,7 @@ class STree2(object) :
         # check soma-representation: 3-point soma or a non-standard representation
         soma_type = self._determine_soma_type(file_n)
         # print "found soma type: ", soma_type
-        #print "STree2::read_SWC_tree_from_file found soma_type=%i" % soma_type
+        print "STree2::read_SWC_tree_from_file found soma_type=%i" % soma_type
         
         file = open(file_n,'r')
         all_nodes = dict()
