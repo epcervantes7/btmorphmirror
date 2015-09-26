@@ -20,7 +20,7 @@ def _get_node_features(stats,node,term=False):
         AMP = stats.bifurcation_angle_vec(node)
         return O,D,ED,PL,SPL,SED,PA,AMP
 
-def perform_2D_analysis(destination,filter="*.swc",max_n=None):
+def perform_2D_analysis_filelist(destination,all_files,filter="*.swc"):
     """
     Wrapper function to perform an analysis of the vector features of one neuronal morphology (in the SWC format and with 3-point soma)
 
@@ -42,17 +42,9 @@ def perform_2D_analysis(destination,filter="*.swc",max_n=None):
     destination : string
         string with the location of where to find the SWC files.
     """
-    
-    # change to a directory of choice for I/O
-    os.chdir(destination)
-    
-    # load morphologies and initialize statistics
-    all_f = glob.glob(filter)
-    if not max_n == None:
-        all_f = all_f[:max_n]
     swc_trees = {}
     individual_stats = {}
-    for f in all_f:
+    for f in all_files:
         print "f: ", f
         cell_name = f.split(filter)[0]
         temp_tree = btmorph.STree2()
@@ -91,6 +83,17 @@ def perform_2D_analysis(destination,filter="*.swc",max_n=None):
         bif_writer.write(bif_to_write)
         bif_writer.flush()
         bif_writer.close()
+        
+def perform_2D_analysis(destination,filter="*.swc",max_n=None):
+    # change to a directory of choice for I/O
+    os.chdir(destination)
+    
+    # load morphologies and initialize statistics
+    all_f = glob.glob(filter)
+    if not max_n == None:
+        all_f = all_f[:max_n]
+
+    return perform_2D_analysis_filelist(destination,all_f,filter)
 
 if __name__=="__main__":
     destination = "."

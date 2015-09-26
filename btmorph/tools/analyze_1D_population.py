@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 import btmorph
 
-def perform_1D_population_analysis(destination,filter="*.swc",depth="Y",bar=[200,200,200],post_name=None,max_n=None):
+def perform_1D_population_analysis_filelist(destination,all_files,depth="Y",bar=[200,200,200],post_name=None,filter="*.swc"):
     """
     Wrapper function to perform a complete analysis of a population of neuronal morphologies stored in SWC format (and three-point soma).
 
@@ -34,32 +34,18 @@ def perform_1D_population_analysis(destination,filter="*.swc",depth="Y",bar=[200
     -----------
     destination : string
         string with the location of where to find the SWC files.
-    filter :  string
-        filter to select SWC files. Default is "*.swc". See `glob
-        <https://docs.python.org/2/library/glob.html>`_ documentation for more advanced filters
+    file_list :  
     depth : string
         Dimension that indicates "depth"/distance from top. Default is "Y"; NeuroMac generated files use "Z".
     bar : array of float
         Include a scale-bar with the specified dimensions
-    max_n : int
-        To perform the analysis on a subset of morphologies specify a \
-        number. Default is None and all morphologies will be taken \
-        into account.
     post_name : string
         string appended to the file name when saving. Default None
-    """
-    # change to a directory of choice for I/O
-    pwd = os.getcwd()
-    os.chdir(destination)    
-
-    # load morphologies and initialize statistics
-    all_f = glob.glob(filter)
-    if not max_n == None:
-        all_f = all_f[:max_n]    
+    """    
     swc_trees = {}
     individual_stats = {}
-    for f in all_f:
-        print "f: ", f
+    for f in all_files:
+        print "[1D analysis] f: ", f
         cell_name = f.split(filter)[0]
         temp_tree = btmorph.STree2()
         temp_tree.read_SWC_tree_from_file(f)
@@ -162,15 +148,25 @@ def perform_1D_population_analysis(destination,filter="*.swc",depth="Y",bar=[200
         plt.xlabel(func)
         plt.ylabel("#")
         if post_name == None:
-            plt.savefig("pop_1D_"+func+"_hist.pdf")
-            p_name = "pop_1D_"+func+"_raw.pkl"
+            plt.savefig(destination+"/pop_1D_"+func+"_hist.pdf")
+            p_name = destination+"/pop_1D_"+func+"_raw.pkl"
         else:
-            plt.savefig("pop_1D_"+func+"_hist"+post_name+".pdf")
-            p_name = "pop_1D_"+func+"_raw"+post_name+".pkl"            
+            plt.savefig(destination+"/pop_1D_"+func+"_hist"+post_name+".pdf")
+            p_name = destination+"/pop_1D_"+func+"_raw"+post_name+".pkl"
+            print "p_name: ", p_name
         pickle.dump(one_d_stats[func], open(p_name,"w"))
 
-    # and change back to the original directory where the command was given
-    os.chdir(pwd)
+def perform_1D_population_analysis(destination,filter="*.swc",depth="Y",bar=[200,200,200],post_name=None,max_n=None):
+    # change to a directory of choice for I/O
+    pwd = os.getcwd()
+    os.chdir(destination)    
+
+    # load morphologies and initialize statistics
+    all_f = glob.glob(filter)
+    if not max_n == None:
+        all_f = all_f[:max_n]
+
+    return perform_1D_population_analysis_filelist(destination,all_f,depth=depth,bar=bar,post_name=post_name,filter=filter)
 
 if __name__=="__main__":
     destination = "."
