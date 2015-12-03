@@ -616,7 +616,9 @@ class STree2(object) :
                     t_node.content = {'p3d': tP3D}
                     all_nodes[index] = (swc_type,t_node,parent_index)
                 else:
-                    print type,index
+                    # print type,index
+                    pass
+                    
 
         #print "len(all_nodes): ", len(all_nodes)
 
