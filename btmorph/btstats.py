@@ -714,8 +714,178 @@ class BTStats(object) :
             return 1
         # Not leaf
         childrenHS = map(self.local_horton_strahler, node.children)
-        return max(childrenHS + [(min(childrenHS)+1)])
+        #print("childrenHS: \n{}".format(childrenHS))
+        if len(node.children) == 1:
+            return max(childrenHS + [(min(childrenHS))])
+        elif len(node.children) == 2:
+            return max(childrenHS + [(min(childrenHS)+1)])
+        else:
+            return max(childrenHS)
+
+    def get_all_paths(self):
+        tree = self._tree
+        p_interest = self._bif_points + self._end_points
+        inc_paths = []
+        print("Number of bifurcations ({}) and terminals tips ({}) taken into account".format(len(self._bif_points),len(self._end_points)))
+        for to_node in p_interest:
+            if tree.is_leaf(to_node) :
+                path = tree.path_to_root(to_node)
+            else :
+                path = tree.path_to_root(to_node)[1:]
+            new_path = []
+            for node in path:
+                n = node.content['p3d']
+                new_path.append(node)
+                if len(node.children) >= 2 : # I arrive at either the soma or a branchpoint close to the soma
+                    inc_paths.append(new_path)
+                    break
+        print("number of inc_paths: {}".format(len(inc_paths)))
+        return inc_paths
+
+    def get_terminal_paths(self):
+        tree = self._tree
+        term_paths = []
+        term_p_l = []
+
+        for to_node in self._end_points:
+            path = tree.path_to_root(to_node)
+            new_path = []
+            for node in path:
+                n = node.content['p3d']
+                new_path.append(node)
+                if len(node.children) >= 2 : # I arrive at either the soma or a branchpoint close to the soma
+                    term_paths.append(new_path)
+                    term_p_l.append(len(new_path))
+                    break
+        print("Num term paths found: {}".format(len(term_paths)))
+        print("avg len term path: {}".format(np.mean(term_p_l)))
+        #plt.hist(term_p_l)
+        #plt.title('path lengths')
+        return term_paths
+
+    def get_non_terminal_paths(self):
+        tree = self._tree
+        bif_paths = []
+        bif_p_l = []
+
+        for to_node in self._bif_points:
+            path = tree.path_to_root(to_node)
+            new_path = []
+            for node in path:
+                n = node.content['p3d']
+                new_path.append(node)
+                if len(node.children) >= 2 : # I arrive at either the soma or a branchpoint close to the soma
+                    bif_paths.append(new_path)
+                    bif_p_l.append(len(new_path))
+                    break
+        print("Num bif paths found: {}".format(len(bif_paths)))
+        print("avg bif term path: {}".format(np.mean(bif_p_l)))
+        return bif_paths
+
+    def ccw(self,A,B,C):
+        # intersection code from: http://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/
+        return (C[1]-A[1]) * (B[0]-A[0]) > (B[1]-A[1]) * (C[0]-A[0])
+
+    def intersect(self,A,B,C,D):
+        # Return true if line segments AB and CD intersect
+        return self.ccw(A,C,D) != self.ccw(B,C,D) and self.ccw(A,B,C) != self.ccw(A,B,D)
+
+    def check_crossings_2D(self):
+        ''' Check crossings in 2D projection. Projection -> z=0
+        Parameters
+        ----------
+        Returns
+        -------
+        pathL,euclL : two lists of reals with path lengths and Euclidean distances of detected crossings
+        '''
+        intersec_PL = []
+        intersec_eucl = []
+        all_nodes = self._tree.get_nodes()[3:] # skip the first three, which are some-related nodes
+        for i in range(len(all_nodes)):
+            first_p = all_nodes[i]
+            for j in range(i,len(all_nodes)):
+                second_p = all_nodes[j]
+                
+                first_start = first_p.parent.content['p3d']
+                first_end = first_p.content['p3d']
+                second_start = second_p.parent.content['p3d']
+                second_end = second_p.content['p3d']
+                
+                # check if these nodes are linked: parent-child relation
+                # skip those because the always intersect at the connection point
+                if(second_p in first_p.children) or \
+                    (first_p in second_p.children):
+                    pass
+                else:
+                    cross = self.intersect(first_start.xyz,first_end.xyz,\
+                        second_start.xyz,second_end.xyz)
+                    if cross:
+                        # check PL and Euclidean distance of intersecting paths
+                        eucl = self.get_Euclidean_length_to_root(first_p) # first node of first path
+                        pl = self.get_pathlength_to_root(first_p)
+                        intersec_PL.append(pl)
+                        intersec_eucl.append(eucl)
+        return (intersec_PL,intersec_eucl)         
         
+    def check_path_crossings(self,all_paths,detailed=False):
+        ''' Check crossings in 2D projection. Projection -> z=0                                                                                                                                                                                    
+        Parameters                                                                                                                                                                                                                                 
+        ----------                                                                                                                                                                                                                                 
+        all_paths : list                                                                                                                                                                                                                           
+            List of paths created by get_all_paths                                                                                                                                                                                                 
+        detailed: boolean                                                                                                                                                                                                                          
+        '''
+        intersec_PL = []
+        intersec_eucl = []
+        if not detailed:
+            '''Only check "upper-triangle" to avoid counting twice as many crossing                                                                                                                                                                
+            (path 1 intersectiing with path 2 is the same as path 2 intersecting with 1)                                                                                                                                                           
+            '''
+            for i in range(len(all_paths)):
+                first_p = all_paths[i]
+                for j in range(i,len(all_paths)):
+                    second_p = all_paths[j]
+                    if not first_p==second_p:
+                        # make non-detailed line segments
+                        first_start = first_p[0].content['p3d']
+                        first_end = first_p[-1].content['p3d']
+                        second_start = second_p[0].content['p3d']
+                        second_end = second_p[-1].content['p3d']
+                        cross = self.intersect(first_start.xyz,first_end.xyz,\
+                                          second_start.xyz,second_end.xyz)
+                        if cross:
+                            # check PL and Euclidean distance of intersecting paths
+                            # for brevity, only check these for path 1
+                            eucl = self.get_Euclidean_length_to_root(first_p[0]) # first node of first path
+                            pl = self.get_pathlength_to_root(first_p[0])
+                            intersec_PL.append(pl)
+                            intersec_eucl.append(eucl)
+        if detailed:
+            for i in range(len(all_paths)):
+                first_p = all_paths[i]
+                for j in range(i,len(all_paths)):
+                    second_p = all_paths[j]
+                    # now loop over all nodes in first_p vs all nodes in second_p
+                    if len(first_p)>1 and len(second_p)>1: # otherwise, intersection is on a point, which is unlikely
+                        for ii in range(1,len(first_p)):
+                            first_start = first_p[ii-1].content['p3d']
+                            first_end = first_p[ii].content['p3d']
+                            for jj in range(1,len(second_p)):
+                                second_start = second_p[jj-1].content['p3d']
+                                second_end = second_p[jj].content['p3d']
+
+                                cross = self.intersect(first_start.xyz,first_end.xyz,\
+                                                  second_start.xyz,second_end.xyz)
+                                if cross:
+                                    # check PL and Euclidean distance of intersecting paths
+                                    # for brevity, only check these for path 1
+                                    eucl = self.get_Euclidean_length_to_root(first_p[ii-1]) # first node of first path
+                                    pl = self.get_pathlength_to_root(first_p[ii-1])
+                                    intersec_PL.append(pl)
+                                    intersec_eucl.append(eucl)                                
+                            
+        return (intersec_PL,intersec_eucl) 
+
     def fractal_dimension_box_counting_core(self, vg):
         """
         Calculates fractal dimension of the given voxel grid by this formula:
