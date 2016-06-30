@@ -268,7 +268,9 @@ def setup_func_small_tree():
     #0 - Only soma tree
     test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/soma_only.swc")) 
     #1 - Wiki test tree
-    test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/horton-strahler_test_wiki_3pointsoma.swc"))    
+    test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/horton-strahler_test_wiki_3pointsoma.swc"))
+    # 2 - Unbrached tree for additional Strahel check
+    test_trees.append(btmorph.STree2().read_SWC_tree_from_file("tests/straight_strahler_test.swc"))
     test_stats = btmorph.BTStats(test_trees[1])
 
 def teardown_func_small_tree():
@@ -294,7 +296,17 @@ def test_local_horton_strahler():
 @with_setup(setup_func_small_tree, teardown_func_small_tree) 
 def test_global_horton_strahler():
     global test_stats
+    global test_trees
     assert(4  == test_stats.global_horton_strahler())
+    stats = btmorph.BTStats(test_trees[2])
+    assert(1== stats.global_horton_strahler())
+    pass
+
+@with_setup(setup_func_small_tree, teardown_func_small_tree) 
+def test_global_horton_strahler_straight():
+    global test_trees
+    stats = btmorph.BTStats(test_trees[2])
+    assert(1== stats.global_horton_strahler())
     pass
 
 def setup_func_small_tree_lac():
