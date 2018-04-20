@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/Users/epcervantes/anaconda/bin/python
+##!/usr/bin/python
 import warnings
 
 with warnings.catch_warnings():

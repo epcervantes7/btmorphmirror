@@ -17,7 +17,7 @@ def test_soma_type_3ps():
     """
     swc_tree1 = STree2()
     soma_type = swc_tree1._determine_soma_type("tests/v_e_moto1.CNG.swc")
-    assert(soma_type == 1)
+    assert(soma_type == 3)
 
 def test_soma_type_mc():
     """

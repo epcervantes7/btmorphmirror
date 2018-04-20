@@ -893,7 +893,7 @@ class STree2(object):
             writer.close()
             # print 'STree::writeSWCTreeToFile -> finished. Tree in >',fileN,'<'
 
-    def read_SWC_tree_from_file(self, file_n, types):
+    def read_SWC_tree_from_file(self, file_n, types=range(1,10)):
         """
         Non-specific for a "tree data structure"
         Read and load a morphology from an SWC file and parse it into
