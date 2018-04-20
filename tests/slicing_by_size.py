@@ -1,8 +1,4 @@
-#!/home/epcervantes/scratch/anaconda/envs/py27/bin/python
-##!/usr/bin/python
-##!/Users/epcervantes/anaconda/bin/python
-##!/home/evelyn/anaconda3/envs/py27/bin/python2.7
-##!/usr/bin/python
+#!/usr/bin/python
 import warnings
 
 with warnings.catch_warnings():
@@ -11,8 +7,6 @@ with warnings.catch_warnings():
 import numpy as np
 
 import sys
-#
-# sys.path.insert(0, 'btmorph')
 import btmorph
 import os
 
