@@ -17,6 +17,7 @@ import btmorph
 import os
 
 dictionary = {
+    #'directory_name': class id
     'test': 0,
     'test1': 1,
     # 'chimpanzee_principal_pyramidal': 1,
