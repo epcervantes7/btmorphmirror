@@ -8,6 +8,9 @@ with warnings.catch_warnings():
 import numpy as np
 
 import sys
+import sys
+
+sys.path.insert(0, '../btmorph')
 import btmorph
 import os
 
@@ -29,9 +32,9 @@ dictionary = {
 
 
 if len(sys.argv) == 4:
-    directory = "./" + str(sys.argv[1])
+    directory = "tests/" + str(sys.argv[1])
     slice_size = int(str(sys.argv[3]))
-    new_directory = "./" + str(sys.argv[2]+"_" + str(slice_size))
+    new_directory = "tests/" + str(sys.argv[2]+"_" + str(slice_size))
 
     class_number=(dictionary[sys.argv[1]])
     from_level = 0
