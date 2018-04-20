@@ -4,19 +4,22 @@ File contains:
     - :class:`P3D2`
     - :class:`SNode2`
     - :class:`STree2`
-    
+
 B. Torben-Nielsen (from legacy code). Daniele Linaro contributed the
 iterators in  :class:`STree2`.
 """
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 import math
 
-class P3D2(object) :
+
+class P3D2(object):
     """
     Basic container to represent and store 3D information
     """
-    def __init__(self,xyz,radius,type=7) :
+
+    def __init__(self, xyz, radius, type=7):
         """ Constructor.
 
         Parameters
@@ -32,17 +35,18 @@ class P3D2(object) :
         self.radius = radius
         self.type = type
 
-    def __str__(self) :
-        return "P3D2 [%.2f %.2f %.2f], R=%.2f" % (self.xyz[0],self.xyz[1],self.xyz[2],self.radius)
+    def __str__(self):
+        return "P3D2 [%.2f %.2f %.2f], R=%.2f" % (self.xyz[0], self.xyz[1], self.xyz[2], self.radius)
 
-class SNode2(object) :
+
+class SNode2(object):
     """
     Simple Node for use with a simple Tree (STree)
-    
+
     By design, the "content" should be a dictionary. (2013-03-08)
     """
-    
-    def __init__(self,index) :
+
+    def __init__(self, index):
         """
         Constructor.
 
@@ -55,8 +59,10 @@ class SNode2(object) :
         self.index = index
         self.children = []
         self.content = {}
+        self.level = 0
+        self.visit = 0
 
-    def get_parent(self) :
+    def get_parent(self):
         """
         Return the parent node of this one.
 
@@ -64,10 +70,10 @@ class SNode2(object) :
         -------
         parent : :class:`SNode2`
            In case of the root, None is returned.Otherwise a :class:`SNode2` is returned
-        """          
+        """
         return self.__parent
 
-    def set_parent(self,parent) :
+    def set_parent(self, parent):
         """
         Set the parent node of a given other node
 
@@ -78,8 +84,8 @@ class SNode2(object) :
         self.__parent = parent
 
     parent = property(get_parent, set_parent)
-    
-    def get_index(self) :
+
+    def get_index(self):
         """
         Return the index of this node
 
@@ -88,8 +94,8 @@ class SNode2(object) :
         index : int
         """
         return self.__index
-        
-    def set_index(self,index) :
+
+    def set_index(self, index):
         """
         Set the unqiue name of a node
 
@@ -99,10 +105,10 @@ class SNode2(object) :
         index : int
         """
         self.__index = index
-    
+
     index = property(get_index, set_index)
 
-    def get_children(self) :
+    def get_children(self):
         """
         Return the children nodes of this one (if any)
 
@@ -110,10 +116,10 @@ class SNode2(object) :
         -------
         children : list :class:`SNode2`
            In case of a leaf an empty list is returned
-        """                  
+        """
         return self.__children
-        
-    def set_children(self, children) :
+
+    def set_children(self, children):
         """
         Set the children nodes of this one
 
@@ -126,7 +132,7 @@ class SNode2(object) :
 
     children = property(get_children, set_children)
 
-    def get_content(self) :
+    def get_content(self):
         """
         Return the content dict of a :class:`SNode2`
 
@@ -134,10 +140,10 @@ class SNode2(object) :
         -------
         parent : :class:`SNode2`
            In case of the root, None is returned.Otherwise a :class:`SNode2` is returned
-        """                  
+        """
         return self.__content
-    
-    def set_content(self,content) :
+
+    def set_content(self, content):
         """
         Set the content of a node. The content must be a dict
 
@@ -145,15 +151,15 @@ class SNode2(object) :
         ----------
         content : dict
             dict with content. For use in btmorph at least a 'p3d' entry should be present
-        """        
-        if isinstance(content,dict) :
-            self.__content = content 
-        else :
-            raise Exception("SNode2.set_content must receive a dict")    
+        """
+        if isinstance(content, dict):
+            self.__content = content
+        else:
+            raise Exception("SNode2.set_content must receive a dict")
 
     content = property(get_content, set_content)
 
-    def add_child(self,child_node) :
+    def add_child(self, child_node):
         """
         add a child to the children list of a given node
 
@@ -162,7 +168,7 @@ class SNode2(object) :
         node :  :class:`SNode2`
         """
         self.children.append(child_node)
-            
+
     def make_empty(self):
         """
         Clear the node. Unclear why I ever implemented this. Probably to cover up some failed garbage collection
@@ -170,8 +176,14 @@ class SNode2(object) :
         self.parent = None
         self.content = {}
         self.children = []
-            
-    def remove_child(self, child) :
+
+    def remove_children(self):
+        """
+        Clear the node. Unclear why I ever implemented this. Probably to cover up some failed garbage collection
+        """
+        self.children = []
+
+    def remove_child(self, child):
         """
         Remove a child node from the list of children of a specific node
 
@@ -181,55 +193,61 @@ class SNode2(object) :
             If the child doesn't exist, you get into problems.
         """
         self.children.remove(child)
-        
-    def __str__(self) :
-        return 'SNode2 (ID: '+str(self.index)+')'
 
-    def __lt__(self,other):
-        if self.index < other.index :
+    def __str__(self):
+        return 'SNode2 (ID: ' + str(self.index) + ')'
+
+    def __lt__(self, other):
+        if self.index < other.index:
             return True
-    def __le__(self,other):
-        if self.index <= other.index :
+
+    def __le__(self, other):
+        if self.index <= other.index:
             return True
-    def __gt__(self,other):
-        if self.index > other.index :
+
+    def __gt__(self, other):
+        if self.index > other.index:
             return True
-    def __ge__(self,other):
-        if self.index >= other.index :
+
+    def __ge__(self, other):
+        if self.index >= other.index:
             return True
-    
-    def __copy__(self) : # customization of copy.copy
+
+    def __copy__(self):  # customization of copy.copy
         ret = SNode2(self.index)
-        for child in self.children :
+        for child in self.children:
             ret.add_child(child)
         ret.content = self.content
         ret.parent = self.parent
         return ret
 
-class STree2(object) :
+
+class STree2(object):
     '''
     Simple tree for use with a simple Node (:class:`SNode2`).
 
     While the class is designed to contain binary trees (for neuronal morphologies) the number of children is not limited.
     As such, this is a generic implementation of a tree structure as a linked list.
     '''
-    
+
     def __init__(self):
         """
         Default constructor. No arguments are passed.
         """
         self.root = None
+        self.max_height = 0
+        self.total_all_nodes = dict()
 
     def __iter__(self):
         nodes = []
-        self._gather_nodes(self.root,nodes)
+        self._gather_nodes(self.root, nodes)
         for n in nodes:
             yield n
-    
-    def __getitem__(self,index):
-        return self._find_node(self.root,index)
 
-    def set_root(self,node) :
+    def __getitem__(self, index):
+        return self._find_node(self.root, index)
+
+    def set_root(self, node):
         """
         Set the root node of the tree
 
@@ -240,8 +258,10 @@ class STree2(object) :
         """
         if not node is None:
             node.parent = None
+            node.level = 0
         self.__root = node
-    def get_root(self) :
+
+    def get_root(self):
         """
         Obtain the root node
 
@@ -250,9 +270,10 @@ class STree2(object) :
         root : :class:`SNode2`
         """
         return self.__root
+
     root = property(get_root, set_root)
-    
-    def is_root(self,node) :
+
+    def is_root(self, node):
         """
         Check whether a node is the root node
 
@@ -263,10 +284,10 @@ class STree2(object) :
         """
         if node.parent is None:
             return True
-        else :
+        else:
             return False
-            
-    def is_leaf(self,node) :
+
+    def is_leaf(self, node):
         """
         Check whether a node is a leaf node, i.e., a node without children
 
@@ -275,12 +296,49 @@ class STree2(object) :
         is_leaf : boolean
             True is the queried node is a leaf, False otherwise
         """
-        if len(node.children) == 0  :
+        if len(node.children) == 0:
             return True
-        else :
+        else:
             return False
-            
-    def add_node_with_parent(self,node,parent) :
+
+    def set_level_to_node(self):
+        node = self.get_root()
+        if not node is None:
+            node.level = 0
+            for child in node.children:
+                child.level = node.level
+                if self.max_height < child.level:
+                    self.max_height = child.level
+                self.add_level_to_node(child)
+            return self
+
+    def add_level_to_node(self, node):
+        for child in node.children:
+            if len(node.children) == 2:  # is bifurcation then increasse the level of children
+                child.level = node.level + 1
+            else:
+                child.level = node.level
+            if self.max_height < child.level:
+                self.max_height = child.level
+            self.add_level_to_node(child)
+        return self
+
+    def add_level_to_node_old(self, node):
+        if len(node.children) == 2:  # is bifurcation
+            for child in node.children:
+                child.level = node.level + 1;
+                if self.max_height < child.level:
+                    self.max_height = child.level
+                self.add_level_to_node(child)
+        else:
+            for child in node.children:
+                child.level = node.level
+                if self.max_height < child.level:
+                    self.max_height = child.level
+                self.add_level_to_node(child)
+        return self
+
+    def add_node_with_parent(self, node, parent):
         """
         Add a node to the tree under a specific parent node
 
@@ -294,8 +352,8 @@ class STree2(object) :
         node.parent = parent
         if not parent is None:
             parent.add_child(node)
-        
-    def remove_node(self,node) :
+
+    def remove_node(self, node):
         """
         Remove a node from the tree
 
@@ -306,15 +364,14 @@ class STree2(object) :
         """
         node.parent.remove_child(node)
         self._deep_remove(node)
-        
-            
-    def _deep_remove(self,node) :
+
+    def _deep_remove(self, node):
         children = node.children
         node.make_empty()
-        for child in children :
-            self._deep_remove(child)        
+        for child in children:
+            self._deep_remove(child)
 
-    def get_nodes(self) :
+    def get_nodes(self):
         """
         Obtain a list of all nodes int the tree
 
@@ -323,10 +380,10 @@ class STree2(object) :
         all_nodes : list of :class:`SNode2`
         """
         n = []
-        self._gather_nodes(self.root,n) 
+        self._gather_nodes(self.root, n)
         return n
 
-    def get_sub_tree(self,fake_root) :
+    def get_sub_tree(self, fake_root):
         """
         Obtain the subtree starting from the given node
 
@@ -346,13 +403,13 @@ class STree2(object) :
         ret.root = cp
         return ret
 
-    def _gather_nodes(self,node,node_list) :
+    def _gather_nodes(self, node, node_list):
         if not node is None:
             node_list.append(node)
-            for child in node.children :
-                self._gather_nodes(child,node_list)
-    
-    def get_node_with_index(self, index) :
+            for child in node.children:
+                self._gather_nodes(child, node_list)
+
+    def get_node_with_index(self, index):
         """
         Get a node with a specific name. The name is always an integer
 
@@ -366,9 +423,9 @@ class STree2(object) :
         node : :class:`SNode2`
             Node with the specific index
         """
-        return self._find_node(self.root,index)
-        
-    def get_node_in_subtree(self,index,fake_root) :
+        return self._find_node(self.root, index)
+
+    def get_node_in_subtree(self, index, fake_root):
         """
         Get a node with a specific name in a the subtree rooted at fake_root. The name is always an integer
 
@@ -384,35 +441,35 @@ class STree2(object) :
         node : :class:`SNode2`
             Node with the specific index
         """
-        return self._find_node(fake_root,index)
-        
-    def _find_node(self,node,index) :
+        return self._find_node(fake_root, index)
+
+    def _find_node(self, node, index):
         """
-        Sweet breadth-first/stack iteration to replace the recursive call. 
+        Sweet breadth-first/stack iteration to replace the recursive call.
         Traverses the tree until it finds the node you are looking for.
 
         Parameters
         -----------
 
-        
+
         Returns
         -------
         node : :class:`SNode2`
             when found and None when not found
         """
-        stack = []; 
+        stack = [];
         stack.append(node)
-        while(len(stack) != 0) :
-            for child in stack :
-                if child.index == index  :
+        while (len(stack) != 0):
+            for child in stack:
+                if child.index == index:
                     return child
-                else :
+                else:
                     stack.remove(child)
-                    for cchild in child.children :
+                    for cchild in child.children:
                         stack.append(cchild)
-        return None # Not found!
-        
-    def degree_of_node(self,node) :
+        return None  # Not found!
+
+    def degree_of_node(self, node):
         """
         Get the degree of a given node. The degree is defined as the number of leaf nodes in the subtree rooted at this node.
 
@@ -428,12 +485,12 @@ class STree2(object) :
         sub_tree = self.get_sub_tree(node)
         st_nodes = sub_tree.get_nodes()
         leafs = 0
-        for n in st_nodes :
-            if sub_tree.is_leaf(n) :
-                leafs = leafs +1
+        for n in st_nodes:
+            if sub_tree.is_leaf(n):
+                leafs = leafs + 1
         return leafs
-        
-    def order_of_node(self,node) :
+
+    def order_of_node(self, node):
         """
         Get the order of a given node. The order or centrifugal order is defined as 0 for the root and increased with any bifurcation.
         Hence, a node with 2 branch points on the shortest path between that node and the root has order 2.
@@ -449,13 +506,13 @@ class STree2(object) :
         """
         ptr = self.path_to_root(node)
         order = 0
-        for n in ptr :
-            if len(n.children) > 1  :
-                order = order+1
+        for n in ptr:
+            if len(n.children) > 1:
+                order = order + 1
         # order is on [0,max_order] thus subtract 1 from this calculation
-        return order-1 
-                
-    def path_to_root(self,node) :
+        return order - 1
+
+    def path_to_root(self, node):
         """
         Find and return the path between a node and the root.
 
@@ -470,15 +527,63 @@ class STree2(object) :
             list of :class:`SNode2` with the provided node and the root as first and last entry, respectively.
         """
         n = []
-        self._go_up_from(node,n)            
+        self._go_up_from(node, n)
         return n
-        
-    def _go_up_from(self,node,n):
-        n.append(node)
-        if not node.parent is None :
-            self._go_up_from(node.parent,n)
 
-    def path_between_nodes(self,from_node,to_node) :
+    def _go_up_from(self, node, n):
+        n.append(node)
+        if not node.parent is None:
+            self._go_up_from(node.parent, n)
+
+    def path_to_bifurcation(self, node):
+        """
+        Find and return the path between a leaf and the first bifurcation.
+
+        Parameters
+        ----------
+        node : :class:`SNode2`
+            Node at which the path starts
+
+        Returns
+        -------
+        path : list of :class:`SNode2`
+            list of :class:`SNode2` with the provided node and the root as first and last entry, respectively.
+        """
+        n = []
+        self._go_to_bifurcation(node, n)
+        return n
+
+    def _go_to_bifurcation(self, node, n):
+        if len(node.get_parent().children) < 2:
+            if not node.parent is None:  # the root is not a bifurcation
+                n.append(node)
+                self._go_to_bifurcation(node.parent, n)
+
+    def path_to_dbifurcation(self, node):
+        """
+        Find and return the path between a leaf and the first bifurcation.
+
+        Parameters
+        ----------
+        node : :class:`SNode2`
+            Node at which the path starts
+
+        Returns
+        -------
+        path : list of :class:`SNode2`
+            list of :class:`SNode2` with the provided node and the root as first and last entry, respectively.
+        """
+        n = []
+        self._go_to_dbifurcation(node, n)
+        return n
+
+    def _go_to_dbifurcation(self, node, n):
+        if len(node.children) == 1:
+            if not node.children is None:
+                n.append(node)
+                self._go_to_dbifurcation(node.children[0], n)
+
+    def path_between_nodes(self, from_node, to_node):
         """
         Find the path between two nodes. The from_node needs to be of higher \
         order than the to_node. In case there is no path between the nodes, \
@@ -490,17 +595,17 @@ class STree2(object) :
         to_node : :class:`SNode2`
         """
         n = []
-        self._go_up_from_until(from_node,to_node,n)
+        self._go_up_from_until(from_node, to_node, n)
         return n
 
-    def _go_up_from_until(self,from_node,to_node,n) :
+    def _go_up_from_until(self, from_node, to_node, n):
         n.append(from_node)
-        if from_node == to_node :
+        if from_node == to_node:
             return
-        if not from_node.parent is None :
-            self._go_up_from_until(from_node.parent,to_node,n)
+        if not from_node.parent is None:
+            self._go_up_from_until(from_node.parent, to_node, n)
 
-    def write_SWC_tree_to_file(self,file_n) :
+    def new_write_SWC_tree_to_file(self, file_n):
         """
         Non-specific for a tree.
 
@@ -512,10 +617,10 @@ class STree2(object) :
         file_n : str
             name of the file to open
         """
-        writer = open(file_n,'w')
+        writer = open(file_n, 'w')
         nodes = self.get_nodes()
         nodes.sort()
-
+        print (file_n)
         # 3 point soma representation (See Neuromoprho.org FAQ)
         s1p = nodes[0].content["p3d"]
         s1_xyz = s1p.xyz
@@ -523,38 +628,278 @@ class STree2(object) :
         s2_xyz = s2p.xyz
         s3p = nodes[2].content["p3d"]
         s3_xyz = s3p.xyz
-        soma_str = "1 1 " +str(s1_xyz[0]) + " " + str(s1_xyz[1]) + \
-          " " + str(s1_xyz[2]) + " " + str(s1p.radius) + " -1\n" + \
-          "2 1 " +str(s2_xyz[0]) + " " + str(s2_xyz[1]) + \
-          " " + str(s2_xyz[2]) + " " + str(s2p.radius) + " 1\n" + \
-          "3 1 " +str(s3_xyz[0]) + " " + str(s3_xyz[1]) + \
-          " " + str(s3_xyz[2]) + " " + str(s3p.radius) + " 1\n"
+        soma_str = "1 1 " + str(s1_xyz[0]) + " " + str(s1_xyz[1]) + \
+                   " " + str(s1_xyz[2]) + " " + str(s1p.radius) + " -1\n" + \
+                   "2 1 " + str(s2_xyz[0]) + " " + str(s2_xyz[1]) + \
+                   " " + str(s2_xyz[2]) + " " + str(s2p.radius) + " 1\n" + \
+                   "3 1 " + str(s3_xyz[0]) + " " + str(s3_xyz[1]) + \
+                   " " + str(s3_xyz[2]) + " " + str(s3p.radius) + " 1\n"
         writer.write(soma_str)
         writer.flush()
-        
+
         # add the soma compartment, then enter the loop
-        for node in nodes[3:] :
-            p3d = node.content['p3d'] # update 2013-03-08
+        for node in nodes[3:]:
+            p3d = node.content['p3d']  # update 2013-03-08
             xyz = p3d.xyz
             radius = p3d.radius
             tt = p3d.type
-            p3d_string = str(node.index)+' '+str(tt) + ' ' + \
-                str(xyz[0]) + ' ' + str(xyz[1])+ ' ' + str(xyz[2]) + \
-                ' ' + str(radius) + ' ' \
-                + str(node.parent.index)
+            p3d_string = str(node.index) + ' ' + str(tt) + ' ' + \
+                         str(xyz[0]) + ' ' + str(xyz[1]) + ' ' + str(xyz[2]) + \
+                         ' ' + str(radius) + ' ' \
+                         + str(node.parent.index)
             # print 'p3d_string: ', p3d_string
-            writer.write( p3d_string + '\n' )
+            writer.write(p3d_string + '\n')
             writer.flush()
-        writer.close()          
-        #print 'STree::writeSWCTreeToFile -> finished. Tree in >',fileN,'<'
-        
-    def read_SWC_tree_from_file(self,file_n,types=range(1,10)) :
+        writer.close()
+        # print 'STree::writeSWCTreeToFile -> finished. Tree in >',fileN,'<'
+
+    def write_SWC_tree_to_file(self, file_n):
+        """
+        Non-specific for a tree.
+
+        Used to write an SWC file from a morphology stored in this
+        :class:`STree2`. Output uses the 3-point soma standard.
+
+        Parameters
+        ----------
+        file_n : str
+            name of the file to open
+        """
+        writer = open(file_n, 'w')
+        nodes = self.get_nodes()
+        nodes.sort()
+        # print (file_n)
+        # 3 point soma representation (See Neuromoprho.org FAQ)
+        s1p = nodes[0].content["p3d"]
+        s1_xyz = s1p.xyz
+        s2p = nodes[1].content["p3d"]
+        s2_xyz = s2p.xyz
+        s3p = nodes[2].content["p3d"]
+        s3_xyz = s3p.xyz
+        soma_str = "1 1 " + str(s1_xyz[0]) + " " + str(s1_xyz[1]) + \
+                   " " + str(s1_xyz[2]) + " " + str(s1p.radius) + " -1\n" + \
+                   "2 1 " + str(s2_xyz[0]) + " " + str(s2_xyz[1]) + \
+                   " " + str(s2_xyz[2]) + " " + str(s2p.radius) + " 1\n" + \
+                   "3 1 " + str(s3_xyz[0]) + " " + str(s3_xyz[1]) + \
+                   " " + str(s3_xyz[2]) + " " + str(s3p.radius) + " 1\n"
+        writer.write(soma_str)
+        writer.flush()
+
+        # add the soma compartment, then enter the loop
+        for node in nodes[3:]:
+            p3d = node.content['p3d']  # update 2013-03-08
+            xyz = p3d.xyz
+            radius = p3d.radius
+            tt = p3d.type
+            p3d_string = str(node.index) + ' ' + str(tt) + ' ' + \
+                         str(xyz[0]) + ' ' + str(xyz[1]) + ' ' + str(xyz[2]) + \
+                         ' ' + str(radius) + ' ' \
+                         + str(node.parent.index)
+            # print 'p3d_string: ', p3d_string
+            writer.write(p3d_string + '\n')
+            writer.flush()
+        writer.close()
+        # print 'STree::writeSWCTreeToFile -> finished. Tree in >',fileN,'<'
+
+    def re_write_SWC_tree_to_file(self, path, fileName):
+        """
+        Non-specific for a tree.
+
+        Used to write an SWC file from a morphology stored in this
+        :class:`STree2`. Output uses the 3-point soma standard.
+
+        Parameters
+        ----------
+        file_n : str
+            name of the file to open
+        """
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+        sub_tree_name = path + fileName
+        writer = open(sub_tree_name, 'w')
+        soma_type = self._determine_soma_type(sub_tree_name)
+        # print ("Soma type on print "+str(soma_type))
+        nodes = self.get_nodes()
+        # for i in nodes:
+        #    print i.get_index()
+        #    print i.content["p3d"]
+        nodes.sort()
+        if len(nodes) > 2:
+            # 3 point soma representation (See Neuromoprho.org FAQ)
+            s1p = nodes[0].content["p3d"]
+            s1_xyz = s1p.xyz
+            s2p = nodes[1].content["p3d"]
+            s2_xyz = s2p.xyz
+            s3p = nodes[2].content["p3d"]
+            s3_xyz = s3p.xyz
+            # add the soma compartment, then enter the loop
+            first = 0;
+            indices = dict()
+            ordered_index = 2
+            from_node = 1
+            if nodes[0].index == 1 and nodes[1].index == 1 and nodes[2].index == 1:  # three points representation
+                soma_str = "1 1 " + str(s1_xyz[0]) + " " + str(s1_xyz[1]) + \
+                           " " + str(s1_xyz[2]) + " " + str(s1p.radius) + " -1\n" + \
+                           "2 1 " + str(s2_xyz[0]) + " " + str(s2_xyz[1]) + \
+                           " " + str(s2_xyz[2]) + " " + str(s2p.radius) + " 1\n" + \
+                           "3 1 " + str(s3_xyz[0]) + " " + str(s3_xyz[1]) + \
+                           " " + str(s3_xyz[2]) + " " + str(s3p.radius) + " 1\n"
+                ordered_index = 4
+                from_node = 4
+                # depending on representation type
+                indices[1] = 1
+                indices[2] = 2
+                indices[3] = 3
+            else:
+                soma_str = "1 1 " + str(s1_xyz[0]) + " " + str(s1_xyz[1]) + \
+                           " " + str(s1_xyz[2]) + " " + str(s1p.radius) + " -1\n"
+                ordered_index = 2
+                from_node = 1
+                indices[1] = 1
+
+            writer.write(soma_str)
+            writer.flush()
+
+            for node in nodes[from_node:]:
+                p3d = node.content['p3d']  # update 2013-03-08
+                xyz = p3d.xyz
+                radius = p3d.radius
+                tt = p3d.type
+
+                if (first == 0):
+                    if indices.has_key(node.index):
+                        idx = indices.get(node.index)
+                    else:
+                        idx = ordered_index
+                        indices[node.index] = ordered_index
+                        ordered_index += 1
+                    p3d_string = str(idx) + ' ' + str(tt) + ' ' + \
+                                 str(xyz[0]) + ' ' + str(xyz[1]) + ' ' + str(xyz[2]) + \
+                                 ' ' + str(radius) + ' ' \
+                                 + str("1")
+                    first = 1
+                else:
+                    if indices.has_key(node.index):
+                        idx = indices.get(node.index)
+                    else:
+                        idx = ordered_index
+                        indices[node.index] = ordered_index
+                        ordered_index += 1
+
+                    p3d_string = str(idx) + ' ' + str(tt) + ' ' + \
+                                 str(xyz[0]) + ' ' + str(xyz[1]) + ' ' + str(xyz[2]) + \
+                                 ' ' + str(radius) + ' ' \
+                                 + str(indices.get(node.parent.index))
+                    # p3d_string = str(node.index)+' '+str(tt) + ' ' + \
+                    # str(xyz[0]) + ' ' + str(xyz[1])+ ' ' + str(xyz[2]) + \
+                    # ' ' + str(radius) + ' ' \
+                    # + str(node.parent.index)
+                # print 'p3d_string: ', p3d_string
+                writer.write(p3d_string + '\n')
+                writer.flush()
+            writer.close()
+            # print 'STree::writeSWCTreeToFile -> finished. Tree in >',fileN,'<'
+
+    def other_write_SWC_tree_to_file(self, file_n):
+        """
+        Non-specific for a tree.
+
+        Used to write an SWC file from a morphology stored in this
+        :class:`STree2`. Output uses the 3-point soma standard.
+
+        Parameters
+        ----------
+        file_n : str
+            name of the file to open
+        """
+        writer = open(file_n, 'w')
+        nodes = self.get_nodes()
+        # for i in nodes:
+        #     print(i.index, i.content["p3d"].xyz,i.level)
+        #    print i.content["p3d"]
+        nodes.sort()
+        if len(nodes) > 2:
+            # 3 point soma representation (See Neuromoprho.org FAQ)
+            s1p = nodes[0].content["p3d"]
+            s1_xyz = s1p.xyz
+            s2p = nodes[1].content["p3d"]
+            s2_xyz = s2p.xyz
+            s3p = nodes[2].content["p3d"]
+            s3_xyz = s3p.xyz
+            # add the soma compartment, then enter the loop
+            first = 0;
+            indices = dict()
+            ordered_index = 2
+            from_node = 1
+            if nodes[0].content['p3d'].type == 1 and nodes[1].content['p3d'].type == 1 and nodes[2].content[
+                'p3d'].type == 1 and len(nodes) == 3:  # case ONLY SOMA do not write anything
+                try:
+                    os.remove(file_n)
+                except OSError:
+                    pass
+                return
+            else:
+
+                soma_str = "1 1 " + str(s1_xyz[0]) + " " + str(s1_xyz[1]) + \
+                           " " + str(s1_xyz[2]) + " " + str(s1p.radius) + " -1\n"
+                ordered_index = 2
+                from_node = 1
+                indices[1] = 1
+
+                writer.write(soma_str)
+                writer.flush()
+
+            for node in nodes[from_node:]:
+                p3d = node.content['p3d']  # update 2013-03-08
+                xyz = p3d.xyz
+                radius = p3d.radius
+                tt = p3d.type
+
+                if (first == 0):
+
+                    if indices.has_key(node.index):
+                        idx = indices.get(node.index)
+                    else:
+                        idx = ordered_index
+                        indices[node.index] = ordered_index
+                        ordered_index += 1
+                    p3d_string = str(idx) + ' ' + str(tt) + ' ' + \
+                                 str(xyz[0]) + ' ' + str(xyz[1]) + ' ' + str(xyz[2]) + \
+                                 ' ' + str(radius) + ' ' \
+                                 + str("1")
+                    first = 1
+                else:
+
+                    if indices.has_key(node.index):
+                        idx = indices.get(node.index)
+                    else:
+                        idx = ordered_index
+                        indices[node.index] = ordered_index
+                        ordered_index += 1
+
+                    p3d_string = str(idx) + ' ' + str(tt) + ' ' + \
+                                 str(xyz[0]) + ' ' + str(xyz[1]) + ' ' + str(xyz[2]) + \
+                                 ' ' + str(radius) + ' ' \
+                                 + str(indices.get(node.parent.index))
+                    # p3d_string = str(node.index)+' '+str(tt) + ' ' + \
+                    # str(xyz[0]) + ' ' + str(xyz[1])+ ' ' + str(xyz[2]) + \
+                    # ' ' + str(radius) + ' ' \
+                    # + str(node.parent.index)
+                # print 'p3d_string: ', p3d_string
+                writer.write(p3d_string + '\n')
+                writer.flush()
+
+            writer.close()
+            # print 'STree::writeSWCTreeToFile -> finished. Tree in >',fileN,'<'
+
+    def read_SWC_tree_from_file(self, file_n, types):
         """
         Non-specific for a "tree data structure"
         Read and load a morphology from an SWC file and parse it into
-        an STree2 object. 
+        an STree2 object.
 
-        On the NeuroMorpho.org website, 5 types of somadescriptions are 
+        On the NeuroMorpho.org website, 5 types of somadescriptions are
         considered (http://neuromorpho.org/neuroMorpho/SomaFormat.html).
         The "3-point soma" is the standard and most files are converted
         to this format during a curation step. btmorph follows this default
@@ -565,7 +910,7 @@ class STree2(object) :
         are still allowed and available, namely:
         - soma absent: btmorph adds a 3-point soma in between of [TO DEFINE/TODO]
         - multiple cylinder: [TO DEFINE/TODO]
-        
+
         Parameters
         -----------
         file_n : str
@@ -573,111 +918,137 @@ class STree2(object) :
         """
         # check soma-representation: 3-point soma or a non-standard representation
         soma_type = self._determine_soma_type(file_n)
-        #print "STree2::read_SWC_tree_from_file found soma_type=%i" % soma_type
-        
-        file = open(file_n,'r')
+        # print "STree2::read_SWC_tree_from_fil/MD070517-2e found soma_type=%i" % soma_type
+
+        file = open(file_n, 'r')
         all_nodes = dict()
-        for line in file :
-            if not line.startswith('#') :
+        for line in file:
+            if not line.startswith('#'):
                 split = line.split()
-                index = int(split[0].rstrip())
-                swc_type = int(split[1].rstrip())
-                x = float(split[2].rstrip())
-                y = float(split[3].rstrip())
-                z = float(split[4].rstrip())
-                radius = float(split[5].rstrip())
-                parent_index = int(split[6].rstrip())
+                # print line
+                if len(split) > 6:
+                    index = int(split[0].rstrip())
+                    swc_type = int(split[1].rstrip())
+                    x = float(split[2].rstrip())
+                    y = float(split[3].rstrip())
+                    z = float(split[4].rstrip())
+                    radius = float(split[5].rstrip())
+                    parent_index = int(split[6].rstrip())
+                    # For no soma representation
+                    if soma_type == 0 and parent_index == -1:
+                        swc_type = 1
+                        soma_type = 1
 
-                if swc_type in types:
-                    tP3D = P3D2(np.array([x,y,z]),radius,swc_type)
-                    t_node = SNode2(index)
-                    t_node.content = {'p3d': tP3D}
-                    all_nodes[index] = (swc_type,t_node,parent_index)
-                else:
-                    print type,index
-
-        #print "len(all_nodes): ", len(all_nodes)
+                    if swc_type in types:
+                        tP3D = P3D2(np.array([x, y, z]), radius, swc_type)
+                        t_node = SNode2(index)
+                        t_node.content = {'p3d': tP3D}
+                        all_nodes[index] = (swc_type, t_node, parent_index)
 
         # IF 3-point soma representation
-        if soma_type == 1:
-            for index,(swc_type,node,parent_index) in all_nodes.items() :
+        # print "soma_type " + str(soma_type)
+        # print ("soma type   " +str(soma_type))
+        if soma_type == 3:
+            for index, (swc_type, node, parent_index) in all_nodes.items():
                 if index == 1:
                     self.root = node
-                elif index in (2,3):
+                elif index in (2, 3):
                     # the 3-point soma representation (http://neuromorpho.org/neuroMorpho/SomaFormat.html)
-                    self.add_node_with_parent(node,self.root)
+                    self.add_node_with_parent(node, self.root)
                 else:
+                    # print "parent index "+str(parent_index)
+                    if not all_nodes.__contains__(parent_index):  # special case apical connected to basal;
+                        parent_index = 1
                     parent_node = all_nodes[parent_index][1]
-                    self.add_node_with_parent(node,parent_node)
+                    self.add_node_with_parent(node, parent_node)
+        elif soma_type == 1:
+            for index, (swc_type, node, parent_index) in all_nodes.items():
+                if index == 1:
+                    self.root = node
+                elif index == 2:
+                    # elif index in (2,3):
+                    # the 3-point soma representation (http://neuromorpho.org/neuroMorpho/SomaFormat.html)
+                    self.add_node_with_parent(node, self.root)
+                else:
+                    if not all_nodes.__contains__(parent_index):  # special case apical connected to basal;
+                        parent_index = 1
+                    parent_node = all_nodes[parent_index][1]
+                    self.add_node_with_parent(node, parent_node)
         # IF multiple cylinder soma representation
-        elif soma_type ==2:
+        elif soma_type == 2:
             self.root = all_nodes[1][1]
-            
+
             # get all some info
             soma_cylinders = []
             connected_to_root = []
-            for index,(swc_type,node,parent_index) in all_nodes.items() :
+            for index, (swc_type, node, parent_index) in all_nodes.items():
                 if swc_type == 1 and not index == 1:
-                    soma_cylinders.append((node,parent_index))
-                    if index > 1 :
+                    soma_cylinders.append((node, parent_index))
+                    if index > 1:
                         connected_to_root.append(index)
 
             # make soma
-            s_node_1, s_node_2 = self._make_soma_from_cylinders(soma_cylinders,all_nodes)
-            
+            s_node_1, s_node_2 = self._make_soma_from_cylinders(soma_cylinders, all_nodes)
+
             # add soma
             self.root = all_nodes[1][1]
             self.root.content["p3d"].radius = s_node_1.content["p3d"].radius
-            self.add_node_with_parent(s_node_1,self.root)
-            self.add_node_with_parent(s_node_2,self.root)
+            self.add_node_with_parent(s_node_1, self.root)
+            self.add_node_with_parent(s_node_2, self.root)
 
-            # add the other points            
-            for index,(swc_type,node,parent_index) in all_nodes.items() :
+            # add the other points
+            for index, (swc_type, node, parent_index) in all_nodes.items():
+                #  if swc_type== 2
                 if swc_type == 1:
                     pass
                 else:
+
+                    if not all_nodes.__contains__(parent_index):  # special case apical connected to basal;
+                        parent_index = 1
                     parent_node = all_nodes[parent_index][1]
                     if parent_node.index in connected_to_root:
-                        self.add_node_with_parent(node,self.root)
+                        self.add_node_with_parent(node, self.root)
                     else:
-                        self.add_node_with_parent(node,parent_node)
-                    
+                        self.add_node_with_parent(node, parent_node)
+        self.total_all_nodes = all_nodes
         return self
 
-    def _make_soma_from_cylinders(self,soma_cylinders,all_nodes):
+    def _make_soma_from_cylinders(self, soma_cylinders, all_nodes):
         """Now construct 3-point soma
         step 1: calculate surface of all cylinders
         step 2: make 3-point representation with the same surface"""
-        
+
         total_surf = 0
-        for (node,parent_index) in soma_cylinders:
+        for (node, parent_index) in soma_cylinders:
             n = node.content["p3d"]
+            if not all_nodes.__contains__(parent_index):  # special case apical connected to basal;
+                parent_index = 1
             p = all_nodes[parent_index][1].content["p3d"]
-            H = np.sqrt(np.sum((n.xyz-p.xyz)**2))
-            surf = 2*np.pi*p.radius*H
-            #print "(node %i) surf as cylinder:  %f (R=%f, H=%f), P=%s" % (node.index,surf,n.radius,H,p)
-            total_surf = total_surf+surf
-        print "found 'multiple cylinder soma' w/ total soma surface=", total_surf
+            H = np.sqrt(np.sum((n.xyz - p.xyz) ** 2))
+            surf = 2 * np.pi * p.radius * H
+            # print "(node %i) surf as cylinder:  %f (R=%f, H=%f), P=%s" % (node.index,surf,n.radius,H,p)
+            total_surf = total_surf + surf
+        print ("found 'multiple cylinder soma' w/ total soma surface=", total_surf)
 
         # define apropriate radius
-        radius=np.sqrt(total_surf/(4*np.pi))
-        #print "found radius: ", radius
+        radius = np.sqrt(total_surf / (4 * np.pi))
+        # print "found radius: ", radius
 
         s_node_1 = SNode2(2)
         r = self.root.content["p3d"]
         rp = r.xyz
-        s_p_1 = P3D2(np.array([rp[0],rp[1]-radius,rp[2]]),radius,1)
+        s_p_1 = P3D2(np.array([rp[0], rp[1] - radius, rp[2]]), radius, 1)
         s_node_1.content = {'p3d': s_p_1}
         s_node_2 = SNode2(3)
-        s_p_2 = P3D2(np.array([rp[0],rp[1]+radius,rp[2]]),radius,1)
+        s_p_2 = P3D2(np.array([rp[0], rp[1] + radius, rp[2]]), radius, 1)
         s_node_2.content = {'p3d': s_p_2}
-        
-        return s_node_1,s_node_2
-    
-    def _determine_soma_type(self,file_n):
+
+        return s_node_1, s_node_2
+
+    def _determine_soma_type(self, file_n):
         """
         Costly method to determine the soma type used in the SWC file.
-        This method searches the whole file for soma entries.  
+        This method searches the whole file for soma entries.
 
         Parameters
         ----------
@@ -691,23 +1062,26 @@ class STree2(object) :
             1: Default three-point soma, 2: multiple cylinder description,
             3: otherwise [not suported in btmorph]
         """
-        file = open(file_n,"r")
+        file = open(file_n, "r")
         somas = 0
         for line in file:
-            if not line.startswith('#') :
+            if not line.startswith('#'):
                 split = line.split()
-                index = int(split[0].rstrip())
-                s_type = int(split[1].rstrip())
-                if s_type == 1 :
-                    somas = somas +1
+                if len(split) > 1:
+                    index = int(split[0].rstrip())
+                    s_type = int(split[1].rstrip())
+                    # print (str(index)+" " +str(s_type))
+                    if s_type == 1:
+                        somas = somas + 1
         file.close()
         if somas == 3:
-            return 1
-        elif somas < 3:
             return 3
+        elif somas == 2:
+            return 3
+        elif somas < 3:
+            return somas
         else:
             return 2
-        
 
-    def __str__(self) :
-        return "STree2 ("+str(len(self.get_nodes()))+" nodes)"
+    def __str__(self):
+        return "STree2 (" + str(len(self.get_nodes())) + " nodes)"
