@@ -9,10 +9,10 @@ Small Python library containing a data structure and tools to represent and anal
 Installation
 ------------
 
-Prerequisites 
+Prerequisites
 ~~~~~~~~~~~~~~
 
-You will need Python (2.7), `Numpy <http://numpy.org>`_ / `Scipy <http://scipy.org>`_ and `Matplotlib <http://matplotlib.org/>`_ to run the code. `IPython <http://ipython.org>`_ is highly recommended because it provides an interactive environment (like Matlab) for Python. 
+You will need Python (2.7), `Numpy <http://numpy.org>`_ / `Scipy <http://scipy.org>`_ and `Matplotlib <http://matplotlib.org/>`_ to run the code. `IPython <http://ipython.org>`_ is highly recommended because it provides an interactive environment (like Matlab) for Python.
 
 
 * Linux: Most linux distributions contain versions of these packages in their package manager that can readily be installed.
@@ -26,7 +26,7 @@ Proper installation
 
 .. note:: The following instructions are for Linux and Max OSX systems and only use command line tools. Please follow the appropriate manuals for Windows systems or tools with graphical interfaces.
 
-Check out the git repository and adjust your :code:`$PYTHONPATH`. 
+Check out the git repository and adjust your :code:`$PYTHONPATH`.
 ::
     git clone https://bitbucket.org/btorb/btmorph.git
     cd btmorph
@@ -38,7 +38,8 @@ Test the installation by running the tests (see :ref:`unit_testing`):
 ::
     nosetests -v --nocapture tests/structs_test.py
     nosetests -v --nocapture tests/stats_test.py
-
+    tests/slicing_by_size.py test test_slice 2
+    tests/example.py
 
 
 Data representation
@@ -58,9 +59,9 @@ Schematically, it looks like this:
 Design requirements
 -------------------
 
-A small set of library containing an efficient data structure and routines to quickly analyze morphometric features of neuronal morphologies. 
+A small set of library containing an efficient data structure and routines to quickly analyze morphometric features of neuronal morphologies.
 
-The internal representation is based on a tree data-structure (rather than an adjacency matrix as in the `TREES toolbox <http://www.treestoolbox.org/>`_). 
+The internal representation is based on a tree data-structure (rather than an adjacency matrix as in the `TREES toolbox <http://www.treestoolbox.org/>`_).
 
 Atomic functions are provided to allow usage in scripting and enable the user to built more complex morphometrics on top of the provided functionality. The code is serial (i.e., non-parallel) because single neuron morphometrics are fast to compute. When analyzing a batch of morphologies a parallel wrapper can be written (e.g., using Pythons's multiprocessing module or more fancy using MPI).
 
@@ -72,7 +73,7 @@ Simple wrappers are provided to analyze single neurons, populations thereof and 
 
 .. Routines are atomic functions that can be used by end-users in scripts and used to build more complex morphometrics. Additionally, basic visualization of neuronal topology ("dendrogram") and geometry can be performed.
 .. For now, the analysis is based on the whole neuron. In case you want to analyze only a part of the morphology, you have to filter the SWC file first and run the analysis on the resulting filtered file.
-   
+
 
 
 Morphometric features
@@ -85,7 +86,7 @@ Morphometric features
   * # branch points
   * # terminal points
   * width (without translation; absolute coordinates; potential extension along the first 3 principal components)
-  * height 
+  * height
   * depth
   * max degree (of neurites sprouting at the soma)
   * max order (of neurites sprouting at the soma)
